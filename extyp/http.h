@@ -6,6 +6,7 @@
 #include <stdtyp/file.h>
 
 create_error_header(http_addr_error);
+create_error_header(http_addr_hostname_error);
 
 struct inet_addr {
    // IPv4 or IPv6

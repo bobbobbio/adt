@@ -6,6 +6,7 @@
 #include <errno.h>
 
 create_error_body(http_addr_error);
+create_error_body(http_addr_hostname_error);
 
 // Error handling
 static struct error
@@ -23,7 +24,7 @@ eai_to_error(int ecode)
    else if (ecode == EAI_MEMORY)
       return error_make(http_addr_error, "memory allocation failure");
    else if (ecode == EAI_NONAME)
-      return error_make(http_addr_error,
+      return error_make(http_addr_hostname_error,
          "hostname or servname not provided, or not known");
    else if (ecode == EAI_OVERFLOW)
       return error_make(http_addr_error, "argument buffer overflow");

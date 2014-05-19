@@ -24,7 +24,14 @@ struct error {
 #define error_equal(error_a, error_b) \
    (error_a.type == error_b.type)
 
+#define error_is_type(error_a, etype) \
+   (error_a.type == etype)
+
 create_error_header(_no_error);
+
+#define ehandle(ename, expr) \
+   for (struct error ename = expr; !error_equal(ename, no_error); \
+   ename = no_error)
 
 #define no_error error_make(_no_error, "")
 

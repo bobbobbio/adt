@@ -1,4 +1,4 @@
-all_tests: test_main.o map_test linereader_test vector_test list_test file_test http_test ../libadt.a
+all_tests: test_main.o map_test linereader_test vector_test list_test file_test http_test argparse_test ../libadt.a
 	(cd ..; make)
 	c99 -I../ -g -o $@ test_main.o ../libadt.a
 
@@ -22,5 +22,8 @@ file_test: file_test.c ../adt.h ../stdtyp/string.h ../stdtyp/file.h ../libadt.a
 
 http_test: http_test.c ../extyp/http.h ../libadt.a
 	c99 -I../ -g -o $@ http_test.c  ../libadt.a
+
+argparse_test: argparse_test.c ../stdtyp/argparse.h ../libadt.a
+	c99 -I../ -g -o $@ argparse_test.c  ../libadt.a
 clean:
 	rm -fr all_tests *.o *_test *.dSYM

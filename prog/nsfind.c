@@ -1,9 +1,10 @@
+#include <adt.h>
 #include <extyp/http.h>
 
 int
 main(int argc, char **argv)
 {
-   assert(argc == 2);
+   // XXX use progargs to ensure an argument is given
    create(inet_addr, ia);
    create_string(hostname, argv[1]);
    ehandle (error, dns_lookup(&hostname, &ia)) {
@@ -15,12 +16,6 @@ main(int argc, char **argv)
    }
    inet_addr_print(&ia);
    printf("\n");
-/*
-   assert(ia.addr[0] == 127
-       && ia.addr[1] == 0
-       && ia.addr[2] == 0
-       && ia.addr[3] == 1);
-*/
 
    return EXIT_SUCCESS;
 }
