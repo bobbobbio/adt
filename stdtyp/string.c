@@ -47,18 +47,44 @@ string_new_var(const char *cstr)
    return a;
 }
 
+struct string
+string_make_const(const char *buff)
+{
+   struct string s;
+   s.buff = (char *)buff;
+   s.buff_len = strlen(buff) + 1;
+   s.length = strlen(buff);
+   s.mallocd = false;
+
+   return s;
+}
+
+const struct string *
+string_new_const(const char *buff)
+{
+   struct string *s = malloc(sizeof(struct string));
+   s->buff = (char *)buff;
+   s->buff_len = strlen(buff) + 1;
+   s->length = strlen(buff);
+   s->mallocd = false;
+
+   return s;
+}
+
 void
 string_init(struct string *s)
 {
    s->buff_len = 10;
    s->buff = (char *)malloc(s->buff_len);
    s->length = 0;
+   s->mallocd = true;
 }
 
 void
 string_destroy(struct string *s)
 {
-   free(s->buff);
+   if (s->mallocd)
+      free(s->buff);
 }
 
 void
@@ -113,8 +139,18 @@ string_char_at_index(const struct string *s, uint64_t i)
 static void
 string_expand(struct string *s)
 {
-   s->buff_len *= 2;
-   s->buff = (char *)realloc(s->buff, s->buff_len);
+   if (s->mallocd) {
+      s->buff_len *= 2;
+      s->buff = (char *)realloc(s->buff, s->buff_len);
+   } else {
+      int nbuff_len = s->buff_len * 2;
+      char *nbuff = (char *)malloc(nbuff_len);
+      memcpy(nbuff, s->buff, s->buff_len);
+
+      s->buff = nbuff;
+      s->buff_len = nbuff_len;
+      s->mallocd = true;
+   }
 }
 
 static void

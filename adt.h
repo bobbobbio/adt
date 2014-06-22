@@ -101,6 +101,11 @@
       *d = *s; } \
    SWALLOWSEMICOLON
 
+m_make(int, int);
+m_make(unsigned, unsigned);
+m_make(char, char);
+m_make(double, double);
+
 // Convert existing structs to use create, that have existing free
 #define _convert_ctype_body(type, f_func, f) \
    f void \

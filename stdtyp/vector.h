@@ -125,9 +125,8 @@ vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **,
    _vector_gen_header(name, const struct type *, struct type *, f)
 
 #define __vector_gen_pod_body(name, type, f) \
-   m_make(name##_type, type); \
    static void name##_type_print(const type *a) { type##_print(a); } \
-   _vector_gen_body(name, type, type *, ref, sizeof(type), name##_type, f)
+   _vector_gen_body(name, type, type *, ref, sizeof(type), type, f)
 #define __vector_gen_pod_header(name, type, f) \
    _vector_gen_header(name, type, type *, f)
 
@@ -161,7 +160,7 @@ vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **,
       for (unsigned i = 0; i < name##_size(a); i++) \
       type##_free(*name##_at(a, i)); } \
    _vector_gen_body(name, struct type *, struct type **, ref, \
-   sizeof(struct type *), name##_void, f)
+      sizeof(struct type *), name##_void, f)
 
 #define vector_gen_ptr_header(name, type) \
    _vector_gen_ptr_header(name, type, )

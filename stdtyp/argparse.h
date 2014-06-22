@@ -5,45 +5,69 @@
 #include <stdtyp/map.h>
 #include <stdtyp/string.h>
 
-struct argparse_arg;
-map_gen_header(string_arg_map, string, argparse_arg);
+#include <unistd.h>
+#include <stdarg.h>
+
+enum arg_type {
+   ARG_BOOL,
+   ARG_STRING,
+   ARG_NUM,
+   ARG_STRING_ARRAY,
+};
+
+enum arg_needs_type {
+   ARG_OPTIONAL,
+   ARG_REQUIRED
+};
+
+struct arg_template;
+adt_func_header(arg_template);
+
+struct arg_value;
+adt_func_pod_header(arg_value);
+
+map_gen_header(string_arg_template_map, string, arg_template);
+map_gen_header(string_arg_map, string, arg_value);
 map_gen_podk_header(char_string_map, char, string);
 
-struct argparse;
-adt_func_header(argparse);
+struct arg_dict {
+   struct string_arg_template_map templates;
+   struct char_string_map shortcuts;
+   struct string_arg_map values;
+};
+adt_func_header(arg_dict);
+
+void *
+get_arg(struct arg_dict *dict, const struct string *cmd);
 
 void
-argparse_add_required_arg(struct argparse *, struct string *, char,
-   struct string *);
+_declare_args(struct arg_dict *ad, const char *arg_name, ...);
+
+#define define_args(...) \
+static void declare_args(struct arg_dict *ad) \
+{ _declare_args(ad, __VA_ARGS__, NULL); } \
+SWALLOWSEMICOLON
 
 void
-argparse_add_optional_arg(struct argparse *, struct string *, char,
-   struct string *);
+parse_args(struct arg_dict *dict, char **argv, int argc);
 
-void
-argparse_add_required_value_arg(struct argparse *, struct string *, char,
-   struct string *);
+#define arg_main(_arg_dict) \
+_arg_call(_arg_dict); \
+int main(int argc, char **argv) { \
+   create(arg_dict, ad); \
+   declare_args(&ad); \
+   parse_args(&ad, argv, argc); \
+   return _arg_call(&ad); } \
+int _arg_call(_arg_dict)
 
-void
-argparse_add_optional_value_arg(struct argparse *, struct string *, char,
-   struct string *);
+struct arg_entry {
+   char sc;
+   char *word;
+   char *desc;
+   struct arg_entry *next;
+};
 
-void
-argparse_add_required_program_arg(struct argparse *, struct string *);
-
-void
-argparse_add_optional_program_arg(struct argparse *, struct string *);
-
-bool
-argparse_got_arg(struct argparse *, struct string *);
-
-void
-argparse_arg_value(struct argparse *, struct string *, struct string *);
-
-void
-argparse_program_arg_value(struct argparse *, struct string *);
-
-void
-argparse_parse(struct argparse *, int, char **);
+#define define_arg(_sc, _word, _desc) \
+arg_list_head = (struct arg_entry *)&{ .tail = arg_tail};
 
 #endif // __ARGPARSE_H__

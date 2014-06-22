@@ -32,6 +32,8 @@ bool point_equal(struct point *a, struct point *b)
 map_gen_podk_static(my_map, int, point);
 map_gen_static(my_map_two, string, point);
 
+map_gen_podk_ptr_static(ptr_map, int, point);
+
 void
 p_inc(struct point *p)
 {
@@ -85,5 +87,14 @@ main(int argc, char **argv)
       create(point, po);
       my_map_get(&m3, i, &po);
       assert(point_equal(&po, &p));
+   }
+
+   create(ptr_map, pm);
+   ptr_map_insert(&pm, 3, &p);
+
+   iter (ptr_map, &pm, i) {
+      assert(*i.key == 3);
+      assert(*i.value == &p);
+      assert(point_equal(&p, *i.value));
    }
 }

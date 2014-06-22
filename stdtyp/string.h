@@ -12,9 +12,10 @@
    string_new_var(str)
 
 #define strw(cstr) \
-   &((const struct string){ .buff = cstr, \
+   &((const struct string){ .buff = (char *)cstr, \
    .buff_len = sizeof(cstr) / sizeof(char), \
-   .length = sizeof(cstr) / sizeof(char) - 1 })
+   .length = sizeof(cstr) / sizeof(char) - 1, \
+   .mallocd = false })
 
 void
 carr_freer(const char ***);
@@ -31,6 +32,7 @@ struct string {
    char *buff;
    uint64_t buff_len;
    uint64_t length;
+   bool mallocd;
 };
 adt_func_header(string);
 
@@ -42,6 +44,12 @@ vector_gen_header(string_vec, string);
 
 struct string_vec
 _strvw(const struct string *);
+
+struct string
+string_make_const(const char *buff);
+
+const struct string *
+string_new_const(const char *buff);
 
 void
 string_append_cstring(struct string *, const char *);

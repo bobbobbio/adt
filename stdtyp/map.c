@@ -123,7 +123,7 @@ map_insert(struct map *m, void *k, void *v, void **ko, void **vo)
    assert(v != NULL);
 
    _map_resize_check(m); // this ensures our map has room
-   
+
    uint64_t l = m->hash(k) % _map_nbuckets(m);
 
    uint64_t not_seen = _map_nbuckets(m);
@@ -193,7 +193,7 @@ map_iterate(const struct map *m, struct aiter *p, void **k, void **v)
    if (p->ipos >= _map_nbuckets(m))
       return false;
 
-   while (map_table_at(m->buckets, p->ipos)->key == NULL || 
+   while (map_table_at(m->buckets, p->ipos)->key == NULL ||
           map_table_at(m->buckets, p->ipos)->deleted) {
       p->ipos++;
       if (p->ipos >= _map_nbuckets(m))
