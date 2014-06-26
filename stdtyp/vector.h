@@ -34,7 +34,6 @@ vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **,
    struct name { struct vector vector; }; \
    _adt_func_header(name, f); \
    _gen_iter_header(name, int, type_ref, f); \
-   f bool name##_iter_next(const struct name *, struct name##_iter *); \
    f struct name *name##_new_size(uint64_t); \
    f bool name##_equal(const struct name *, const struct name *); \
    f void name##_insert(struct name *, type, int i); \

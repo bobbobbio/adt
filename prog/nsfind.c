@@ -9,7 +9,7 @@ define_args(
 int
 arg_main(struct arg_dict *args)
 {
-   const struct string *hostname = get_arg(args, strw(""));
+   const struct string *hostname = get_arg_string(args, strw(""));
    create(inet_addr, ia);
    ehandle (error, dns_lookup(hostname, &ia)) {
       if (error_is_type(error, http_addr_hostname_error)) {

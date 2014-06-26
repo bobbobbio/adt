@@ -74,14 +74,13 @@ int string_compare(const void *a, const void *b);
    struct name { struct map map; }; \
    _adt_func_header(name, f); \
    _gen_iter_header(name, ktype_ref, type_ref, f); \
-   f bool name##_iter_next(const struct name *, struct name##_iter *); \
    f void name##_get(const struct name *, ktype, type_ref); \
    f type_ref name##_at(const struct name *, ktype); \
    f void name##_insert(struct name *, ktype, cnst type); \
    f bool name##_remove(struct name *, ktype); \
    f int name##_size(const struct name *); \
    f void name##_copy(struct name *, const struct name *); \
-   f bool name##_contains(struct name *, ktype)
+   f bool name##_contains(const struct name *, ktype)
 
 #define _map_gen_body(name, ktype, ktype_ref, ktype_tn, ktype_in, ktype_out,   \
       typename, type, type_ref, vref, cnst, f)                                 \
@@ -150,7 +149,7 @@ int string_compare(const void *a, const void *b);
    {                                                                           \
       return map_size(&a->map);                                                \
    }                                                                           \
-   f bool name##_contains(struct name *a, ktype k)                             \
+   f bool name##_contains(const struct name *a, ktype k)                       \
    {                                                                           \
       return map_contains(&a->map, ktype_in(k));                               \
    }                                                                           \

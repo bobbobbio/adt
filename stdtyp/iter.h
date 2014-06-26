@@ -17,6 +17,7 @@ struct name##_iter { \
    struct aiter pos; \
 }; \
 _adt_func_header(name##_iter, f); \
+f bool name##_iter_next(const struct name *, struct name##_iter *); \
 typedef vtype name##_value; \
 typedef ktype name##_key
 
@@ -27,6 +28,14 @@ f void name##_iter_init(struct name##_iter *i) { \
 f void name##_iter_destroy(struct name##_iter *i) {} \
 SWALLOWSEMICOLON
 
+#define iter_gen_header(name, ktype, vtype) \
+   _gen_iter_header(name, ktype, vtype, )
+#define iter_gen_body(name, ktype, vtype) \
+   _gen_iter_body(name, ktype, vtype, )
+
+#define iter_gen_static(name, ktype, vtype) \
+   _gen_iter_header(name, ktype, vtype, static); \
+   _gen_iter_body(name, ktype, vtype, static)
 
 #define iter(type, sub, name) \
    for (struct type##_iter name = type##_iter_make(); \

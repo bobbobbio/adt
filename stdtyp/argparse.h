@@ -37,12 +37,28 @@ struct arg_dict {
    const char *prog_name;
 };
 adt_func_header(arg_dict);
+iter_gen_header(arg_dict, struct string *, void *);
 
 void *
-get_arg(struct arg_dict *dict, const struct string *cmd);
+get_arg(const struct arg_dict *dict, enum arg_type, const struct string *cmd);
 
 bool
-has_arg(struct arg_dict *dict, const struct string *cmd);
+get_arg_bool(const struct arg_dict *dict, const struct string *cmd);
+
+const struct string *
+get_arg_string(const struct arg_dict *dict, const struct string *cmd);
+
+int
+get_arg_num(const struct arg_dict *dict, const struct string *cmd);
+
+const struct string_vec *
+get_arg_string_array(const struct arg_dict *dict, const struct string *cmd);
+
+enum arg_type
+get_arg_type(const struct arg_dict *dict, const struct string *cmd);
+
+bool
+has_arg(const struct arg_dict *dict, const struct string *cmd);
 
 void
 _declare_args(struct arg_dict *ad, const char *arg_name, ...);

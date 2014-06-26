@@ -60,6 +60,7 @@ file_stats_equal(const struct file_stats *a, const struct file_stats *b)
    return false;
 }
 
+// Gives the width of a uint
 static int
 uwidth(uint64_t n)
 {
@@ -68,19 +69,27 @@ uwidth(uint64_t n)
    return string_length(&tmp);
 }
 
+// Given an arguments dict, return out a string_vec with all the selected
+// options
 static void
 get_options(struct arg_dict *dict, struct string_vec *options_out)
 {
    string_vec_clear(options_out);
 
-   // Get the options out of the arg parser
-   create_string_vec(all_options, "lines", "words", "bytes", "chars",
-      "max-line-length");
+   // Go through all the arguments
+   iter (arg_dict, dict, item) {
+      // Skip the argument we don't care about
+      if (string_equal(item.key, strw("version")))
+         continue;
+      if (string_equal(item.key, strw("")))
+         continue;
 
-   // Remove the options that weren't specified
-   iter_value (string_vec, &all_options, stat) {
-      if (has_arg(dict, stat))
-         string_vec_append(options_out, stat);
+      // All the other options should be bools
+      assert(get_arg_type(dict, item.key) == ARG_BOOL);
+      bool flagged = *(bool *)item.value;
+
+      if (flagged)
+         string_vec_append(options_out, item.key);
    }
 
    // If no options were given, use defaults
@@ -91,13 +100,14 @@ get_options(struct arg_dict *dict, struct string_vec *options_out)
    }
 }
 
+// Print out file stats with the given options and column width
 static void
 file_stats_print_stats(const struct file_stats *f, int col,
    struct string_vec *options)
 {
    // Print the chosen stats
    uint64_t val = *stat_map_at(&f->stats, string_vec_at(options, 0));
-   printf("%*lu", col, val);
+   printf("%*lu", max(col, uwidth(val) + 1), val);
    for (int i = 1; i < string_vec_size(options); i++) {
       val = *stat_map_at(&f->stats, string_vec_at(options, i));
       printf(" %*lu", col, val);
@@ -151,14 +161,14 @@ int
 arg_main(struct arg_dict *args)
 {
    // Print version and exit if --version is given
-   if (*(bool *)get_arg(args, strw("version"))) {
+   if (has_arg(args, strw("version"))) {
       printf("word count v1.0\n");
       printf("C ADT by Remi Bernotavicius 2014");
       return EXIT_SUCCESS;
    }
 
    // Get the files given as args
-   struct string_vec *files = get_arg(args, strw(""));
+   const struct string_vec *files = get_arg_string_array(args, strw(""));
 
    // Create a vector to store all of the stats
    create(file_stats_vec, all_file_stats);
@@ -184,6 +194,7 @@ arg_main(struct arg_dict *args)
             }
          }
 
+         // If we were able to open the file, analyze it
          if (line_reader_opened(&lr)) {
             create(file_stats, fs);
             analyze_file(&lr, &fs);
