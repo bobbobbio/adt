@@ -343,3 +343,27 @@ string_contains_substring(const struct string *a, const struct string *b)
 
    return false;
 }
+
+int
+string_compare(const struct string *a, const struct string *b)
+{
+   return strcmp(string_to_cstring(a), string_to_cstring(b));
+}
+
+uint64_t
+string_hash(const struct string *s)
+{
+   uint64_t hash = 0;
+   uint64_t exp = 1;
+   const char *str = string_to_cstring(s);
+
+   while (*str != '\0') {
+      hash += exp * *str;
+      exp *= 37;
+
+      str++;
+   }
+
+   return hash;
+}
+

@@ -25,7 +25,6 @@ vector_gen_static(map_table, map_table_item);
 
 adt_func_body(map);
 
-
 void
 map_init(struct map *m)
 {
@@ -131,7 +130,6 @@ void
 map_insert(struct map *m, void *k, void *v, void **ko, void **vo)
 {
    assert(k != NULL);
-   assert(v != NULL);
 
    _map_resize_check(m); // this ensures our map has room
 
@@ -162,7 +160,7 @@ map_insert(struct map *m, void *k, void *v, void **ko, void **vo)
 }
 
 bool
-map_remove(struct map *m, void *k, void **k_out, void **v_out)
+map_remove(struct map *m, const void *k, void **k_out, void **v_out)
 {
    struct map_table_item *item = _map_get(m, k);
    if (item == NULL)
@@ -171,6 +169,8 @@ map_remove(struct map *m, void *k, void **k_out, void **v_out)
    item->deleted = true;
    *v_out = item->data;
    *k_out = item->key;
+
+   m->size--;
 
    return true;
 }
@@ -218,98 +218,5 @@ map_iterate(const struct map *m, struct aiter *p, void **k, void **v)
    p->ipos++;
 
    return true;
-}
-
-// XXX these do not go here
-
-uint64_t
-uint64_t_hash(const void *_key)
-{
-   const uint64_t *key = _key;
-   return *key;
-}
-
-int
-uint64_t_compare(const void *a, const void *b)
-{
-   return ((int)*((const uint64_t *)a)) - *((const uint64_t *)b);
-}
-
-uint64_t
-uint32_t_hash(const void *_key)
-{
-   const uint32_t *key = _key;
-   return *key;
-}
-
-int
-uint32_t_compare(const void *a, const void *b)
-{
-   return ((int)*((const uint32_t *)a)) - *((const uint32_t *)b);
-}
-
-uint64_t
-uint16_t_hash(const void *_key)
-{
-   const uint16_t *key = _key;
-   return *key;
-}
-
-int
-uint16_t_compare(const void *a, const void *b)
-{
-   return ((int)*((const uint16_t *)a)) - *((const uint16_t *)b);
-}
-
-uint64_t
-uint8_t_hash(const void *_key)
-{
-   const uint8_t *key = _key;
-   return *key;
-}
-
-int
-uint8_t_compare(const void *a, const void *b)
-{
-   return ((int)*((const uint8_t *)a)) - *((const uint8_t *)b);
-}
-
-uint64_t
-int_hash(const void *_key)
-{
-   const int *key = _key;
-   return *key;
-}
-
-int
-int_compare(const void *a, const void *b)
-{
-   return *((const int *)a) - *((const int *)b);
-}
-
-uint64_t
-string_hash(const void *_key)
-{
-   uint64_t hash = 0;
-   uint64_t exp = 1;
-   const char *str = string_to_cstring((const struct string *)_key);
-
-   while (*str != '\0') {
-      hash += exp * *str;
-      exp *= 37;
-
-      str++;
-   }
-
-   return hash;
-}
-
-int
-string_compare(const void *a, const void *b)
-{
-   const struct string *str_a = (const struct string *)a;
-   const struct string *str_b = (const struct string *)b;
-
-   return strcmp(string_to_cstring(str_a), string_to_cstring(str_b));
 }
 

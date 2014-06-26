@@ -23,7 +23,7 @@ void
 map_insert(struct map *, void *, void *, void **, void **);
 
 bool
-map_remove(struct map *, void *, void **, void **);
+map_remove(struct map *, const void *, void **, void **);
 
 uint64_t
 map_size(const struct map *);
@@ -37,39 +37,6 @@ map_contains(const struct map *, const void *);
 bool
 map_iterate(const struct map *, struct aiter *, void **, void **);
 
-// hashers for basic types
-// XXX the compares should really not go here, also as written they are only
-// good for equality
-uint64_t uint64_t_hash(const void *_key);
-int uint64_t_compare(const void *a, const void *b);
-uint64_t uint32_t_hash(const void *_key);
-int uint32_t_compare(const void *a, const void *b);
-uint64_t uint16_t_hash(const void *_key);
-int uint16_t_compare(const void *a, const void *b);
-uint64_t uint8_t_hash(const void *_key);
-int uint8_t_compare(const void *a, const void *b);
-uint64_t int_hash(const void *_key);
-int int_compare(const void *a, const void *b);
-#define int64_t_hash uint64_t_hash
-#define int64_t_compare uint64_t_compare
-#define int32_t_hash uint32_t_hash
-#define int32_t_compare uint32_t_compare
-#define int16_t_hash uint16_t_hash
-#define int16_t_compare uint16_t_compare
-#define int8_t_hash uint8_t_hash
-#define int8_t_compare uint8_t_compare
-#define float_hash int_hash
-#define float_compare int_compare
-#define double_hash uint32_t_hash
-#define double_compare uint32_t_compare
-#define char_hash uint8_t_hash
-#define char_compare uint8_t_compare
-#define unsigned_hash int_hash
-#define unsigned_compare int_compare
-
-uint64_t string_hash(const void *_key);
-int string_compare(const void *a, const void *b);
-
 #define _map_gen_header(name, ktype, ktype_ref, type, type_ref, cnst, f) \
    struct name { struct map map; }; \
    _adt_func_header(name, f); \
@@ -79,7 +46,6 @@ int string_compare(const void *a, const void *b);
    f void name##_insert(struct name *, ktype, cnst type); \
    f bool name##_remove(struct name *, ktype); \
    f int name##_size(const struct name *); \
-   f void name##_copy(struct name *, const struct name *); \
    f bool name##_contains(const struct name *, ktype)
 
 #define _map_gen_body(name, ktype, ktype_ref, ktype_tn, ktype_in, ktype_out,   \
@@ -87,11 +53,19 @@ int string_compare(const void *a, const void *b);
    _adt_func_body(name, f);                                                    \
    _gen_iter_body(name, ktype_ref, type_ref, f);                               \
                                                                                \
+   static uint64_t name##_hash(const void *a)                                  \
+   {                                                                           \
+      return ktype_tn##_hash((const ktype_ref)a);                              \
+   }                                                                           \
+   static int name##_key_compare(const void *a, const void *b)                 \
+   {                                                                           \
+      return ktype_tn##_compare((const ktype_ref)a, (const ktype_ref)b);       \
+   }                                                                           \
    f void name##_init(struct name *a)                                          \
    {                                                                           \
       map_init(&a->map);                                                       \
-      a->map.hash = ktype_tn##_hash;                                           \
-      a->map.key_compare = ktype_tn##_compare;                                 \
+      a->map.hash = name##_hash;                                               \
+      a->map.key_compare = name##_key_compare;                                 \
    }                                                                           \
    f void name##_destroy(struct name *a) {                                     \
       ktype_ref k; type_ref v;                                                 \
@@ -139,7 +113,7 @@ int string_compare(const void *a, const void *b);
    {                                                                           \
       ktype_ref ko;                                                            \
       type_ref to;                                                             \
-      if (!map_remove(&a->map, (void *)&k, (void **)&ko, (void **)&to))        \
+      if (!map_remove(&a->map, ktype_in(k), (void **)&ko, (void **)&to))       \
          return false;                                                         \
       typename##_free(to);                                                     \
       ktype_tn##_free(ko);                                                     \

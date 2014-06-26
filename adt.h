@@ -63,7 +63,8 @@
    _adt_func_body(type, static)
 
 // The POD func gen is the same as the regular except it gives you an init that
-// zeros out the struct and a do nothing destructor
+// zeros out the struct and a do nothing destructor, and implements copy, equal,
+// compare and hash
 #define _adt_func_pod_body(type, f) \
    _adt_func_body(type, f); \
    f void type##_init(struct type *a) { memset(a, 0, sizeof(struct type)); } \
@@ -72,12 +73,32 @@
    f bool type##_equal(const struct type *a, const struct type *b) \
       { return memcmp((const void *)a, (const void *)b, \
       sizeof(struct type)) == 0; } \
+   f int type##_compare(const struct type *a, const struct type *b) \
+      { return memcmp((const void *)a, (const void *)b, \
+      sizeof(struct type)); } \
+   f uint64_t type##_hash(const struct type *a) \
+      { return memory_hash((void *)a, sizeof(struct type)); } \
    SWALLOWSEMICOLON
 #define adt_func_pod_body(type) _adt_func_pod_body(type, )
 #define adt_func_pod_header(type) _adt_func_header(type, )
 #define adt_func_pod_static(type) \
    _adt_func_header(type, static); \
    _adt_func_pod_body(type, static)
+
+static uint64_t
+memory_hash(void *m, size_t size)
+{
+   uint64_t hash = 0;
+
+   uint8_t *h8 = (uint8_t *)&hash;
+   uint8_t *m8 = m;
+
+   for (int i = 0; i < size; i++) {
+      h8[i % 8] ^= m8[i];
+   }
+
+   return hash;
+}
 
 // POD types, printing
 #define int_print(x) printf("%d", *(x))
@@ -108,19 +129,27 @@
       *d = *s; } \
    SWALLOWSEMICOLON
 
-m_make(int, int);
-m_make(unsigned, unsigned);
-m_make(char, char);
-m_make(double, double);
-m_make(float, float);
-m_make(uint64_t, uint64_t);
-m_make(uint32_t, uint32_t);
-m_make(uint16_t, uint16_t);
-m_make(uint8_t, uint8_t);
-m_make(int64_t, int64_t);
-m_make(int32_t, int32_t);
-m_make(int16_t, int16_t);
-m_make(int8_t, int8_t);
+#define pod_m_make(type) \
+   m_make(type, type); \
+   static uint64_t type##_hash(const type *a) { \
+      return *a; } \
+   static int type##_compare(const type *a, const type *b) { \
+      return *a - *b; } \
+   SWALLOWSEMICOLON
+
+pod_m_make(int);
+pod_m_make(unsigned);
+pod_m_make(char);
+pod_m_make(double);
+pod_m_make(float);
+pod_m_make(uint64_t);
+pod_m_make(uint32_t);
+pod_m_make(uint16_t);
+pod_m_make(uint8_t);
+pod_m_make(int64_t);
+pod_m_make(int32_t);
+pod_m_make(int16_t);
+pod_m_make(int8_t);
 
 // Convert existing structs to use create, that have existing free
 #define _convert_ctype_body(type, f_func, f) \

@@ -2,9 +2,14 @@
 #include <stdtyp/string.h>
 #include <stdtyp/subprocess.h>
 #include <stdtyp/file.h>
+#include <stdtyp/argparse.h>
+
+define_args(
+   "", '\0', "tests to run", ARG_STRING_ARRAY, ARG_OPTIONAL
+);
 
 int
-main(int argc, char **argv)
+arg_main(struct arg_dict *args)
 {
    create(string_vec, files);
    echeck(file_list_directory(strw("."), &files));
@@ -17,8 +22,13 @@ main(int argc, char **argv)
    if (valgrind)
       printf("Using valgrind\n");
 
-   iter (string_vec, &files, item) {
-      const struct string *file = item.value;
+   const struct string_vec *tests = get_arg_string_array(args, strw(""));
+
+   iter_value (string_vec, &files, file) {
+      if (tests != NULL) {
+         if (!string_vec_contains(tests, file))
+            continue;
+      }
       if (string_ends_with(file, strw("_test"))) {
          printf("%-20s: ", string_to_cstring(file));
 

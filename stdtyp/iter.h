@@ -47,4 +47,10 @@ SWALLOWSEMICOLON
    for (bool _once = true; _once; ) \
    for (type##_value name = _iter.value; _once; _once = false)
 
+#define iter_key(type, sub, name) \
+   for (struct type##_iter _iter = type##_iter_make(); \
+      type##_iter_next(sub, &_iter); ) \
+   for (bool _once = true; _once; ) \
+   for (type##_key name = _iter.key; _once; _once = false)
+
 #endif // __ITER_H__

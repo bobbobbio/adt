@@ -161,4 +161,14 @@ main(int argc, char **argv)
    assert(*string_int_map_at(&sim, strw("cat")) == 7);
 
    assert(string_int_map_size(&sim) == 3);
+
+   assert(string_int_map_contains(&sim, strw("apple")));
+   assert(string_int_map_remove(&sim, strw("apple")));
+   assert(!string_int_map_remove(&sim, strw("apple")));
+
+   assert(!string_int_map_contains(&sim, strw("apple")));
+   assert(*string_int_map_at(&sim, strw("bat")) == 6);
+   assert(*string_int_map_at(&sim, strw("cat")) == 7);
+
+   assert(string_int_map_size(&sim) == 2);
 }

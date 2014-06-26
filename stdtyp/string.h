@@ -120,4 +120,10 @@ string_contains_char(const struct string *, char);
 bool
 string_contains_substring(const struct string *, const struct string *);
 
+int
+string_compare(const struct string *, const struct string *);
+
+uint64_t
+string_hash(const struct string *s);
+
 #endif // __STRING_H

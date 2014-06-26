@@ -1,4 +1,4 @@
-all_tests: test_main.o map_test linereader_test vector_test list_test file_test http_test argparse_test ../libadt.a
+all_tests: test_main.o map_test set_test linereader_test vector_test list_test file_test http_test argparse_test ../libadt.a
 	(cd ..; make)
 	c99 -I../ -g -o $@ test_main.o ../libadt.a
 
@@ -7,6 +7,9 @@ test_main.o: test_main.c ../adt.h
 
 map_test: map_test.c ../adt.h ../stdtyp/map.h ../libadt.a
 	c99 -I../ -g -o $@ map_test.c ../libadt.a
+
+set_test: set_test.c ../adt.h ../stdtyp/set.h ../libadt.a
+	c99 -I../ -g -o $@ set_test.c ../libadt.a
 
 linereader_test: linereader_test.c ../adt.h ../stdtyp/linereader.h ../libadt.a
 	c99 -I../ -g -o $@ linereader_test.c  ../libadt.a

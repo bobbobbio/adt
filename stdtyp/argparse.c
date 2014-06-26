@@ -328,13 +328,15 @@ parse_args(struct arg_dict *dict, char **argv, int argc)
             }
             create(arg_value, av);
             av.type = at->type;
-            i += process_arg(dict, &command, &av, &argv[i + 1], argc - i - 1);
+            i += process_arg(dict, &command, &av, &argv[i + 1], argc - i - 1)
+               - 1;
             string_arg_map_insert(&dict->values, &command, &av);
          } else {
             fprintf(stderr, "unknown command '%s'\n", arg);
             arg_print_help(dict);
          }
       } else if (arg[0] == '-' && arg[1] != '\0') {
+         int num_processed = 0;
          for (char *c = &arg[1]; *c != '\0'; c++) {
             if (char_string_map_contains(&dict->shortcuts, *c)) {
                create(string, command);
@@ -348,7 +350,7 @@ parse_args(struct arg_dict *dict, char **argv, int argc)
                }
                create(arg_value, av);
                av.type = at->type;
-               i += process_arg(dict, &command, &av, &argv[i + 1],
+               num_processed += process_arg(dict, &command, &av, &argv[i + 1],
                   argc - i - 1);
                string_arg_map_insert(&dict->values, &command, &av);
             } else {
@@ -356,6 +358,7 @@ parse_args(struct arg_dict *dict, char **argv, int argc)
                arg_print_help(dict);
             }
          }
+         i += num_processed - 1;
       }  else {
          if (string_arg_template_map_contains(&dict->templates, strw(""))) {
             struct arg_template *at =
@@ -366,7 +369,7 @@ parse_args(struct arg_dict *dict, char **argv, int argc)
             }
             create(arg_value, av);
             av.type = at->type;
-            i += process_arg(dict, strw(""), &av, &argv[i], argc - i);
+            i += process_arg(dict, strw(""), &av, &argv[i], argc - i) - 1;
             string_arg_map_insert(&dict->values, strw(""), &av);
          } else {
             fprintf(stderr, "unexpected argument: '%s'", arg);
