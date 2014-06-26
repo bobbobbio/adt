@@ -105,15 +105,26 @@ _map_get(const struct map *m, const void *k)
    return NULL;
 }
 
-void *
-map_get(const struct map *m, const void *k)
+void **
+map_at(const struct map *m, const void *k)
 {
    struct map_table_item *item = _map_get(m, k);
 
    if (item == NULL)
       return NULL;
 
-   return item->data;
+   return &item->data;
+}
+
+void *
+map_get(const struct map *m, const void *k)
+{
+   void **v = map_at(m, k);
+
+   if (v == NULL)
+      return NULL;
+
+   return *v;
 }
 
 void
@@ -135,6 +146,7 @@ map_insert(struct map *m, void *k, void *v, void **ko, void **vo)
                *ko = item->key;
             if (vo != NULL)
                *vo = item->data;
+            m->size--;
          }
          item->deleted = false;
          item->key = k;

@@ -13,6 +13,9 @@ struct map {
 };
 adt_func_header(map);
 
+void **
+map_at(const struct map *, const void *);
+
 void *
 map_get(const struct map *, const void *);
 
@@ -73,7 +76,7 @@ int string_compare(const void *a, const void *b);
    _gen_iter_header(name, ktype_ref, type_ref, f); \
    f bool name##_iter_next(const struct name *, struct name##_iter *); \
    f void name##_get(const struct name *, ktype, type_ref); \
-   f type name##_at(const struct name *, ktype); \
+   f type_ref name##_at(const struct name *, ktype); \
    f void name##_insert(struct name *, ktype, cnst type); \
    f bool name##_remove(struct name *, ktype); \
    f int name##_size(const struct name *); \
@@ -111,9 +114,9 @@ int string_compare(const void *a, const void *b);
       assert(v != NULL);                                                       \
       typename##_copy(o, v);                                                   \
    }                                                                           \
-   f type name##_at(const struct name *a, ktype k)                             \
+   f type_ref name##_at(const struct name *a, ktype k)                         \
    {                                                                           \
-      return map_get(&a->map, ktype_in(k));                                    \
+      return (type_ref)map_get(&a->map, ktype_in(k));                          \
    }                                                                           \
    static void name##_insert_(struct name *a, ktype k, cnst type_ref v)        \
    {                                                                           \
@@ -123,7 +126,7 @@ int string_compare(const void *a, const void *b);
       ktype_tn##_copy(nk, ktype_in(k));                                        \
       type_ref to = NULL;                                                      \
       ktype_ref ko = NULL;                                                     \
-      map_insert(&a->map, nk, nv, (void **)&to, (void **)&ko);                 \
+      map_insert(&a->map, nk, nv, (void **)&ko, (void **)&to);                 \
       if (to != NULL)                                                          \
          typename##_free(to);                                                  \
       if (ko != NULL)                                                          \
@@ -225,3 +228,30 @@ int string_compare(const void *a, const void *b);
       struct type **, , static); \
    _map_gen_body(name, const struct ktype *, struct ktype *, ktype, , , void, \
       struct type *, struct type **, ref, , static)
+
+// POD value
+// POD key
+#define map_gen_podk_podv_header(name, ktype, type) \
+   _map_gen_header(name, ktype, ktype *, type, type *, , )
+#define map_gen_podk_podv_body(name, ktype, type) \
+   _map_gen_body(name, ktype, ktype *, ktype, ref, unref, type, \
+      type, type *, ref, , )
+
+#define map_gen_podk_podv_static(name, ktype, type) \
+   _map_gen_header(name, ktype, ktype *, type, type *, , static); \
+   _map_gen_body(name, ktype, ktype *, ktype, ref, unref, type, \
+      type, type *, ref, , static)
+
+// type key
+#define map_gen_podv_header(name, ktype, type) \
+   _map_gen_header(name, const struct ktype *, struct ktype *, type, \
+      type *, , )
+#define map_gen_podv_body(name, ktype, type) \
+   _map_gen_body(name, const struct ktype *, struct ktype *, ktype, , , \
+      type, type, type *, ref, , )
+
+#define map_gen_podv_static(name, ktype, type) \
+   _map_gen_header(name, const struct ktype *, struct ktype *, type, \
+      type *, , static); \
+   _map_gen_body(name, const struct ktype *, struct ktype *, ktype, , , \
+      type, type, type *, ref, , static)

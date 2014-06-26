@@ -94,7 +94,7 @@ struct string *
 string_substring(struct string *, uint64_t, int len);
 
 int
-string_to_int(struct string *);
+string_to_int(const struct string *);
 
 bool
 string_equal(const struct string *, const struct string *);

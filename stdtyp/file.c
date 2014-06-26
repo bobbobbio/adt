@@ -36,15 +36,15 @@ errno_to_error(void)
       panic("oflag was not set");
 
    if (errno == EACCES)
-      return error_make(file_access_error, "Insufficent access");
+      return error_make(file_access_error, strerror(errno));
    else if (errno == ENOENT)
-      return error_make(file_not_found_error, "Directory not found");
+      return error_make(file_not_found_error, strerror(errno));
    else if (errno == EEXIST)
-      return error_make(file_already_exists_error, "File already exists");
+      return error_make(file_already_exists_error, strerror(errno));
    else if (errno == ENOSPC)
-      return error_make(file_out_of_space_error, "File system out of space");
+      return error_make(file_out_of_space_error, strerror(errno));
    else
-      return error_make(errno_unknown_error, "");
+      return error_make(errno_unknown_error, strerror(errno));
 }
 
 

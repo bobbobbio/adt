@@ -45,5 +45,6 @@ create_error_header(_no_error);
 
 void error_panic(struct error e, char *code);
 void panic(char *msg);
+char *error_msg(struct error e);
 
 #endif // __ERROR_H

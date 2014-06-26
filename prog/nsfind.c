@@ -1,15 +1,19 @@
 #include <adt.h>
 #include <extyp/http.h>
+#include <stdtyp/argparse.h>
+
+define_args(
+   "", '\0', "name", ARG_STRING, ARG_REQUIRED
+);
 
 int
-main(int argc, char **argv)
+arg_main(struct arg_dict *args)
 {
-   // XXX use progargs to ensure an argument is given
+   const struct string *hostname = get_arg(args, strw(""));
    create(inet_addr, ia);
-   create_string(hostname, argv[1]);
-   ehandle (error, dns_lookup(&hostname, &ia)) {
+   ehandle (error, dns_lookup(hostname, &ia)) {
       if (error_is_type(error, http_addr_hostname_error)) {
-         printf("hostname '%s' not found\n", string_to_cstring(&hostname));
+         printf("hostname '%s' not found\n", string_to_cstring(hostname));
          return EXIT_FAILURE;
       } else
          echeck(error);

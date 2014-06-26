@@ -10,7 +10,12 @@ struct TOPY {
 adt_func_static(TOPY);
 void TOPY_init(struct TOPY *t) { t->a = 0; }
 void TOPY_destroy(struct TOPY *t) { }
+void TOPY_copy(struct TOPY *d, const struct TOPY *s) { *d = *s; }
+bool TOPY_equal(const struct TOPY *a, const struct TOPY *b)
+   { return false; }
+void TOPY_print(const struct TOPY *d) { }
 vector_gen_ptr_static(ptr_vec, TOPY);
+vector_gen_static(topy_vec, TOPY);
 
 int main()
 {
@@ -52,12 +57,24 @@ int main()
       j++;
    }
 
+   int cnt = 0;
+   iter_value (money_vec, &money, val) {
+      assert(*val > 0);
+      *val = 7;
+      cnt++;
+   }
+   assert(cnt == 5);
+
+   iter_value (money_vec, &money, val)
+      assert(*val == 7);
+
    create(int_vec, ints);
    int_vec_append(&ints, 1);
    int_vec_append(&ints, 2);
    int_vec_append(&ints, 3);
    int_vec_append(&ints, 4);
    int_vec_append(&ints, 5);
+   int_vec_append(&ints, 6);
    int_vec_append(&ints, 6);
    int_vec_insert(&ints, 99, 2);
    int_vec_insert(&ints, 98, 5);
@@ -78,6 +95,22 @@ int main()
    assert(*int_vec_at(&ints, 9) == 98);
    assert(*int_vec_at(&ints, 10) == 5);
    assert(*int_vec_at(&ints, 11) == 6);
+   assert(*int_vec_at(&ints, 12) == 6);
+
+   assert(int_vec_index_of(&ints, 97) == 0);
+   assert(int_vec_index_of(&ints, 96) == 1);
+   assert(int_vec_index_of(&ints, 1) == 2);
+   assert(int_vec_index_of(&ints, 94) == 3);
+   assert(int_vec_index_of(&ints, 2) == 4);
+   assert(int_vec_index_of(&ints, 95) == 5);
+   assert(int_vec_index_of(&ints, 99) == 6);
+   assert(int_vec_index_of(&ints, 3) == 7);
+   assert(int_vec_index_of(&ints, 4) == 8);
+   assert(int_vec_index_of(&ints, 98) == 9);
+   assert(int_vec_index_of(&ints, 5) == 10);
+   assert(int_vec_index_of(&ints, 6) == 11);
+
+   assert(int_vec_remove_value(&ints, 6));
 
    struct TOPY *t = malloc(sizeof(struct TOPY));
    struct TOPY *u = malloc(sizeof(struct TOPY));

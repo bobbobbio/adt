@@ -6,14 +6,21 @@
 #include <stdint.h>
 #include <string.h>
 
+// XXX These don't go here
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
 // Use a random extern symbol to swallow a semicolon
 #define SWALLOWSEMICOLON extern void __BODYCODEGENEND99893__
 
 #define a_cleanup(n) __attribute__ ((__cleanup__(n)))
 
 #define create(type, name) \
-   struct type name a_cleanup(type##_destroy) = \
-   type##_make()
+   struct type name a_cleanup(type##_destroy) = type##_make()
+
+#define create_copy(type, name, copy) \
+   struct type name a_cleanup(type##_destroy) = type##_make(); \
+   type##_copy(&name, copy)
 
 #define type_malloc(type) \
    ((struct type *)malloc(sizeof (struct type)))
@@ -105,6 +112,15 @@ m_make(int, int);
 m_make(unsigned, unsigned);
 m_make(char, char);
 m_make(double, double);
+m_make(float, float);
+m_make(uint64_t, uint64_t);
+m_make(uint32_t, uint32_t);
+m_make(uint16_t, uint16_t);
+m_make(uint8_t, uint8_t);
+m_make(int64_t, int64_t);
+m_make(int32_t, int32_t);
+m_make(int16_t, int16_t);
+m_make(int8_t, int8_t);
 
 // Convert existing structs to use create, that have existing free
 #define _convert_ctype_body(type, f_func, f) \
@@ -124,17 +140,17 @@ m_make(double, double);
    f void type##_destroy(struct type *a); \
    f void type##_freer(struct type **a); \
    SWALLOWSEMICOLON
-   
+
 #define convert_ctype_header(type, f_func) \
    _convert_ctype_header(type, f_func, )
-   
+
 #define convert_ctype_body(type, f_func) \
    _convert_ctype_body(type, f_func, )
 
 #define convert_ctype_static(type, f_func) \
    _convert_ctype_header(type, f_func, static); \
    _convert_ctype_body(type, f_func, static)
-   
+
 #include <error.h>
 
 #endif // __ADT_H

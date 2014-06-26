@@ -12,7 +12,7 @@ adt_func_body(line_reader);
 void
 line_reader_init(struct line_reader *l)
 {
-   l->fd = 0;
+   l->fd = -1;
    l->buff = (char *)malloc(BUFFER_SIZE);
    l->start = 0;
    l->size = 0;
@@ -22,14 +22,15 @@ line_reader_init(struct line_reader *l)
 void
 line_reader_destroy(struct line_reader *l)
 {
-   close(l->fd);
+   if (line_reader_opened(l))
+      close(l->fd);
    free(l->buff);
 }
 
 static struct error
 line_reader_read(struct line_reader *l, bool *done)
 {
-   assert(l->fd > 0);
+   assert(line_reader_opened(l));
    while (true) {
       l->size = read(l->fd, l->buff, BUFFER_SIZE);
       if (l->size == -1) {
@@ -50,6 +51,13 @@ line_reader_read(struct line_reader *l, bool *done)
 }
 
 struct error
+line_reader_open_stdin(struct line_reader *l)
+{
+   l->fd = STDIN_FILENO;
+   return no_error;
+}
+
+struct error
 line_reader_open_file(struct line_reader *l, const struct string *path)
 {
    // open file
@@ -64,7 +72,7 @@ bool line_reader_get_line(struct line_reader *l, struct string *s)
 {
    if (l->done)
       return false;
- 
+
    if (l->start >= l->size) {
       echeck(line_reader_read(l, &l->done));
       if (l->done)
@@ -86,4 +94,10 @@ bool line_reader_get_line(struct line_reader *l, struct string *s)
    l->start = i + 1;
 
    return true;
+}
+
+bool
+line_reader_opened(const struct line_reader *l)
+{
+   return l->fd != -1;
 }

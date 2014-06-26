@@ -34,11 +34,15 @@ struct arg_dict {
    struct string_arg_template_map templates;
    struct char_string_map shortcuts;
    struct string_arg_map values;
+   const char *prog_name;
 };
 adt_func_header(arg_dict);
 
 void *
 get_arg(struct arg_dict *dict, const struct string *cmd);
+
+bool
+has_arg(struct arg_dict *dict, const struct string *cmd);
 
 void
 _declare_args(struct arg_dict *ad, const char *arg_name, ...);

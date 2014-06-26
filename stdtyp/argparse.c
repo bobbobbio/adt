@@ -54,8 +54,11 @@ _declare_args(struct arg_dict *ad, const char *arg_name, ...)
       at.needs_type = va_arg(argp, enum arg_needs_type);
       at.sc = sc;
 
-      string_arg_template_map_insert(&ad->templates, strw(arg_name), &at);
-      char_string_map_insert(&ad->shortcuts, sc, strw(arg_name));
+      create_string(arg_name_str, arg_name);
+      string_arg_template_map_insert(&ad->templates, &arg_name_str, &at);
+
+      if (sc != '\0')
+         char_string_map_insert(&ad->shortcuts, sc, &arg_name_str);
 
       arg_name = va_arg(argp, const char *);
    }
@@ -93,6 +96,7 @@ arg_dict_init(struct arg_dict *d)
    string_arg_template_map_init(&d->templates);
    char_string_map_init(&d->shortcuts);
    string_arg_map_init(&d->values);
+   d->prog_name = NULL;
 }
 
 void
@@ -118,8 +122,29 @@ arg_dict_copy(struct arg_dict *dst, const struct arg_dict *src)
 static void
 arg_print_help(struct arg_dict *dict)
 {
-   printf("Available commands:\n");
+   assert(dict->prog_name != NULL);
+
+   bool multi_options;
+   if (string_arg_template_map_contains(&dict->templates, strw("")))
+      multi_options = string_arg_template_map_size(&dict->templates) > 2;
+   else
+      multi_options = string_arg_template_map_size(&dict->templates) > 1;
+
+   printf("Usage: %s [OPTION]%s", dict->prog_name,
+      multi_options ? "..." : "");
+
+   if (string_arg_template_map_contains(&dict->templates, strw(""))) {
+      struct arg_template *at =
+         string_arg_template_map_at(&dict->templates, strw(""));
+      printf(" [%s]%s", string_to_cstring(&at->description),
+         at->type == ARG_STRING_ARRAY ? "..." : "");
+   }
+
+   printf("\n");
+   printf("Options:\n");
    iter (string_arg_template_map, &dict->templates, item) {
+      if (string_equal(item.key, strw("")))
+         continue;
       if (item.value->sc != '\0')
          printf("-%c, ", item.value->sc);
       else
@@ -151,11 +176,12 @@ is_w_arg(char *w)
 }
 
 static int
-process_arg(struct arg_dict *dict, struct string *arg_name,
+process_arg(struct arg_dict *dict, const struct string *arg_name,
    struct arg_value *av, char **argv, int len)
 {
+   int num_used = 0;
    int i = 0;
-   for ( ; i < len && argv[i][0] != '-'; i++) {
+   for ( ; i < len && !(argv[i][0] == '-' && argv[i][1] != '\0'); i++) {
       switch (av->type) {
          case ARG_STRING: {
             if (av->value != NULL) {
@@ -165,6 +191,7 @@ process_arg(struct arg_dict *dict, struct string *arg_name,
             }  else {
                av->value = (void *)string_new_const(argv[i]);
             }
+            num_used++;
          }
          break;
          case ARG_NUM: {
@@ -176,19 +203,18 @@ process_arg(struct arg_dict *dict, struct string *arg_name,
                av->value = malloc(sizeof(int));
                *(int *)av->value = atoi(argv[i]);
             }
+            num_used++;
          }
          break;
          case ARG_STRING_ARRAY: {
             if (av->value == NULL)
                av->value = string_vec_new();
-            string_vec_append(av->value, strw(argv[i]));
+            create_string(arg_str, argv[i]);
+            string_vec_append(av->value, &arg_str);
+            num_used++;
          }
          break;
-         case ARG_BOOL: {
-            fprintf(stderr, "argument '%s' does not take an argument\n",
-               string_to_cstring(arg_name));
-            arg_print_help(dict);
-         }
+         case ARG_BOOL:
          break;
       }
    }
@@ -203,21 +229,42 @@ process_arg(struct arg_dict *dict, struct string *arg_name,
       }
    }
 
-   return i;
+   return num_used;
 }
 
 void *
 get_arg(struct arg_dict *dict, const struct string *cmd)
 {
-   if (!string_arg_map_contains(&dict->values, cmd))
+   // Make sure this is a real argument
+   assert(string_arg_template_map_contains(&dict->templates, cmd));
+
+   if (!string_arg_map_contains(&dict->values, cmd)) {
+      // If we don't have the arg, it had to have been an optional one
+      assert(string_arg_template_map_at(&dict->templates, cmd)->needs_type ==
+         ARG_OPTIONAL);
       return NULL;
+   }
 
    return string_arg_map_at(&dict->values, cmd)->value;
+}
+
+bool
+has_arg(struct arg_dict *dict, const struct string *cmd)
+{
+   void *a = get_arg(dict, cmd);
+   if (string_arg_template_map_at(&dict->templates, cmd)->type == ARG_BOOL) {
+      assert(a != NULL);
+      return *(bool *)a;
+   }
+
+   return a != NULL;
 }
 
 void
 parse_args(struct arg_dict *dict, char **argv, int argc)
 {
+   dict->prog_name = argv[0];
+
    for (int i = 1; i < argc; i++) {
       char *arg = argv[i];
       if (arg[0] == '-' && arg[1] == '-') {
@@ -225,35 +272,35 @@ parse_args(struct arg_dict *dict, char **argv, int argc)
          if (string_equal(&command, strw("help")))
             arg_print_help(dict);
          if (string_arg_template_map_contains(&dict->templates, &command)) {
-            create(arg_template, at);
-            string_arg_template_map_get(&dict->templates, &command, &at);
+            struct arg_template *at =
+               string_arg_template_map_at(&dict->templates, &command);
             if (string_arg_map_contains(&dict->values, &command)) {
                fprintf(stderr, "command '%s' provided twice\n",
                   string_to_cstring(&command));
                arg_print_help(dict);
             }
             create(arg_value, av);
-            av.type = at.type;
+            av.type = at->type;
             i += process_arg(dict, &command, &av, &argv[i + 1], argc - i - 1);
             string_arg_map_insert(&dict->values, &command, &av);
          } else {
             fprintf(stderr, "unknown command '%s'\n", arg);
             arg_print_help(dict);
          }
-      } else if (arg[0] == '-') {
+      } else if (arg[0] == '-' && arg[1] != '\0') {
          for (char *c = &arg[1]; *c != '\0'; c++) {
             if (char_string_map_contains(&dict->shortcuts, *c)) {
                create(string, command);
                char_string_map_get(&dict->shortcuts, *c, &command);
-               create(arg_template, at);
-               string_arg_template_map_get(&dict->templates, &command, &at);
+               struct arg_template *at =
+                  string_arg_template_map_at(&dict->templates, &command);
                if (string_arg_map_contains(&dict->values, &command)) {
                   fprintf(stderr, "command '%s' provided twice\n",
                      string_to_cstring(&command));
                   arg_print_help(dict);
                }
                create(arg_value, av);
-               av.type = at.type;
+               av.type = at->type;
                i += process_arg(dict, &command, &av, &argv[i + 1],
                   argc - i - 1);
                string_arg_map_insert(&dict->values, &command, &av);
@@ -263,7 +310,21 @@ parse_args(struct arg_dict *dict, char **argv, int argc)
             }
          }
       }  else {
-         printf("extra arg '%s'\n", arg);
+         if (string_arg_template_map_contains(&dict->templates, strw(""))) {
+            struct arg_template *at =
+               string_arg_template_map_at(&dict->templates, strw(""));
+            if (string_arg_map_contains(&dict->values, strw(""))) {
+               fprintf(stderr, "unexpected argument: '%s'", arg);
+               arg_print_help(dict);
+            }
+            create(arg_value, av);
+            av.type = at->type;
+            i += process_arg(dict, strw(""), &av, &argv[i], argc - i);
+            string_arg_map_insert(&dict->values, strw(""), &av);
+         } else {
+            fprintf(stderr, "unexpected argument: '%s'", arg);
+            arg_print_help(dict);
+         }
       }
    }
 

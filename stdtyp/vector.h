@@ -41,6 +41,8 @@ vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **,
    f void name##_append(struct name *, type); \
    f void name##_prepend(struct name *, type); \
    f void name##_remove(struct name *, int i); \
+   f int name##_index_of(struct name *, type); \
+   f bool name##_remove_value(struct name *, type); \
    f void name##_get(const struct name *, type_ref, int); \
    f type_ref name##_at(const struct name *, int); \
    f void name##_init_size(struct name *, uint64_t); \
@@ -93,6 +95,21 @@ vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **,
       name##_clear(a); vector_destroy(&a->vector); } \
    f int name##_size(const struct name *a) { \
       return vector_size(&a->vector); } \
+   f int name##_index_of(struct name *a, type v) { \
+      for (unsigned i = 0; i < vector_size(&a->vector); i++) { \
+         if (typename##_equal(vector_at(&a->vector, i, so), \
+            type_in(v))) \
+            return i; \
+      } \
+      return -1; \
+   } \
+   f bool name##_remove_value(struct name *a, type v) { \
+      int i = name##_index_of(a, v); \
+      if (i == -1) \
+         return false; \
+      name##_remove(a, i); \
+      return true; \
+   } \
    f void name##_print(const struct name *a) { \
       printf("[ "); if (vector_size(&a->vector) > 0) \
       typename##_print((const type_ref)vector_at(&a->vector, 0, so)); \

@@ -90,6 +90,8 @@ string_destroy(struct string *s)
 void
 string_copy(struct string *dest, const struct string *src)
 {
+   assert(dest->mallocd);
+
    string_destroy(dest);
    dest->length = src->length;
    dest->buff_len = src->length + 1;
@@ -100,6 +102,7 @@ string_copy(struct string *dest, const struct string *src)
 void
 string_clear(struct string *s)
 {
+   assert(s->mallocd);
    s->length = 0;
    s->buff[0] = '\0';
 }
@@ -139,23 +142,16 @@ string_char_at_index(const struct string *s, uint64_t i)
 static void
 string_expand(struct string *s)
 {
-   if (s->mallocd) {
-      s->buff_len *= 2;
-      s->buff = (char *)realloc(s->buff, s->buff_len);
-   } else {
-      int nbuff_len = s->buff_len * 2;
-      char *nbuff = (char *)malloc(nbuff_len);
-      memcpy(nbuff, s->buff, s->buff_len);
+   assert(s->mallocd);
 
-      s->buff = nbuff;
-      s->buff_len = nbuff_len;
-      s->mallocd = true;
-   }
+   s->buff_len *= 2;
+   s->buff = (char *)realloc(s->buff, s->buff_len);
 }
 
 static void
 _string_append_char(struct string *s, char c)
 {
+   assert(s->mallocd);
    s->length++;
    if (s->length + 1 > s->buff_len)
       string_expand(s);
@@ -163,7 +159,8 @@ _string_append_char(struct string *s, char c)
 }
 
 void
-string_append_char(struct string *s, char c) {
+string_append_char(struct string *s, char c)
+{
    _string_append_char(s, c);
    s->buff[s->length] = '\0';
 }
@@ -193,6 +190,8 @@ string_append_string(struct string *s, const struct string *a)
 struct error
 string_read_fd(struct string *s, int fd)
 {
+   assert(s->mallocd);
+
    int bytes_read = 0;
    while (true) {
       bytes_read = read(fd, &(s->buff[s->length]), s->buff_len - s->length);
@@ -219,13 +218,15 @@ string_read_fd(struct string *s, int fd)
 void
 string_append_int(struct string *s, int i)
 {
+   assert(s->mallocd);
+
    char b[20]; // should be long enough to hold any 64 bit int
    sprintf(b, "%d", i);
    string_append_cstring(s, b); 
 }
 
 int
-string_to_int(struct string *s)
+string_to_int(const struct string *s)
 {
    assert(s->length > 0);
    return atoi(s->buff);
@@ -240,6 +241,8 @@ string_equal(const struct string *a, const struct string *b)
 struct error
 string_read_from_file(struct string *s, const struct string *path)
 {
+   assert(s->mallocd);
+
    create_fd(fd, open(string_to_cstring(path), O_RDONLY));
    if (fd == -1)
       return errno_to_error();
