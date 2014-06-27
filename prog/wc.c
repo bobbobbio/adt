@@ -107,7 +107,7 @@ file_stats_print_stats(const struct file_stats *f, int col,
 {
    // Print the chosen stats
    uint64_t val = *stat_map_at(&f->stats, string_vec_at(options, 0));
-   printf("%*lu", max(col, uwidth(val) + 1), val);
+   printf("%*lu", col, val);
    for (int i = 1; i < string_vec_size(options); i++) {
       val = *stat_map_at(&f->stats, string_vec_at(options, i));
       printf(" %*lu", col, val);
@@ -220,12 +220,9 @@ arg_main(struct arg_dict *args)
 
    // Get column width
    int col = 0;
-   iter_value (file_stats_vec, &all_file_stats, fs)
-   {
-      iter_value (string_vec, &options, stat) {
-         uint64_t val = *stat_map_at(&fs->stats, stat);
-         col = max(col, uwidth(val));
-      }
+   iter_value (file_stats_vec, &all_file_stats, fs) {
+      iter_value (stat_map, &fs->stats, val)
+         col = max(col, uwidth(*val));
    }
 
    // Print the stats
