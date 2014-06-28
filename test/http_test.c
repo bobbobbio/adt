@@ -16,5 +16,9 @@ main(int argc, char **argv)
        && ia.addr[2] == 0
        && ia.addr[3] == 1);
 
+   create(string, response);
+   echeck(http_get_url(strw("abort.cc/"), &response));
+   string_print(&response);
+
    return EXIT_SUCCESS;
 }

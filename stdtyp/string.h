@@ -55,13 +55,16 @@ void
 string_append_cstring(struct string *, const char *);
 
 void
-string_append_cstring_size(struct string *, const char *, size_t);
+string_append_cstring_length(struct string *, const char *, size_t);
 
 void
 string_append_string(struct string *, const struct string *);
 
 struct error
 string_read_fd(struct string *, int);
+
+struct error
+string_write_fd(const struct string *, int);
 
 struct string
 string_make_var(const char *cstr);
@@ -90,9 +93,6 @@ string_length(const struct string *);
 char
 string_char_at_index(const struct string *, uint64_t);
 
-struct string *
-string_substring(struct string *, uint64_t, int len);
-
 int
 string_to_int(const struct string *);
 
@@ -120,10 +120,16 @@ string_contains_char(const struct string *, char);
 bool
 string_contains_substring(const struct string *, const struct string *);
 
+void
+string_remove_substring(struct string *, int s, int e);
+
 int
 string_compare(const struct string *, const struct string *);
 
 uint64_t
 string_hash(const struct string *s);
+
+void
+string_vec_join(struct string *, const struct string_vec *, char);
 
 #endif // __STRING_H

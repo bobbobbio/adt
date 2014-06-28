@@ -11,9 +11,12 @@ error_panic(struct error e, char *code)
 }
 
 void
-panic(char *msg)
+panic(char *fmt, ...)
 {
-   fprintf(stderr, "%s\n", msg);
+   va_list args;
+   va_start(args, fmt);
+   vfprintf(stderr, fmt, args);
+   fprintf(stderr, "\n");
    abort();
 }
 

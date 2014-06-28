@@ -174,7 +174,7 @@ string_append_cstring(struct string *s, const char *cstr)
 }
 
 void
-string_append_cstring_size(struct string *s, const char *cstr, size_t len)
+string_append_cstring_length(struct string *s, const char *cstr, size_t len)
 {
    for (int i = 0; i < len; i++)
       _string_append_char(s, cstr[i]);
@@ -191,6 +191,7 @@ struct error
 string_read_fd(struct string *s, int fd)
 {
    assert(s->mallocd);
+   string_clear(s);
 
    int bytes_read = 0;
    while (true) {
@@ -203,7 +204,7 @@ string_read_fd(struct string *s, int fd)
          else {
             return error_make(file_read_error, "Failed to read from fd");
          }
-      } else { // we actually wrote data
+      } else { // we actually read data
          s->length += bytes_read;
          if (s->length == s->buff_len) {
             string_expand(s);
@@ -253,13 +254,11 @@ string_read_from_file(struct string *s, const struct string *path)
 }
 
 struct error
-string_write_to_file(const struct string *data, const struct string *path)
+string_write_fd(const struct string *data, int fd)
 {
    unsigned to_write = data->length;
    const char *d = string_to_cstring(data);
-   create_fd(fd, open(string_to_cstring(path), O_WRONLY | O_CREAT, 0666));
-   if (fd == -1)
-      return errno_to_error();
+
    while (to_write > 0) {
       int written = write(fd, &d[data->length - to_write], to_write);
       if (written == -1) {
@@ -272,6 +271,16 @@ string_write_to_file(const struct string *data, const struct string *path)
    }
 
    return no_error;
+}
+
+struct error
+string_write_to_file(const struct string *data, const struct string *path)
+{
+   create_fd(fd, open(string_to_cstring(path), O_WRONLY | O_CREAT, 0666));
+   if (fd == -1)
+      return errno_to_error();
+
+   return string_write_fd(data, fd);
 }
 
 void
@@ -365,5 +374,45 @@ string_hash(const struct string *s)
    }
 
    return hash;
+}
+
+void
+string_vec_join(struct string *d, const struct string_vec *v, char s)
+{
+   string_clear(d);
+
+   if (string_vec_size(v) == 0)
+      return;
+
+   string_append_string(d, string_vec_at(v, 0));
+
+   for (int i = 1; i < string_vec_size(v); i++) {
+      string_append_char(d, s);
+      string_append_string(d, string_vec_at(v, i));
+   }
+}
+
+void
+string_remove_substring(struct string *s, int si, int ei)
+{
+   assert(s->mallocd);
+   assert(si <= ei);
+   assert(si >= 0);
+   assert(ei < s->length);
+
+   int nbuff_len = s->buff_len - (ei - si + 1);
+   char *nbuff = (char *)malloc(nbuff_len);
+
+   int bi = 0;
+   for (int i = 0; i < s->buff_len; i++) {
+      if (i < si || i > ei)
+         nbuff[bi++] = s->buff[i];
+   }
+   assert(bi == nbuff_len);
+
+   free(s->buff);
+   s->buff = nbuff;
+   s->buff_len = nbuff_len;
+   s->length = s->buff_len - 1;
 }
 

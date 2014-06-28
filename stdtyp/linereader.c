@@ -17,12 +17,13 @@ line_reader_init(struct line_reader *l)
    l->start = 0;
    l->size = 0;
    l->done = false;
+   l->should_close = false;
 }
 
 void
 line_reader_destroy(struct line_reader *l)
 {
-   if (line_reader_opened(l))
+   if (l->should_close)
       close(l->fd);
    free(l->buff);
 }
@@ -54,6 +55,15 @@ struct error
 line_reader_open_stdin(struct line_reader *l)
 {
    l->fd = STDIN_FILENO;
+   l->should_close = false;
+   return no_error;
+}
+
+struct error
+line_reader_open_fd(struct line_reader *l, int fd)
+{
+   l->fd = fd;
+   l->should_close = false;
    return no_error;
 }
 
@@ -64,6 +74,8 @@ line_reader_open_file(struct line_reader *l, const struct string *path)
    l->fd = open(string_to_cstring(path), O_RDONLY);
    if (l->fd == -1)
       return errno_to_error();
+
+   l->should_close = true;
 
    return no_error;
 }
@@ -82,7 +94,9 @@ bool line_reader_get_line(struct line_reader *l, struct string *s)
    string_clear(s);
    uint64_t i = l->start;
    while (l->buff[i] != '\n') {
-      string_append_char(s, l->buff[i]);
+      // XXX what do we do about \r????
+      if (l->buff[i] != '\r')
+         string_append_char(s, l->buff[i]);
       i++;
       if (i >= l->size) {
          echeck(line_reader_read(l, &l->done));

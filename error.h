@@ -1,9 +1,10 @@
 #ifndef __ERROR_H
 #define __ERROR_H
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <adt.h>
 
@@ -44,7 +45,7 @@ create_error_header(_no_error);
    if (e.type != _no_error) return e; } while(0)
 
 void error_panic(struct error e, char *code);
-void panic(char *msg);
+void panic(char *fmt, ...);
 char *error_msg(struct error e);
 
 #endif // __ERROR_H

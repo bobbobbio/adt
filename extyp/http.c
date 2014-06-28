@@ -1,12 +1,17 @@
+#include <stdtyp/map.h>
+#include <stdtyp/linereader.h>
 #include <extyp/http.h>
 
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <limits.h>
 
 create_error_body(http_addr_error);
 create_error_body(http_addr_hostname_error);
+
+map_gen_static(string_string_map, string, string);
 
 // Error handling
 static struct error
@@ -124,5 +129,98 @@ dns_lookup(const struct string *dname, struct inet_addr *iaddr_out)
 struct error
 http_get_url(const struct string *url, struct string *output)
 {
+   string_clear(output);
+
+   create(string_vec, components);
+   string_split(url, '/', &components);
+   create(string, domain);
+   string_vec_get(&components, &domain, 0);
+   string_vec_remove(&components, 0);
+   create(string, uri);
+   string_vec_join(&uri, &components, '/');
+   if (string_length(&uri) == 0)
+      string_set_cstring(&uri, "/");
+
+   create(inet_addr, ia);
+
+   epass(dns_lookup(&domain, &ia));
+
+   create_fd(fd, socket(AF_INET, SOCK_STREAM, 0));
+   if (fd == -1)
+      return errno_to_error();
+
+   struct sockaddr_in saddr = {
+      .sin_family = AF_INET,
+      .sin_port = htons(80),
+      .sin_addr.s_addr = *((uint32_t *)ia.addr)
+   };
+
+   if (connect(fd, (struct sockaddr *)&saddr, sizeof(saddr)) != 0)
+      return errno_to_error();
+
+   create(string, req);
+   string_append_cstring(&req, "GET ");
+   string_append_string(&req, &uri);
+   string_append_cstring(&req, " HTTP/1.1\n");
+   string_append_cstring(&req, "host: ");
+   string_append_string(&req, &domain);
+   string_append_cstring(&req, "\n\n");
+
+   epass(string_write_fd(&req, fd));
+
+   create(line_reader, lr);
+   line_reader_open_fd(&lr, fd);
+
+   create(string_string_map, header);
+   int line_number = 0;
+   while (true) {
+      create(string, line);
+      line_reader_get_line(&lr, &line);
+      // status line
+      if (line_number == 0) {
+         // XXX Check for HTTP OK or something
+      } else {
+         // Check for end of header
+         if (string_length(&line) == 0)
+            break;
+         create(string_vec, kv_pair);
+         string_split(&line, ':', &kv_pair);
+         // XXX rather than assert, return malformed error
+         assert(string_vec_size(&kv_pair) >= 2);
+         // XXX Fix when real string split exists
+         create(string, key);
+         string_vec_get(&kv_pair, &key, 0);
+         string_vec_remove(&kv_pair, 0);
+         create(string, value);
+         string_vec_join(&value, &kv_pair, ':');
+         string_remove_substring(&value, 0, 0);
+         string_string_map_insert(&header, &key, &value);
+      }
+      line_number++;
+   }
+
+   // XXX fix this!
+   if (string_string_map_contains(&header, strw("Transfer-Encoding"))) {
+      if (string_equal(string_string_map_at(&header, strw("Transfer-Encoding")),
+         strw("chunked")))
+         panic("chunked encoding not supported");
+   }
+
+   // Start of content
+   int clength = INT_MAX;
+   if (string_string_map_contains(&header, strw("Content-Length")))
+      clength = string_to_int(string_string_map_at(&header,
+         strw("Content-Length")));
+
+   create(string, line);
+   while (line_reader_get_line(&lr, &line)) {
+      string_append_string(output, &line);
+      string_append_cstring(output, "\n");
+      // XXX This isn't exact, because we're eating \r doh!
+      clength -= (string_length(&line) + 1);
+      if (clength <= 0)
+         break;
+   }
+
    return no_error;
 }

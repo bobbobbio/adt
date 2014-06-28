@@ -1,4 +1,4 @@
-libadt.a: error.o string.o vector.o map.o list.o linereader.o tokenizer.o subprocess.o argparse.o file.o http.o
+libadt.a: error.o string.o vector.o map.o list.o linereader.o tokenizer.o subprocess.o argparse.o file.o http.o regex.o
 	ar rcs $@ $^
 
 error.o: error.c error.h
@@ -30,6 +30,9 @@ tokenizer.o: stdtyp/tokenizer.c stdtyp/tokenizer.h adt.h string.o
 
 argparse.o: stdtyp/argparse.c stdtyp/map.h adt.h string.o
 	c99 -I./ -D_POSIX_C_SOURCE -g -c stdtyp/argparse.c
+
+regex.o: stdtyp/regex.c stdtyp/regex.h adt.h string.o
+	c99 -I./ -D_POSIX_C_SOURCE -g -c stdtyp/regex.c
 
 http.o: extyp/http.c extyp/http.h adt.h string.o file.o
 	c99 -I./ -D_POSIX_C_SOURCE -g -c extyp/http.c
