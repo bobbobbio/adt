@@ -132,4 +132,7 @@ string_hash(const struct string *s);
 void
 string_vec_join(struct string *, const struct string_vec *, char);
 
+void
+string_printf(struct string *, char *, ...);
+
 #endif // __STRING_H

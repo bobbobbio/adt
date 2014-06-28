@@ -1,6 +1,7 @@
 #include <stdtyp/map.h>
 #include <stdtyp/linereader.h>
 #include <extyp/http.h>
+#include <stdtyp/regex.h>
 
 #include <netdb.h>
 #include <sys/socket.h>
@@ -126,25 +127,14 @@ dns_lookup(const struct string *dname, struct inet_addr *iaddr_out)
    return no_error;
 }
 
-struct error
-http_get_url(const struct string *url, struct string *output)
+static struct error
+tcp_connect(struct string *server, int *fd_out)
 {
-   string_clear(output);
-
-   create(string_vec, components);
-   string_split(url, '/', &components);
-   create(string, domain);
-   string_vec_get(&components, &domain, 0);
-   string_vec_remove(&components, 0);
-   create(string, uri);
-   string_vec_join(&uri, &components, '/');
-   if (string_length(&uri) == 0)
-      string_set_cstring(&uri, "/");
-
+   // Do the DNS lookup
    create(inet_addr, ia);
+   epass(dns_lookup(server, &ia));
 
-   epass(dns_lookup(&domain, &ia));
-
+   // Create tcp connection
    create_fd(fd, socket(AF_INET, SOCK_STREAM, 0));
    if (fd == -1)
       return errno_to_error();
@@ -157,6 +147,29 @@ http_get_url(const struct string *url, struct string *output)
 
    if (connect(fd, (struct sockaddr *)&saddr, sizeof(saddr)) != 0)
       return errno_to_error();
+
+   *fd_out = fd;
+   fd = -1;
+}
+
+struct error
+http_get_url(const struct string *url, struct string *output)
+{
+   string_clear(output);
+
+   // Parse the url
+   create_regex(url_reg, strw("(.+):\\/\\/([^\\/:]+)(?::(\d+))?(\\/.*)"));
+
+   create(string, url);
+   create(string, protocol);
+   create(string, port);
+   create(string, path);
+   // XXX Lets return an error and not panic
+   if (!regex_match(&url_reg, url, &protocol, &domain, &port, &path))
+      panic("Not well formed url: '%s'", string_to_cstring(url));
+
+   create_fd(fd, -1);
+   epass(tcp_connect(&domain, &fd));
 
    create(string, req);
    string_append_cstring(&req, "GET ");

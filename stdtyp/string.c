@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdarg.h>
 
 adt_func_body(string);
 
@@ -414,5 +415,21 @@ string_remove_substring(struct string *s, int si, int ei)
    s->buff = nbuff;
    s->buff_len = nbuff_len;
    s->length = s->buff_len - 1;
+}
+
+void
+string_printf(struct string *s, char *fmt, ...)
+{
+   va_list args;
+   va_start(args, fmt);
+
+   int len = vsnfprintf(NULL, 0, fmt, args);
+   int fs = s->buff_len - s->length;
+   while (len + 1 > fs) {
+      string_expand(s);
+      fs = s->buff_len - s->length;
+   }
+   assert(vsnprintf(&s->buff[s->length], fs, fmt, args) < fs);
+   s->length += len;
 }
 
