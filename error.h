@@ -44,8 +44,14 @@ create_error_header(_no_error);
    do { struct error e = expr; \
    if (e.type != _no_error) return e; } while(0)
 
+#define panic(fmt, ...) \
+   adt_print(_panic, fmt, ##__VA_ARGS__)
+#define assert_msg(test, fmt, ...) \
+   adt_print(_assert_msg, test, #test, fmt, ##__VA_ARGS__)
+
 void error_panic(struct error e, char *code);
-void panic(char *fmt, ...);
+void _panic(char *fmt, ...);
 char *error_msg(struct error e);
+void _assert_msg(bool test, const char *code, char *fmt, ...);
 
 #endif // __ERROR_H

@@ -174,7 +174,8 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
    _map_gen_header(name, ktype, ktype *, struct type *, struct type **, , )
 #define map_gen_podk_ptr_body(name, ktype, type) \
    m_make(name##_void, struct type *); \
-   static void name##_void_print(const struct type **a) { void_print(a); } \
+   static void name##_void_print(const struct type **a, struct string *s) \
+   { void_print(a, s); } \
    _map_gen_body(name, ktype, ktype *, ktype, ref, unref, name##_void, \
       struct type *, struct type **, ref, , )
 
@@ -182,7 +183,8 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
    _map_gen_header(name, ktype, ktype *, struct type *, struct type **, \
       , static); \
    m_make(name##_void, struct type *); \
-   static void name##_void_print(const struct type **a) { void_print(a); } \
+   static void name##_void_print(const struct type **a, struct string *s) \
+   { void_print(a, s); } \
    _map_gen_body(name, ktype, ktype *, ktype, ref, unref, name##_void, \
       struct type *, struct type **, ref, , static)
 
@@ -192,7 +194,8 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
       struct type **, , )
 #define map_gen_ptr_body(name, ktype, type) \
    m_make(name##_void, struct type *); \
-   static void name##_void_print(const struct type **a) { void_print(a); } \
+   static void name##_void_print(const struct type **a, struct string *s) \
+   { void_print(a, s); } \
    _map_gen_body(name, const struct ktype *, struct ktype *, ktype, , , \
       name##_void, struct type *, struct type **, ref, , )
 

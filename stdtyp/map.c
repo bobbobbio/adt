@@ -15,9 +15,9 @@ struct map_table_item {
 adt_func_pod_static(map_table_item);
 
 void
-map_table_item_print(const struct map_table_item *item)
+map_table_item_print(const struct map_table_item *item, struct string *s)
 {
-   printf("map_table_item(%p, %p, %s)", item->key, item->data,
+   string_append_format(s, "map_table_item(%p, %p, %s)", item->key, item->data,
       item->deleted ? "deleted=true" : "deleted=false");
 }
 

@@ -52,7 +52,7 @@ file_stats_copy(struct file_stats *d, const struct file_stats *s)
 
 // Don't need these functions
 static void
-file_stats_print(const struct file_stats *f) {}
+file_stats_print(const struct file_stats *f, struct string *s) {}
 
 static bool
 file_stats_equal(const struct file_stats *a, const struct file_stats *b)
@@ -76,20 +76,14 @@ get_options(struct arg_dict *dict, struct string_vec *options_out)
 {
    string_vec_clear(options_out);
 
+   // List of all the arguments, the order is the order they get printed
+   create_string_vec(all_options, "lines", "words", "bytes", "chars",
+      "max-line-length");
+
    // Go through all the arguments
-   iter (arg_dict, dict, item) {
-      // Skip the argument we don't care about
-      if (string_equal(item.key, strw("version")))
-         continue;
-      if (string_equal(item.key, strw("")))
-         continue;
-
-      // All the other options should be bools
-      assert(get_arg_type(dict, item.key) == ARG_BOOL);
-      bool flagged = *(bool *)item.value;
-
-      if (flagged)
-         string_vec_append(options_out, item.key);
+   iter_value (string_vec, &all_options, option) {
+      if (has_arg(dict, option))
+         string_vec_append(options_out, option);
    }
 
    // If no options were given, use defaults
@@ -107,13 +101,13 @@ file_stats_print_stats(const struct file_stats *f, int col,
 {
    // Print the chosen stats
    uint64_t val = *stat_map_at(&f->stats, string_vec_at(options, 0));
-   printf("%*lu", col, val);
+   aprintf("%*lu", col, val);
    for (int i = 1; i < string_vec_size(options); i++) {
       val = *stat_map_at(&f->stats, string_vec_at(options, i));
-      printf(" %*lu", col, val);
+      aprintf(" %*lu", col, val);
    }
 
-   printf(" %s\n", string_to_cstring(&f->name));
+   aprintf(" %s\n", print(string, &f->name));
 }
 
 // Aggregate the data from src into dst
@@ -162,8 +156,8 @@ arg_main(struct arg_dict *args)
 {
    // Print version and exit if --version is given
    if (has_arg(args, strw("version"))) {
-      printf("word count v1.0\n");
-      printf("C ADT by Remi Bernotavicius 2014");
+      aprintf("word count v1.0\n");
+      aprintf("C ADT by Remi Bernotavicius 2014");
       return EXIT_SUCCESS;
    }
 
@@ -189,8 +183,8 @@ arg_main(struct arg_dict *args)
             echeck(line_reader_open_stdin(&lr));
          else {
             ehandle (error, line_reader_open_file(&lr, file)) {
-               fprintf(stderr, "%s: %s: %s\n", args->prog_name,
-                  string_to_cstring(file), error_msg(error));
+               afprintf(stderr, "%s: %s: %s\n", args->prog_name,
+                  print(string, file), error_msg(error));
             }
          }
 
@@ -224,6 +218,11 @@ arg_main(struct arg_dict *args)
       iter_value (stat_map, &fs->stats, val)
          col = max(col, uwidth(*val));
    }
+
+   // If we are only printing one stat, lets forget the columns
+   if (file_stats_vec_size(&all_file_stats) == 1
+      && string_vec_size(&options) == 1)
+      col = 1;
 
    // Print the stats
    iter_value (file_stats_vec, &all_file_stats, fs)

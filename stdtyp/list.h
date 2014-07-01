@@ -1,4 +1,5 @@
 #include <adt.h>
+#include <stdtyp/string.h>
 
 struct list_node {
    void *data;
@@ -19,7 +20,7 @@ void *list_get(const struct list *l, int i);
 void list_insert(struct list *l, void *v, int i);
 void *list_remove(struct list *l, int i);
 int list_size(const struct list *l);
-void list_print_v(const struct list *l, void(*p)(void *));
+void list_print_v(const struct list *l, struct string *, void(*p)(void *, struct string *));
 void list_copy_v(struct list *d, const struct list *s, void(*c)(void *, void *),
    void*(*n)());
 
@@ -64,10 +65,10 @@ void list_copy_v(struct list *d, const struct list *s, void(*c)(void *, void *),
       list_destroy(&a->list); } \
    f int name##_size(struct name *a) { \
       return list_size(&a->list); } \
-   static void name##_##typename##_print(void *v) { \
-      typename##_print((type_ref)v); } \
-   f void name##_print(const struct name *a) { \
-      list_print_v(&a->list, name##_##typename##_print); } \
+   static void name##_##typename##_print(void *v, struct string *s) { \
+      typename##_print((type_ref)v, s); } \
+   f void name##_print(const struct name *a, struct string *s) { \
+      list_print_v(&a->list, s, name##_##typename##_print); } \
    f void name##_clear(struct name *a) { \
       while (list_size(&a->list) > 0) name##_remove(a, 0); } \
    static void name##_##typename##_copy(void *d, void *s) { \
@@ -89,7 +90,8 @@ void list_copy_v(struct list *d, const struct list *s, void(*c)(void *, void *),
 
 #define __list_gen_pod_body(name, type, f) \
    m_make(name##_type, type); \
-   static void name##_type_print(const type *a) { type##_print(a); } \
+   static void name##_type_print(const type *a, struct string *s) \
+      { type##_print(a, s); } \
    _list_gen_body(name, type, type *, ref, name##_type, f)
 #define __list_gen_pod_header(name, type, f) \
    _list_gen_header(name, type, type *, f)

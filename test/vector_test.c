@@ -13,7 +13,7 @@ void TOPY_destroy(struct TOPY *t) { }
 void TOPY_copy(struct TOPY *d, const struct TOPY *s) { *d = *s; }
 bool TOPY_equal(const struct TOPY *a, const struct TOPY *b)
    { return false; }
-void TOPY_print(const struct TOPY *d) { }
+void TOPY_print(const struct TOPY *d, struct string *s) { }
 vector_gen_ptr_static(ptr_vec, TOPY);
 vector_gen_static(topy_vec, TOPY);
 

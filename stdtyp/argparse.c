@@ -239,9 +239,9 @@ arg_print_help(struct arg_dict *dict)
       else
          printf("    ");
       printf("--");
-      string_print(item.key);
+      printf("%s", string_to_cstring(item.key));
       printf("\t");
-      string_print(&item.value->description);
+      printf("%s", string_to_cstring(&item.value->description));
       printf("\n");
    }
 
@@ -264,7 +264,7 @@ process_arg(struct arg_dict *dict, const struct string *arg_name,
                   string_to_cstring(arg_name));
                arg_print_help(dict);
             }  else {
-               av->value = (void *)string_new_const(argv[i]);
+               av->value = (void *)string_const_new(argv[i]);
             }
             num_used++;
          }

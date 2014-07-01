@@ -172,32 +172,33 @@ list_size(const struct list *l)
 }
 
 static void
-void_print_visitor(void *v)
+void_print_visitor(void *v, struct string *s)
 {
-   printf("%p", v);
+   string_append_format(s, "%p", v);
 }
 
 void
-list_print(const struct list *l)
+list_print(const struct list *l, struct string *s)
 {
-   list_print_v(l, void_print_visitor);
+   list_print_v(l, s, void_print_visitor);
 }
 
 void
-list_print_v(const struct list *l, void(*p)(void *))
+list_print_v(const struct list *l, struct string *s,
+   void(*p)(void *, struct string *))
 {
    struct list_node *n = l->head;
    if (n == NULL) {
-      printf("[ ]");
+      string_append_cstring(s, "[ ]");
       return;
    }
    printf("[ ");
    while(n->next != NULL) {
-      p(n->data);
+      p(n->data, s);
       n = n->next;
-      printf(", ");
+      string_append_cstring(s, ", ");
    }
-   p(n->data);
+   p(n->data, s);
 
    printf(" ]");
 }

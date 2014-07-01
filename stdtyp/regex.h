@@ -9,6 +9,7 @@
 
 struct regex {
    regex_t r;
+   uint64_t num_groups;
 };
 
 void
@@ -22,3 +23,7 @@ regex_compile(const struct string *s);
 
 bool
 _regex_match(struct regex *, const struct string *s, ...);
+
+bool
+regex_match_all(struct regex *r, const struct string *s,
+   struct string_vec_vec *matches_out);

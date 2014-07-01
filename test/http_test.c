@@ -17,8 +17,8 @@ main(int argc, char **argv)
        && ia.addr[3] == 1);
 
    create(string, response);
-   echeck(http_get_url(strw("abort.cc/"), &response));
-   string_print(&response);
+   echeck(http_get_url(strw("http://abort.cc:80/"), &response));
+   printf("%s", string_to_cstring(&response));
 
    return EXIT_SUCCESS;
 }

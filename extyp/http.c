@@ -78,14 +78,14 @@ convert_ctype_static(addrinfo, freeaddrinfo);
 adt_func_pod_body(inet_addr);
 
 void
-inet_addr_print(const struct inet_addr *a)
+inet_addr_print(const struct inet_addr *a, struct string *s)
 {
    assert(a->version == 4);
 
-   printf("%u", a->addr[0]);
+   string_append_format(s, "%u", a->addr[0]);
    for (unsigned i = 1; i < 4; i++) {
       uint8_t t = a->addr[i];
-      printf(".%u", t);
+      string_append_format(s, ".%u", t);
    }
 }
 
@@ -127,8 +127,8 @@ dns_lookup(const struct string *dname, struct inet_addr *iaddr_out)
    return no_error;
 }
 
-static struct error
-tcp_connect(struct string *server, int *fd_out)
+struct error
+tcp_connect(struct string *server, int port, int *fd_out)
 {
    // Do the DNS lookup
    create(inet_addr, ia);
@@ -141,15 +141,18 @@ tcp_connect(struct string *server, int *fd_out)
 
    struct sockaddr_in saddr = {
       .sin_family = AF_INET,
-      .sin_port = htons(80),
+      .sin_port = htons(port),
       .sin_addr.s_addr = *((uint32_t *)ia.addr)
    };
 
+   // Connect to the server
    if (connect(fd, (struct sockaddr *)&saddr, sizeof(saddr)) != 0)
       return errno_to_error();
 
    *fd_out = fd;
    fd = -1;
+
+   return no_error;
 }
 
 struct error
@@ -158,32 +161,41 @@ http_get_url(const struct string *url, struct string *output)
    string_clear(output);
 
    // Parse the url
-   create_regex(url_reg, strw("(.+):\\/\\/([^\\/:]+)(?::(\d+))?(\\/.*)"));
+   create_regex(url_reg, strw("(.+):\\/\\/([^\\/]+)(\\/.*)"));
 
-   create(string, url);
    create(string, protocol);
-   create(string, port);
+   create(string, domain);
    create(string, path);
    // XXX Lets return an error and not panic
-   if (!regex_match(&url_reg, url, &protocol, &domain, &port, &path))
+   if (!regex_match(&url_reg, url, &protocol, &domain, &path))
       panic("Not well formed url: '%s'", string_to_cstring(url));
 
+   // Parse out the port
+   int port = 80;
+   if (string_contains_char(&domain, ':')) {
+      create_regex(port_reg, strw("(.+):([0-9]+)"));
+      create(string, ndomain);
+      create(string, sport);
+      if (!regex_match(&port_reg, &domain, &ndomain, &sport))
+         panic("Domain not well formed: '%s'", string_to_cstring(&domain));
+      string_copy(&domain, &ndomain);
+      port = string_to_int(&sport);
+   }
+
+   // Create the tcp connection
    create_fd(fd, -1);
-   epass(tcp_connect(&domain, &fd));
+   epass(tcp_connect(&domain, port, &fd));
 
+   // Send the GET request
    create(string, req);
-   string_append_cstring(&req, "GET ");
-   string_append_string(&req, &uri);
-   string_append_cstring(&req, " HTTP/1.1\n");
-   string_append_cstring(&req, "host: ");
-   string_append_string(&req, &domain);
-   string_append_cstring(&req, "\n\n");
-
+   string_append_format(&req, "GET %s HTTP/1.1\n", string_to_cstring(&path));
+   string_append_format(&req, "host: %s\n\n", string_to_cstring(&domain));
    epass(string_write_fd(&req, fd));
 
    create(line_reader, lr);
    line_reader_open_fd(&lr, fd);
 
+   create_regex(kv_reg, strw("(.+): (.+)"));
    create(string_string_map, header);
    int line_number = 0;
    while (true) {
@@ -196,17 +208,10 @@ http_get_url(const struct string *url, struct string *output)
          // Check for end of header
          if (string_length(&line) == 0)
             break;
-         create(string_vec, kv_pair);
-         string_split(&line, ':', &kv_pair);
-         // XXX rather than assert, return malformed error
-         assert(string_vec_size(&kv_pair) >= 2);
-         // XXX Fix when real string split exists
          create(string, key);
-         string_vec_get(&kv_pair, &key, 0);
-         string_vec_remove(&kv_pair, 0);
          create(string, value);
-         string_vec_join(&value, &kv_pair, ':');
-         string_remove_substring(&value, 0, 0);
+         // XXX Rather than assert return some error
+         assert(regex_match(&kv_reg, &line, &key, &value));
          string_string_map_insert(&header, &key, &value);
       }
       line_number++;
@@ -227,8 +232,7 @@ http_get_url(const struct string *url, struct string *output)
 
    create(string, line);
    while (line_reader_get_line(&lr, &line)) {
-      string_append_string(output, &line);
-      string_append_cstring(output, "\n");
+      string_append_format(output, "%s\n", string_to_cstring(&line));
       // XXX This isn't exact, because we're eating \r doh!
       clength -= (string_length(&line) + 1);
       if (clength <= 0)

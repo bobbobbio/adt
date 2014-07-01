@@ -1,29 +1,44 @@
-#include <stdtyp/string.h>
 #include <stdtyp/file.h>
+#include <stdtyp/regex.h>
+#include <stdtyp/string.h>
 #include <stdtyp/tokenizer.h>
 
-#include <string.h> // confusing, but need for memcpy? lol
 #include <errno.h>
-#include <unistd.h>
 #include <fcntl.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 adt_func_body(string);
 
 vector_gen_body(string_vec, string);
+vector_gen_body(string_vec_vec, string_vec);
 
 struct string_vec
-_strvw(const struct string *arr)
+_strvw(const char *a, ...)
 {
+   va_list argp;
+   va_start(argp, a);
+
    struct string_vec out = string_vec_make();
 
-   create(string_vec, temp);
-   string_split(arr, '"', &temp);
-   for (unsigned i = 1; i < string_vec_size(&temp) - 1; i += 2) {
-      string_vec_append(&out, string_vec_at(&temp, i));
+   while (a != NULL) {
+      create_const_string(str, a);
+      string_vec_append(&out, &str);
+      a = va_arg(argp, const char *);
    }
 
    return out;
+}
+
+char *
+_printer(struct string_vec *sv, void(*p)(const void *, struct string *),
+   const void *v)
+{
+   struct string *str = string_vec_grow(sv);
+   p(v, str);
+   return str->buff;
 }
 
 void
@@ -49,7 +64,7 @@ string_new_var(const char *cstr)
 }
 
 struct string
-string_make_const(const char *buff)
+string_const_make(const char *buff)
 {
    struct string s;
    s.buff = (char *)buff;
@@ -61,7 +76,7 @@ string_make_const(const char *buff)
 }
 
 const struct string *
-string_new_const(const char *buff)
+string_const_new(const char *buff)
 {
    struct string *s = malloc(sizeof(struct string));
    s->buff = (char *)buff;
@@ -77,6 +92,7 @@ string_init(struct string *s)
 {
    s->buff_len = 10;
    s->buff = (char *)malloc(s->buff_len);
+   s->buff[0] = '\0';
    s->length = 0;
    s->mallocd = true;
 }
@@ -116,9 +132,9 @@ string_set_cstring(struct string *s, char *cstr)
 }
 
 void
-string_print(const struct string *s)
+string_print(const struct string *s, struct string *d)
 {
-   printf("%s", s->buff);
+   string_append_string(d, s);
 }
 
 const char *
@@ -417,19 +433,110 @@ string_remove_substring(struct string *s, int si, int ei)
    s->length = s->buff_len - 1;
 }
 
-void
-string_printf(struct string *s, char *fmt, ...)
+int
+_string_append_format(struct string *s, char *fmt, ...)
 {
    va_list args;
+   va_list args2;
    va_start(args, fmt);
+   va_start(args2, fmt);
 
-   int len = vsnfprintf(NULL, 0, fmt, args);
+   int len = vsnprintf(NULL, 0, fmt, args);
    int fs = s->buff_len - s->length;
    while (len + 1 > fs) {
       string_expand(s);
       fs = s->buff_len - s->length;
    }
-   assert(vsnprintf(&s->buff[s->length], fs, fmt, args) < fs);
+   assert(vsnprintf(&s->buff[s->length], fs, fmt, args2) < fs);
    s->length += len;
+
+   va_end(args);
+   va_end(args2);
+
+   return len;
+}
+
+static bool
+_string_replace(struct string *s, const struct regex *r, const struct string *n,
+   bool all)
+{
+   assert(s->mallocd);
+
+   char *tm = s->buff;
+   string_init(s);
+
+   create_regex(ce_reg, strw("\\$([0-9]+)"));
+
+   const char *p = tm;
+   regmatch_t m[r->num_groups + 1];
+
+   int num_matches = 0;
+   while (true) {
+      if (regexec(&r->r, p, r->num_groups + 1, m, 0))
+         break;
+
+      create(string, rep);
+
+      const char *p2 = n->buff;
+      regmatch_t m2[3];
+      while (true) {
+         if (regexec(&ce_reg.r, p2, 3, m2, 0))
+            break;
+
+         assert(m2[1].rm_so != -1);
+         char num[10];
+         memset(num, 0, 10);
+         assert(m2[1].rm_eo - m[1].rm_so < 10);
+         strncpy(num, p2 + m2[1].rm_so, m2[1].rm_eo - m2[1].rm_so);
+         int gn = atoi(num);
+         assert(gn <= r->num_groups && gn >= 1);
+         bool escape = m2[0].rm_so > 0 && p2[m2[0].rm_so - 1] == '\\';
+
+         if (m[gn].rm_so != -1 && !escape) {
+            string_append_cstring_length(&rep, p2, m2[0].rm_so);
+            string_append_cstring_length(&rep, p + m[gn].rm_so,
+               m[gn].rm_eo - m[gn].rm_so);
+         } else {
+            if (!escape)
+               string_append_cstring_length(&rep, p2, m2[0].rm_eo);
+            else {
+               string_append_cstring_length(&rep, p2, m2[0].rm_so - 1);
+               string_append_cstring_length(&rep, p2 + m2[0].rm_so,
+                  m2[0].rm_eo - m2[0].rm_so);
+            }
+         }
+
+         p2 += m2[0].rm_eo;
+      }
+      string_append_cstring(&rep, p2);
+
+      string_append_cstring_length(s, p, m[0].rm_so);
+      string_append_string(s, &rep);
+
+      p += m[0].rm_eo;
+      num_matches++;
+
+      if (!all)
+         break;
+   }
+
+   string_append_cstring(s, p);
+
+   free(tm);
+
+   return num_matches > 0;
+}
+
+bool
+string_replace(struct string *s, const struct regex *r, const struct string *n)
+{
+   return _string_replace(s, r, n, true);
+}
+
+bool
+string_replace_first(struct string *s, const struct regex *r,
+   const struct string *n)
+{
+   return _string_replace(s, r, n, false);
 }
 

@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <string.h>
 
+struct string;
+
 // XXX These don't go here
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
@@ -39,7 +41,7 @@
    f void type##_init(struct type *); \
    f struct type type##_make(void); \
    f void type##_destroy(struct type *); \
-   f void type##_print(const struct type *); \
+   f void type##_print(const struct type *, struct string *); \
    f void type##_copy(struct type *, const struct type *)
 
 #define _adt_func_body(type, f) \
@@ -101,20 +103,20 @@ memory_hash(void *m, size_t size)
 }
 
 // POD types, printing
-#define int_print(x) printf("%d", *(x))
-#define uint64_t_print(x) printf("%" SCNu64, *(x))
-#define uint32_t_print(x) printf("%" SCNu32, *(x))
-#define uint16_t_print(x) printf("%" SCNu16, *(x))
-#define uint8_t_print(x) printf("%" SCNu8, *(x))
-#define int64_t_print(x) printf("%" SCNd64, *(x))
-#define int32_t_print(x) printf("%" SCNd32, *(x))
-#define int16_t_print(x) printf("%" SCNd16, *(x))
-#define int8_t_print(x) printf("%" SCNd8, *(x))
-#define float_print(x) printf("%f", *(x))
+#define int_print(x, s) string_append_format(s, "%d", *(x))
+#define uint64_t_print(x, s) string_append_format(s, "%" SCNu64, *(x))
+#define uint32_t_print(x, s) string_append_format(s, "%" SCNu32, *(x))
+#define uint16_t_print(x, s) string_append_format(s, "%" SCNu16, *(x))
+#define uint8_t_print(x, s) string_append_format(s, "%" SCNu8, *(x))
+#define int64_t_print(x, s) string_append_format(s, "%" SCNd64, *(x))
+#define int32_t_print(x, s) string_append_format(s, "%" SCNd32, *(x))
+#define int16_t_print(x, s) string_append_format(s, "%" SCNd16, *(x))
+#define int8_t_print(x, s) string_append_format(s, "%" SCNd8, *(x))
+#define float_print(x, s) string_append_format(s, "%f", *(x))
 #define double_print float_print
-#define char_print(x) printf("%c", *(x))
-#define unsigned_print(x) printf("%u", *(x))
-#define void_print(x) printf("%p", *(x))
+#define char_print(x, s) string_append_format(s, "%c", *(x))
+#define unsigned_print(x, s) string_append_format(s, "%u", *(x))
+#define void_print(x, s) string_append_format(s, "%p", *(x))
 
 // POD types malloc and free
 #define m_make(name, type) \

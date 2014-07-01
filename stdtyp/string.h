@@ -3,6 +3,8 @@
 #include <adt.h>
 #include <stdtyp/vector.h>
 
+struct regex;
+
 #define create_string(name, str) \
    struct string name a_cleanup(string_destroy) = \
    string_make_var(str)
@@ -10,6 +12,9 @@
 #define create_ptr_string(name, str) \
    struct string *name a_cleamup(string_freer) = \
    string_new_var(str)
+
+#define create_const_string(name, str) \
+   struct string name = string_const_make(str)
 
 #define strw(cstr) \
    &((const struct string){ .buff = (char *)cstr, \
@@ -37,19 +42,45 @@ struct string {
 adt_func_header(string);
 
 vector_gen_header(string_vec, string);
+vector_gen_header(string_vec_vec, string_vec);
+
+char *
+_printer(struct string_vec *sv, void(*p)(const void *, struct string *),
+   const void *v);
+
+#define print(type, v) \
+   _printer(&__b__, (void(*)(const void *, struct string *))&type##_print, v)
+
+#define adt_print(func, ...) \
+do { \
+   create(string_vec, __b__); \
+   func(__VA_ARGS__); \
+} while (0)
+
+#define string_append_format(str, fmt, ...) \
+   adt_print(_string_append_format, str, fmt, __VA_ARGS__)
+
+#define aprintf(...) adt_print(printf, __VA_ARGS__)
+#define afprintf(...) adt_print(fprintf, __VA_ARGS__)
+#define asprintf(...) adt_print(sprintf, __VA_ARGS__)
+#define asnprintf(...) adt_print(snprintf, __VA_ARGS__)
+#define avprintf(...) adt_print(vprintf, __VA_ARGS__)
+#define avfprintf(...) adt_print(vfprintf, __VA_ARGS__)
+#define avsprintf(...) adt_print(vsprintf, __VA_ARGS__)
+#define avsnprintf(...) adt_print(vsnprintf, __VA_ARGS__)
 
 #define create_string_vec(name, ...) \
    struct string_vec name a_cleanup(string_vec_destroy) = \
-      _strvw(strw(#__VA_ARGS__))
+      _strvw(__VA_ARGS__, NULL)
 
 struct string_vec
-_strvw(const struct string *);
+_strvw(const char *a, ...);
 
 struct string
-string_make_const(const char *buff);
+string_const_make(const char *buff);
 
 const struct string *
-string_new_const(const char *buff);
+string_const_new(const char *buff);
 
 void
 string_append_cstring(struct string *, const char *);
@@ -132,7 +163,14 @@ string_hash(const struct string *s);
 void
 string_vec_join(struct string *, const struct string_vec *, char);
 
-void
-string_printf(struct string *, char *, ...);
+int
+_string_append_format(struct string *, char *, ...);
+
+bool
+string_replace(struct string *s, const struct regex *r, const struct string *n);
+
+bool
+string_replace_first(struct string *s, const struct regex *r,
+   const struct string *n);
 
 #endif // __STRING_H

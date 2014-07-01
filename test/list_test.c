@@ -11,9 +11,9 @@ struct my_data {
 adt_func_pod_static(my_data);
 
 static void
-my_data_print(const struct my_data *m)
+my_data_print(const struct my_data *m, struct string *s)
 {
-   printf("(%d, %d, %d)", m->a, m->b, m->c);
+   string_append_format(s, "(%d, %d, %d)", m->a, m->b, m->c);
 }
 
 list_gen_static(my_list, my_data);
