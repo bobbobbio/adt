@@ -31,8 +31,8 @@ main(int argc, char **argv)
    string_append_format(&my_str, "%s", print(string_vec, &p));
    assert(string_equal(&my_str, strw("[ apple, banana, cat, LERP ]")));
 
-   assert_msg(string_length(&my_str) == 1,
-      "String is much longer than expected");
+   assert_msg(string_length(&my_str) > 2,
+      "String is much shorter than expected");
 
    return EXIT_SUCCESS;
 }

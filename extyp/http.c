@@ -188,8 +188,8 @@ http_get_url(const struct string *url, struct string *output)
 
    // Send the GET request
    create(string, req);
-   string_append_format(&req, "GET %s HTTP/1.1\n", string_to_cstring(&path));
-   string_append_format(&req, "host: %s\n\n", string_to_cstring(&domain));
+   string_append_format(&req, "GET %s HTTP/1.1\n", print(string, &path));
+   string_append_format(&req, "host: %s\n\n", print(string, &domain));
    epass(string_write_fd(&req, fd));
 
    create(line_reader, lr);
