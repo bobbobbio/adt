@@ -7,10 +7,11 @@
    struct name { struct map map; }; \
    _adt_func_header(name, f); \
    _gen_iter_header(name, int, ktype_ref, f); \
-   f void name##_insert(struct name *, ktype); \
+   f bool name##_insert(struct name *, ktype); \
    f bool name##_remove(struct name *, ktype); \
    f int name##_size(const struct name *); \
-   f bool name##_contains(const struct name *, ktype)
+   f bool name##_contains(const struct name *, ktype); \
+   f void name##_union(struct name *, const struct name *)
 
 #define _set_gen_body(name, ktype, ktype_ref, ktype_tn, ktype_in, ktype_out, f)\
    _adt_func_body(name, f);                                                    \
@@ -47,19 +48,22 @@
       return map_iterate(&a->map, &i->pos, (void **)&i->value,                 \
          (void **)&v);                                                         \
    }                                                                           \
-   static void name##_insert_(struct name *a, ktype k)                         \
+   static bool name##_insert_(struct name *a, ktype k)                         \
    {                                                                           \
       ktype_ref nk = ktype_tn##_new();                                         \
       ktype_tn##_copy(nk, ktype_in(k));                                        \
       void *to = NULL;                                                         \
       ktype_ref ko = NULL;                                                     \
       map_insert(&a->map, nk, NULL, (void **)&ko, (void **)&to);               \
-      if (ko != NULL)                                                          \
+      if (ko != NULL) {                                                        \
          ktype_tn##_free(ko);                                                  \
+         return false;                                                         \
+      }                                                                        \
+      return true;                                                             \
    }                                                                           \
-   f void name##_insert(struct name *a, ktype k)                               \
+   f bool name##_insert(struct name *a, ktype k)                               \
    {                                                                           \
-      name##_insert_(a, k);                                                    \
+      return name##_insert_(a, k);                                             \
    }                                                                           \
    f bool name##_remove(struct name *a, ktype k)                               \
    {                                                                           \
@@ -81,6 +85,14 @@
    f void name##_copy(struct name *dst, const struct name *src)                \
    {                                                                           \
       name##_destroy(dst); name##_init(dst);                                   \
+      ktype_ref k;                                                             \
+      void *v = NULL;                                                          \
+      struct aiter i; i.ipos = 0;                                              \
+      while (map_iterate(&src->map, &i, (void **)&k, (void **)&v))             \
+         assert(name##_insert_(dst, ktype_out(k)));                            \
+   }                                                                           \
+   f void name##_union(struct name *dst, const struct name *src)               \
+   {                                                                           \
       ktype_ref k;                                                             \
       void *v = NULL;                                                          \
       struct aiter i; i.ipos = 0;                                              \

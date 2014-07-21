@@ -96,7 +96,7 @@ _map_get(const struct map *m, const void *k)
          else
             return NULL;
       }
-      l = l + 1 % _map_nbuckets(m);
+      l = (l + 1) % _map_nbuckets(m);
 
       not_seen--;
    }
@@ -152,7 +152,7 @@ map_insert(struct map *m, void *k, void *v, void **ko, void **vo)
          m->size++;
          return;
       }
-      l = l + 1 % _map_nbuckets(m);
+      l = (l + 1) % _map_nbuckets(m);
 
       not_seen--;
    }
