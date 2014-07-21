@@ -54,20 +54,20 @@ main(int argc, char **argv)
    create(my_map_two, m2);
 
    create(point, p);
-   my_map_insert(&m, 0, &p);
-   my_map_two_insert(&m2, strw("apple"), &p);
+   assert(my_map_insert(&m, 0, &p));
+   assert(my_map_two_insert(&m2, strw("apple"), &p));
    p_inc(&p);
-   my_map_insert(&m, 0, &p);
-   my_map_two_insert(&m2, strw("banana"), &p);
+   assert(!my_map_insert(&m, 0, &p));
+   assert(my_map_two_insert(&m2, strw("banana"), &p));
    p_inc(&p);
-   my_map_insert(&m, 1, &p);
-   my_map_two_insert(&m2, strw("cake"), &p);
+   assert(my_map_insert(&m, 1, &p));
+   assert(my_map_two_insert(&m2, strw("cake"), &p));
    p_inc(&p);
-   my_map_insert(&m, 2, &p);
-   my_map_two_insert(&m2, strw("danish"), &p);
+   assert(my_map_insert(&m, 2, &p));
+   assert(my_map_two_insert(&m2, strw("danish"), &p));
    p_inc(&p);
-   my_map_insert(&m, 3, &p);
-   my_map_two_insert(&m2, strw("eclair"), &p);
+   assert(my_map_insert(&m, 3, &p));
+   assert(my_map_two_insert(&m2, strw("eclair"), &p));
 
    iter (my_map, &m, i) {
       assert(*i.key >= 0);
@@ -85,7 +85,7 @@ main(int argc, char **argv)
    create(my_map, m3);
 
    for (unsigned i = 0; i < 10000; i++) {
-      my_map_insert(&m3, i, &p);
+      assert(my_map_insert(&m3, i, &p));
    }
 
    for (unsigned i = 0; i < 10000; i++) {
@@ -95,7 +95,7 @@ main(int argc, char **argv)
    }
 
    create(ptr_map, pm);
-   ptr_map_insert(&pm, 3, &p);
+   assert(ptr_map_insert(&pm, 3, &p));
 
    iter (ptr_map, &pm, i) {
       assert(*i.key == 3);
@@ -105,8 +105,8 @@ main(int argc, char **argv)
 
    create(char_string_map, cm);
 
-   char_string_map_insert(&cm, 'a', strw("hello"));
-   char_string_map_insert(&cm, 'a', strw("hello"));
+   assert(char_string_map_insert(&cm, 'a', strw("hello")));
+   assert(!char_string_map_insert(&cm, 'a', strw("hello")));
 
    int num = 0;
    iter (char_string_map, &cm, i) {
@@ -119,9 +119,9 @@ main(int argc, char **argv)
 
    create(int_int_map, iim);
 
-   int_int_map_insert(&iim, 4, 6);
-   int_int_map_insert(&iim, 3, 2);
-   int_int_map_insert(&iim, 3, 7);
+   assert(int_int_map_insert(&iim, 4, 6));
+   assert(int_int_map_insert(&iim, 3, 2));
+   assert(!int_int_map_insert(&iim, 3, 7));
 
    assert(*int_int_map_at(&iim, 4) == 6);
    assert(*int_int_map_at(&iim, 3) == 7);
@@ -135,10 +135,10 @@ main(int argc, char **argv)
 
    create(string_int_map, sim);
 
-   string_int_map_insert(&sim, strw("apple"), 5);
-   string_int_map_insert(&sim, strw("bat"), 6);
-   string_int_map_insert(&sim, strw("cat"), 7);
-   string_int_map_insert(&sim, strw("apple"), 8);
+   assert(string_int_map_insert(&sim, strw("apple"), 5));
+   assert(string_int_map_insert(&sim, strw("bat"), 6));
+   assert(string_int_map_insert(&sim, strw("cat"), 7));
+   assert(!string_int_map_insert(&sim, strw("apple"), 8));
 
    iter (string_int_map, &sim, i) {
       if (string_equal(i.key, strw("apple"))) {
@@ -171,4 +171,15 @@ main(int argc, char **argv)
    assert(*string_int_map_at(&sim, strw("cat")) == 7);
 
    assert(string_int_map_size(&sim) == 2);
+
+   // Insert enough to go through some resizes
+   create(int_int_map, res);
+   for (int i = 0; i < 1000; i ++)
+      assert(int_int_map_insert(&res, i, 42));
+
+   for (int i = 0; i < 500; i ++)
+      assert(int_int_map_remove(&res, i));
+
+   create(int_int_map, new_res);
+   int_int_map_copy(&new_res, &res);
 }

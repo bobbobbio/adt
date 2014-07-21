@@ -136,40 +136,72 @@ map_insert(struct map *m, void *k, void *v, void **ko, void **vo)
 {
    assert(k != NULL);
 
+   // Set to NULL if we replace nothing
+   if (ko != NULL)
+      *ko = NULL;
+   if (vo != NULL)
+      *vo = NULL;
+
    _map_resize_check(m); // this ensures our map has room
 
    uint64_t l = m->hash(k) % _map_nbuckets(m);
 
+   bool inserted = false;
    uint64_t not_seen = _map_nbuckets(m);
    while (not_seen > 0) {
       struct map_table_item *item = map_table_at(m->buckets, l);
-      // We can put the item there if:
-      //    1. the bucket is empty
-      //    2. the item is the same
-      //    3. the item is deleted
-      if (item->key == NULL || m->key_compare(item->key, k) == 0
-         || item->deleted) {
-         // If there is an item there that we are replacing, we to return out
-         // the item, and decrement the size
+      // As soon as we see a NULL key we can finish
+      if (item->key == NULL) {
+         if (!inserted) {
+            item->deleted = false;
+            item->key = k;
+            item->data = v;
+            m->size++;
+            inserted = true;
+         }
+         return;
+      }
+      // We can use deleted entries
+      else if (item->deleted) {
+         if (!inserted) {
+            item->deleted = false;
+            item->key = k;
+            item->data = v;
+            m->size++;
+            inserted = true;
+         }
+      }
+      // If we find a bucket with the same value
+      else if (m->key_compare(item->key, k) == 0) {
+         // If we are replacing something, return out the value
          if (item->key != NULL && !item->deleted) {
+            // We can't return two things out at once
+            assert(*ko == NULL);
+            assert(*vo == NULL);
             if (ko != NULL)
                *ko = item->key;
             if (vo != NULL)
                *vo = item->data;
             m->size--;
          }
-         // Now insert the item
-         item->deleted = false;
-         item->key = k;
-         item->data = v;
-         m->size++;
-         return;
+         if (!inserted) {
+            item->deleted = false;
+            item->key = k;
+            item->data = v;
+            m->size++;
+            inserted = true;
+         } else {
+            // If we have inserted something, and found a repeat we have to
+            // delete it
+            item->deleted = true;
+         }
       }
       l = (l + 1) % _map_nbuckets(m);
 
       not_seen--;
    }
-   panic("Map is totally broken, somehow didn't find room for item");
+   assert_msg(inserted,
+      "Map is totally broken, somehow didn't find room for item");
 }
 
 bool

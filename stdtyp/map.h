@@ -43,7 +43,7 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
    _gen_iter_header(name, ktype_ref, type_ref, f); \
    f void name##_get(const struct name *, ktype, type_ref); \
    f type_ref name##_at(const struct name *, ktype); \
-   f void name##_insert(struct name *, ktype, cnst type); \
+   f bool name##_insert(struct name *, ktype, cnst type); \
    f bool name##_remove(struct name *, ktype); \
    f int name##_size(const struct name *); \
    f bool name##_contains(const struct name *, ktype)
@@ -91,7 +91,7 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
    {                                                                           \
       return (type_ref)map_get(&a->map, ktype_in(k));                          \
    }                                                                           \
-   static void name##_insert_(struct name *a, ktype k, cnst type_ref v)        \
+   static bool name##_insert_(struct name *a, ktype k, cnst type_ref v)        \
    {                                                                           \
       type_ref nv = typename##_new();                                          \
       typename##_copy(nv, v);                                                  \
@@ -100,14 +100,20 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
       type_ref to = NULL;                                                      \
       ktype_ref ko = NULL;                                                     \
       map_insert(&a->map, nk, nv, (void **)&ko, (void **)&to);                 \
-      if (to != NULL)                                                          \
+      bool replace = false;                                                    \
+      if (to != NULL) {                                                        \
          typename##_free(to);                                                  \
-      if (ko != NULL)                                                          \
+         replace = true;                                                       \
+      }                                                                        \
+      if (ko != NULL) {                                                        \
          ktype_tn##_free(ko);                                                  \
+         replace = true;                                                       \
+      }                                                                        \
+      return !replace;                                                         \
    }                                                                           \
-   f void name##_insert(struct name *a, ktype k, cnst type v)                  \
+   f bool name##_insert(struct name *a, ktype k, cnst type v)                  \
    {                                                                           \
-      name##_insert_(a, k, vref(v));                                           \
+      return name##_insert_(a, k, vref(v));                                    \
    }                                                                           \
    f bool name##_remove(struct name *a, ktype k)                               \
    {                                                                           \
@@ -134,7 +140,7 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
       type_ref v;                                                              \
       struct aiter i; i.ipos = 0;                                              \
       while (map_iterate(&src->map, &i, (void **)&k, (void **)&v))             \
-         name##_insert_(dst, ktype_out(k), v);                                 \
+         assert(name##_insert_(dst, ktype_out(k), v));                         \
    }                                                                           \
    SWALLOWSEMICOLON
 

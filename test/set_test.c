@@ -57,12 +57,12 @@ main(int argc, char **argv)
    assert(cnt == 2);
    assert(int_set_size(&is) == 2);
 
-   string_set_insert(&ss, strw("apple"));
-   string_set_insert(&ss, strw("book"));
-   string_set_insert(&ss, strw("cat"));
-   string_set_insert(&ss, strw("apple"));
-   string_set_insert(&ss, strw("apple"));
-   string_set_insert(&ss, strw("apple"));
+   assert(string_set_insert(&ss, strw("apple")));
+   assert(string_set_insert(&ss, strw("book")));
+   assert(string_set_insert(&ss, strw("cat")));
+   assert(!string_set_insert(&ss, strw("apple")));
+   assert(!string_set_insert(&ss, strw("apple")));
+   assert(!string_set_insert(&ss, strw("apple")));
 
    assert(string_set_size(&ss) == 3);
 
@@ -105,8 +105,24 @@ main(int argc, char **argv)
 
    create(some_type_set, sts);
 
-   some_type_set_insert(&sts, &a);
-   some_type_set_insert(&sts, &b);
+   assert(some_type_set_insert(&sts, &a));
+   assert(!some_type_set_insert(&sts, &b));
 
    assert(some_type_set_size(&sts) == 1);
+
+   create(int_set, res);
+   for (int i = 0; i < 1000; i++)
+      assert(int_set_insert(&res, i));
+
+   for (int i = 0; i < 40; i++)
+      assert(!int_set_insert(&res, i));
+
+   for (int i = 0; i < 500; i++)
+      assert(int_set_remove(&res, i));
+
+   for (int i = 0; i < 250; i++)
+      assert(int_set_insert(&res, i));
+
+   create(int_set, res_copy);
+   int_set_copy(&res_copy, &res);
 }
