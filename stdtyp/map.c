@@ -5,7 +5,7 @@
 
 #define MAP_START_SIZE (100)
 // Resize the table when it is this percent full or more
-#define MAP_RESIZE_FACTOR (0.75)
+#define MAP_RESIZE_FACTOR 3 / 4
 
 struct map_table_item {
    void *key;
@@ -46,22 +46,6 @@ map_destroy(struct map *m)
    map_table_free(m->buckets);
 }
 
-void
-_map_resize(struct map *m)
-{
-   struct map_table *old_buckets = m->buckets;
-   uint64_t size = map_table_size(m->buckets) * 2;
-   m->buckets = map_table_new_size(size);
-   // rehash everything
-   for (uint64_t i = 0; i < map_table_size(old_buckets); i++) {
-      struct map_table_item *item = map_table_at(old_buckets, i);
-      if (!item->deleted && item->key != NULL)
-         map_insert(m, item->key, item->data, NULL, NULL);
-   }
-
-   map_table_free(old_buckets);
-}
-
 static uint64_t
 _map_nbuckets(const struct map *m)
 {
@@ -70,11 +54,32 @@ _map_nbuckets(const struct map *m)
    return s;
 }
 
+void
+_map_resize(struct map *m)
+{
+   uint64_t old_size = m->size;
+   struct map_table *old_buckets = m->buckets;
+   uint64_t size = map_table_size(m->buckets) * 2;
+   m->buckets = map_table_new_size(size);
+   m->size = 0;
+   // rehash everything
+   for (uint64_t i = 0; i < map_table_size(old_buckets); i++) {
+      struct map_table_item *item = map_table_at(old_buckets, i);
+      if (!item->deleted && item->key != NULL)
+         map_insert(m, item->key, item->data, NULL, NULL);
+   }
+   assert(m->size < _map_nbuckets(m));
+   assert(m->size == old_size);
+
+   map_table_free(old_buckets);
+}
+
 static void
 _map_resize_check(struct map *m)
 {
    if (m->size >= _map_nbuckets(m) * MAP_RESIZE_FACTOR) {
       _map_resize(m);
+      assert(m->size < _map_nbuckets(m) * MAP_RESIZE_FACTOR);
    }
 }
 
@@ -138,14 +143,22 @@ map_insert(struct map *m, void *k, void *v, void **ko, void **vo)
    uint64_t not_seen = _map_nbuckets(m);
    while (not_seen > 0) {
       struct map_table_item *item = map_table_at(m->buckets, l);
-      if (item->key == NULL || m->key_compare(item->key, k) == 0) {
-         if (item->key != NULL && item->deleted == false) {
+      // We can put the item there if:
+      //    1. the bucket is empty
+      //    2. the item is the same
+      //    3. the item is deleted
+      if (item->key == NULL || m->key_compare(item->key, k) == 0
+         || item->deleted) {
+         // If there is an item there that we are replacing, we to return out
+         // the item, and decrement the size
+         if (item->key != NULL && !item->deleted) {
             if (ko != NULL)
                *ko = item->key;
             if (vo != NULL)
                *vo = item->data;
             m->size--;
          }
+         // Now insert the item
          item->deleted = false;
          item->key = k;
          item->data = v;
