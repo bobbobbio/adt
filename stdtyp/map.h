@@ -25,6 +25,9 @@ map_insert(struct map *, void *, void *, void **, void **);
 bool
 map_remove(struct map *, const void *, void **, void **);
 
+void
+map_get_random(const struct map *, void **, void **);
+
 uint64_t
 map_size(const struct map *);
 

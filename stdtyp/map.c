@@ -2,6 +2,7 @@
 #include <stdtyp/string.h>
 
 #include <string.h>
+#include <time.h>
 
 #define MAP_START_SIZE (100)
 // Resize the table when it is this percent full or more
@@ -218,6 +219,31 @@ map_remove(struct map *m, const void *k, void **k_out, void **v_out)
    m->size--;
 
    return true;
+}
+
+void
+map_get_random(const struct map *m, void **k_out, void **v_out)
+{
+   assert(m->size > 0);
+   uint64_t c_index = rand() % m->size;
+
+   uint64_t index = 0;
+   uint64_t t_index = 0;
+   while (t_index < _map_nbuckets(m)) {
+      struct map_table_item *item = map_table_at(m->buckets, t_index);
+      if (item->key != NULL && !item->deleted) {
+         if (index == c_index) {
+            if (k_out != NULL)
+               *k_out = item->key;
+            if (v_out != NULL)
+               *v_out = item->data;
+            return;
+         }
+         index++;
+      }
+      t_index++;
+   }
+   panic("Map totally broke");
 }
 
 uint64_t

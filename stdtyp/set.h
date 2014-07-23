@@ -11,6 +11,7 @@
    f bool name##_remove(struct name *, ktype); \
    f int name##_size(const struct name *); \
    f bool name##_contains(const struct name *, ktype); \
+   f void name##_get_random(const struct name *, ktype_ref); \
    f void name##_union(struct name *, const struct name *)
 
 #define _set_gen_body(name, ktype, ktype_ref, ktype_tn, ktype_in, ktype_out, f)\
@@ -81,6 +82,12 @@
    f bool name##_contains(const struct name *a, ktype k)                       \
    {                                                                           \
       return map_contains(&a->map, ktype_in(k));                               \
+   }                                                                           \
+   f void name##_get_random(const struct name *a, ktype_ref k)                 \
+   {                                                                           \
+      ktype_ref ko;                                                            \
+      map_get_random(&a->map, (void **)&ko, NULL);                             \
+      ktype_tn##_copy(k, ko);                                                  \
    }                                                                           \
    f void name##_copy(struct name *dst, const struct name *src)                \
    {                                                                           \
