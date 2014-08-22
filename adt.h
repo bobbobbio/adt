@@ -34,6 +34,9 @@ struct string;
 #define create_null_ptr(type, name) \
    struct type *name a_cleanup(type##_freer) = NULL
 
+#define make(type, ...) \
+   (struct type){ __VA_ARGS__ }
+
 #define _adt_func_header(type, f) \
    f struct type * type##_new(void); \
    f void type##_free(struct type *); \
