@@ -8,6 +8,22 @@
 #include <unistd.h>
 #include <stdarg.h>
 
+/*
+ * argparse is used in the following way:
+ * #include <stdtyp/argparse.h>
+ * define_args(
+ * // arg name | arg char | description           | arg type | req / optional
+ *    "verbose"  'v'        "print all the things"  ARG_BOOL   ARG_OPTIONAL
+ * )
+ * int
+ * arg_main(struct arg_dict *args)
+ * {
+ *    if (has_arg(args, strw("verbose")) {
+ *       aprintf("SO MUCH INFORMATION.");
+ *    }
+ * }
+ */
+
 enum arg_type {
    ARG_BOOL,
    ARG_STRING,

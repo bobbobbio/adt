@@ -260,8 +260,8 @@ process_arg(struct arg_dict *dict, const struct string *arg_name,
       switch (av->type) {
          case ARG_STRING: {
             if (av->value != NULL) {
-               fprintf(stderr, "too many values given to argument '%s'",
-                  string_to_cstring(arg_name));
+               afprintf(stderr, "too many values given to argument '%s'\n",
+                  print(string, arg_name));
                arg_print_help(dict);
             }  else {
                av->value = (void *)string_const_new(argv[i]);
@@ -271,8 +271,8 @@ process_arg(struct arg_dict *dict, const struct string *arg_name,
          break;
          case ARG_NUM: {
             if (av->value != NULL) {
-               fprintf(stderr, "too many values given to argument '%s'",
-                  string_to_cstring(arg_name));
+               afprintf(stderr, "too many values given to argument '%s'\n",
+                  print(string, arg_name));
                arg_print_help(dict);
             } else {
                av->value = malloc(sizeof(int));

@@ -48,6 +48,21 @@ char *
 _printer(struct string_vec *sv, void(*p)(const void *, struct string *),
    const void *v);
 
+// adt printing.  This section defines aprintf and its variants.  This function
+// allows you to print adt types inside one function call. It turns this:
+//
+// create_string_vec(my_list, "a", "b", "c");
+// {
+//    create(string, temp);
+//    string_vec_print(&my_list, &temp);
+//    printf("%s", string_to_cstring(&temp))
+// }
+//
+// into this:
+//
+// create_string_vec(my_list, "a", "b", "c");
+// aprintf("%s", print(string_vec, &my_list));
+
 #define print(type, v) \
    _printer(&__b__, (void(*)(const void *, struct string *))&type##_print, v)
 
