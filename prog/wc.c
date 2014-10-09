@@ -4,6 +4,8 @@
 #include <stdtyp/vector.h>
 #include <stdtyp/tokenizer.h>
 
+#include <inttypes.h>
+
 define_args(
     "bytes", 'c', "print the number of bytes", ARG_BOOL, ARG_OPTIONAL,
     "chars", 'm', "print the number of characters", ARG_BOOL, ARG_OPTIONAL,
@@ -101,10 +103,10 @@ file_stats_print_stats(const struct file_stats *f, int col,
 {
    // Print the chosen stats
    uint64_t val = *stat_map_at(&f->stats, string_vec_at(options, 0));
-   aprintf("%*lu", col, val);
+   aprintf("%*" PRIu64, col, val);
    for (int i = 1; i < string_vec_size(options); i++) {
       val = *stat_map_at(&f->stats, string_vec_at(options, i));
-      aprintf(" %*lu", col, val);
+      aprintf(" %*" PRIu64, col, val);
    }
 
    aprintf(" %s\n", print(string, &f->name));
