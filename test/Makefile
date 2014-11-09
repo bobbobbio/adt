@@ -1,4 +1,4 @@
-all_tests: test_main.o map_test set_test linereader_test vector_test list_test file_test http_test argparse_test regex_test string_test ../libadt.a
+all_tests: test_main.o map_test set_test linereader_test vector_test list_test file_test http_test argparse_test regex_test string_test thread_test ../libadt.a
 	(cd ..; make)
 	c99 -I../ -g -o $@ test_main.o ../libadt.a
 
@@ -34,5 +34,9 @@ regex_test: regex_test.c ../stdtyp/regex.h ../libadt.a
 
 string_test: string_test.c ../stdtyp/string.h ../libadt.a
 	c99 -I../ -g -o $@ string_test.c  ../libadt.a
+
+thread_test: thread_test.c ../stdtyp/threading.h ../libadt.a
+	c99 -I../ -pthread -g -o $@ thread_test.c  ../libadt.a
+
 clean:
 	rm -fr all_tests *.o *_test *.dSYM
