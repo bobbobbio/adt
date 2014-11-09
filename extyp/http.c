@@ -168,7 +168,7 @@ http_get_url(const struct string *url, struct string *output)
    create(string, path);
    // XXX Lets return an error and not panic
    if (!regex_match(&url_reg, url, &protocol, &domain, &path))
-      panic("Not well formed url: '%s'", string_to_cstring(url));
+      panic("Not well formed url: '%s'", print(string, url));
 
    // Parse out the port
    int port = 80;
@@ -177,7 +177,7 @@ http_get_url(const struct string *url, struct string *output)
       create(string, ndomain);
       create(string, sport);
       if (!regex_match(&port_reg, &domain, &ndomain, &sport))
-         panic("Domain not well formed: '%s'", string_to_cstring(&domain));
+         panic("Domain not well formed: '%s'", print(string, &domain));
       string_copy(&domain, &ndomain);
       port = string_to_int(&sport);
    }
