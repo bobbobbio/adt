@@ -81,6 +81,19 @@ vector_insert(struct vector *v, uint64_t i, size_t s)
    return pos;
 }
 
+void *
+vector_extend(struct vector *v, int len, size_t s)
+{
+   int new_size = (v->size + len) * s;
+   if (v->buff_len < new_size) {
+      v->buff_len = new_size;
+      v->buff = realloc(v->buff, v->buff_len);
+   }
+   void *p = &v->buff[v->size * s];
+   v->size += len;
+   return p;
+}
+
 void
 vector_remove(struct vector *v, uint64_t i, size_t s)
 {
@@ -105,10 +118,24 @@ vector_iterate(const struct vector *v, struct aiter *i, uint64_t *i_out,
 
    if (in >= v->size)
       return false;
-   
+
    *i_out = in;
    *v_out = vector_at(v, in, size);
 
    return true;
+}
+
+vector_gen_pod_body(int_vec, int);
+
+struct int_vec
+int_vec_make_var(int val[], int len)
+{
+   struct int_vec vec;
+   vec.vector.buff_len = len * sizeof(int);
+   vec.vector.buff = malloc(vec.vector.buff_len);
+   memcpy(vec.vector.buff, val, vec.vector.buff_len);
+   vec.vector.size = len;
+
+   return vec;
 }
 

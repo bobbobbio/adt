@@ -45,7 +45,7 @@ arg_main(struct arg_dict *args)
          struct error e = subprocess_run(&path, &output);
          if (!error_equal(e, no_error)
             || (valgrind && !string_contains_substring(&output,
-            strw("All heap blocks were freed -- no leaks are possible"))))
+            strw("ERROR SUMMARY: 0 errors from 0 contexts"))))
             printf("failed");
          else
             printf("pass");

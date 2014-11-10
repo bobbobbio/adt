@@ -17,6 +17,9 @@ vector_at(const struct vector *, uint64_t, size_t);
 void *
 vector_insert(struct vector *, uint64_t, size_t);
 
+void *
+vector_extend(struct vector *, int, size_t);
+
 void
 vector_remove(struct vector *, uint64_t, size_t);
 
@@ -38,6 +41,7 @@ vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **,
    f bool name##_equal(const struct name *, const struct name *); \
    f void name##_insert(struct name *, type, int i); \
    f void name##_append(struct name *, type); \
+   f void name##_extend(struct name *, const struct name *); \
    f void name##_prepend(struct name *, type); \
    f type_ref name##_grow(struct name *); \
    f void name##_remove(struct name *, int i); \
@@ -90,6 +94,15 @@ vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **,
       type_ref w = vector_insert(&a->vector, vector_size(&a->vector), so);     \
       typename##_init(w);                                                      \
       typename##_copy(w, type_in (v));                                         \
+   }                                                                           \
+   f void name##_extend(struct name *a, const struct name *b)                  \
+   {                                                                           \
+      type_ref w = vector_extend(&a->vector, name##_size(b), so);              \
+      for (unsigned i = 0; i < name##_size(b); i++) {                          \
+         typename##_init(w);                                                   \
+         typename##_copy(w, name##_at(b, i));                                  \
+         w++;                                                                  \
+      }                                                                        \
    }                                                                           \
    f type_ref name##_grow(struct name *a)                                      \
    {                                                                           \
@@ -241,5 +254,17 @@ vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **,
 #define vector_gen_ptr_static(name, type) \
    _vector_gen_ptr_header(name, type, static); \
    _vector_gen_ptr_body(name, type, static)
+
+#include <stdtyp/string.h>
+
+vector_gen_pod_header(int_vec, int);
+
+#define create_int_vec(name, ...) \
+   struct int_vec name a_cleanup(int_vec_destroy) = \
+      int_vec_make_var((int[]){__VA_ARGS__}, \
+         sizeof((int[]){__VA_ARGS__}) / sizeof(int))
+
+struct int_vec
+int_vec_make_var(int val[], int len);
 
 #endif // __VECTOR_H__

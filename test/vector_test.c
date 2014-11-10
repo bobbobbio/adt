@@ -3,7 +3,6 @@
 
 vector_gen_pod_static(char_vec, char);
 vector_gen_pod_static(money_vec, double);
-vector_gen_pod_static(int_vec, int);
 struct TOPY {
    int a;
 };
@@ -130,6 +129,13 @@ int main()
    free(t);
    free(u);
    free(v);
+
+   create_string_vec(left, "a", "b", "c");
+   create_string_vec(right, "1", "2", "3");
+   create_string_vec(expect, "a", "b", "c", "1", "2", "3");
+
+   string_vec_extend(&left, &right);
+   assert(string_vec_equal(&left, &expect));
 
    return EXIT_SUCCESS;
 }

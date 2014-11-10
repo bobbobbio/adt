@@ -32,17 +32,22 @@ thread_pool_destroy(struct thread_pool *tp)
    thread_vec_destroy(&tp->threads);
 }
 
-static void
-_thread_join(struct thread *thread)
+static void *
+__thread_join(struct thread *thread)
 {
    void *return_value;
    pthread_join(thread->t, &return_value);
+   return return_value;
 }
 
 void
-thread_join(struct thread *thread)
+_thread_join(struct thread *thread, void *ret, int ret_size)
 {
-   _thread_join(thread);
+   void *return_value = __thread_join(thread);
+   if (ret != NULL && return_value != NULL) {
+      memcpy(ret, return_value, ret_size);
+   }
+   free(return_value);
    thread_free(thread);
 }
 
@@ -84,7 +89,7 @@ void
 thread_pool_join(struct thread_pool *tp)
 {
    iter_value (thread_vec, &tp->threads, thread)
-      _thread_join(thread);
+      free(__thread_join(thread));
    thread_vec_clear(&tp->threads);
 }
 

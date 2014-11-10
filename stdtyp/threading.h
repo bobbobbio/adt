@@ -68,7 +68,30 @@ adt_func_header(thread_pool);
 #define thread_run_noargs(func) \
    _thread_run(fptr_run_noargs(func))
 
-#define fptr_define(func, ...) \
+#define fptr_define(func, ret, ...) \
+   struct_make(func##_args, __VA_ARGS__); \
+   void * \
+   func##_stub(void *_args) \
+   { \
+      struct func##_args *args = _args; \
+      ret *v = malloc(sizeof(ret)); \
+      *v = fptr_call(func, args, __VA_ARGS__); \
+      free(args); \
+      pthread_exit(v); \
+   } \
+   SWALLOWSEMICOLON
+
+#define fptr_define_noargs(func, ret) \
+   void * \
+   func##_stub(void *_args) \
+   { \
+      ret *v = malloc(sizeof(ret)); \
+      *v = func(); \
+      pthread_exit(v); \
+   } \
+   SWALLOWSEMICOLON
+
+#define fptr_define_void(func, ...) \
    struct_make(func##_args, __VA_ARGS__); \
    void * \
    func##_stub(void *_args) \
@@ -80,7 +103,7 @@ adt_func_header(thread_pool);
    } \
    SWALLOWSEMICOLON
 
-#define fptr_define_noargs(func) \
+#define fptr_define_void_noargs(func) \
    void * \
    func##_stub(void *_args) \
    { \
@@ -100,6 +123,12 @@ void
 thread_pool_join(struct thread_pool *tp);
 
 void
-thread_join(struct thread *);
+_thread_join(struct thread *, void *ret, int ret_size);
+
+#define thread_join(thread, ret) \
+   _thread_join(thread, ret, sizeof(*ret))
+
+#define thread_join_void(thread) \
+   _thread_join(thread, NULL, 0)
 
 #endif // __THREADING_H__

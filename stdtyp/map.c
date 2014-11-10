@@ -96,11 +96,8 @@ _map_get(const struct map *m, const void *k)
       struct map_table_item *item = map_table_at(m->buckets, l);
       if (item->key == NULL)
          return NULL;
-      if (m->key_compare(item->key, k) == 0) {
-         if (!item->deleted)
-            return item;
-         else
-            return NULL;
+      if (!item->deleted && m->key_compare(item->key, k) == 0) {
+         return item;
       }
       l = (l + 1) % _map_nbuckets(m);
 

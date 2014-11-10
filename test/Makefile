@@ -35,8 +35,17 @@ regex_test: regex_test.c ../stdtyp/regex.h ../libadt.a
 string_test: string_test.c ../stdtyp/string.h ../libadt.a
 	c99 -I../ -g -o $@ string_test.c  ../libadt.a
 
+UNAME := $(shell uname)
+ifeq ($(UNAME), Linux)
+	PTHREAD := -pthread
+endif
+ifeq ($(UNAME), Darwin)
+	PTHREAD := -lpthread
+endif
+
 thread_test: thread_test.c ../stdtyp/threading.h ../libadt.a
-	c99 -I../ -pthread -g -o $@ thread_test.c  ../libadt.a
+	c99 -I../ $(PTHREAD) -g -o $@ thread_test.c  ../libadt.a
+
 
 clean:
 	rm -fr all_tests *.o *_test *.dSYM
