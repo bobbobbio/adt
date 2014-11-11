@@ -1,0 +1,5 @@
+*.o
+*.a
+*.dSYM
+.DS_Store
+*.swp
