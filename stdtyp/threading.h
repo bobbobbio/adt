@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <error.h>
 #include <stdtyp/string.h>
+#include <stdtyp/ctxmanager.h>
 
 struct thread;
 
@@ -130,5 +131,21 @@ _thread_join(struct thread *, void *ret, int ret_size);
 
 #define thread_join_void(thread) \
    _thread_join(thread, NULL, 0)
+
+struct mutex {
+   pthread_mutex_t _lock;
+};
+adt_func_header(mutex);
+
+void
+mutex_lock(struct mutex *m);
+
+void
+mutex_unlock(struct mutex *m);
+
+context_manager_gen_header(mutex_cm, mutex);
+
+#define with_mutex(mutex) \
+   with_context_manager(mutex_cm, mutex)
 
 #endif // __THREADING_H__

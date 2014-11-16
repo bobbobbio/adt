@@ -12,6 +12,17 @@ struct string;
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
+#define __unq(a, b, c) a##_##b##_##c
+#define _unq(a, b, c) __unq(a, b, c)
+#define unq(x) _unq(x, __COUNTER__, __LINE__)
+
+#define once_loop(expr, once) \
+   for (bool once = true; once; ) \
+   for (expr; once; once = false)
+
+#define ctx_def(expr) \
+   once_loop(expr, unq(once))
+
 // Use a random extern symbol to swallow a semicolon
 #define SWALLOWSEMICOLON extern void __BODYCODEGENEND99893__
 

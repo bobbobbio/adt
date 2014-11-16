@@ -93,3 +93,30 @@ thread_pool_join(struct thread_pool *tp)
    thread_vec_clear(&tp->threads);
 }
 
+adt_func_body(mutex);
+
+context_manager_gen_body(mutex_cm, mutex, mutex_lock, mutex_unlock);
+
+void
+mutex_init(struct mutex *m)
+{
+   pthread_mutex_init(&m->_lock, NULL);
+}
+
+void
+mutex_destroy(struct mutex *m)
+{
+   pthread_mutex_destroy(&m->_lock);
+}
+
+void
+mutex_lock(struct mutex *m)
+{
+   pthread_mutex_lock(&m->_lock);
+}
+
+void
+mutex_unlock(struct mutex *m)
+{
+   pthread_mutex_unlock(&m->_lock);
+}

@@ -41,16 +41,18 @@ SWALLOWSEMICOLON
    for (struct type##_iter name = type##_iter_make(); \
       type##_iter_next(sub, &name); )
 
+#define _iter_value(type, sub, name, itername) \
+   iter(type, sub, itername) \
+   ctx_def(type##_value name = itername.value)
+
 #define iter_value(type, sub, name) \
-   for (struct type##_iter _iter = type##_iter_make(); \
-      type##_iter_next(sub, &_iter); ) \
-   for (bool _once = true; _once; ) \
-   for (type##_value name = _iter.value; _once; _once = false)
+   _iter_value(type, sub, name, unq(iter))
+
+#define _iter_key(type, sub, name, itername) \
+   iter(type, sub, itername) \
+   ctx_def(type##_key name = itername.key)
 
 #define iter_key(type, sub, name) \
-   for (struct type##_iter _iter = type##_iter_make(); \
-      type##_iter_next(sub, &_iter); ) \
-   for (bool _once = true; _once; ) \
-   for (type##_key name = _iter.key; _once; _once = false)
+   _iter_key(type, sub, name, unq(iter))
 
 #endif // __ITER_H__

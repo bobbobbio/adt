@@ -34,7 +34,7 @@ argparse.o: stdtyp/argparse.c stdtyp/map.h adt.h
 regex.o: stdtyp/regex.c stdtyp/regex.h adt.h
 	c99 -I./ -D_POSIX_C_SOURCE -D_C99_SOURCE -g -c stdtyp/regex.c
 
-threading.o: stdtyp/threading.c stdtyp/threading.h adt.h error.h stdtyp/vector.h
+threading.o: stdtyp/threading.c stdtyp/threading.h stdtyp/ctxmanager.h adt.h error.h stdtyp/vector.h
 	c99 -I./ -D_POSIX_C_SOURCE -D_C99_SOURCE -g -c stdtyp/threading.c
 
 http.o: extyp/http.c extyp/http.h adt.h

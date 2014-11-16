@@ -19,6 +19,7 @@ hello3(int val)
 }
 fptr_define(hello3, int, int);
 
+// Since the thread calls itself, this has to go first
 struct int_vec *
 merge_sort(const struct int_vec *vec);
 fptr_define(merge_sort, struct int_vec *, struct int_vec *);
@@ -102,4 +103,10 @@ main(int argc, char **argv)
    create_int_vec(expected_sorted, 1, 1, 2, 2, 2, 3, 4, 4, 4, 7, 7, 7, 8, 8);
 
    assert(int_vec_equal(actual_sorted, &expected_sorted));
+
+   create(mutex, mutex);
+
+   with_mutex (&mutex) {
+      printf("Hello from the lock");
+   }
 }
