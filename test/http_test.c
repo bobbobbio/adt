@@ -18,6 +18,7 @@ main(int argc, char **argv)
 
    create(string, response);
    echeck(http_get_url(strw("http://abort.cc:80/"), &response));
+   assert(string_length(&response) > 0);
    printf("%s", string_to_cstring(&response));
 
    return EXIT_SUCCESS;

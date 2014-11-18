@@ -128,15 +128,15 @@ dns_lookup(const struct string *dname, struct inet_addr *iaddr_out)
 }
 
 struct error
-tcp_connect(struct string *server, int port, int *fd_out)
+tcp_connect(struct string *server, int port, struct file* stream_out)
 {
    // Do the DNS lookup
    create(inet_addr, ia);
    epass(dns_lookup(server, &ia));
 
    // Create tcp connection
-   create_fd(fd, socket(AF_INET, SOCK_STREAM, 0));
-   if (fd == -1)
+   create_file_fd(stream, socket(AF_INET, SOCK_STREAM, 0));
+   if (stream.fd == -1)
       return errno_to_error();
 
    struct sockaddr_in saddr = {
@@ -146,11 +146,11 @@ tcp_connect(struct string *server, int port, int *fd_out)
    };
 
    // Connect to the server
-   if (connect(fd, (struct sockaddr *)&saddr, sizeof(saddr)) != 0)
+   if (connect(stream.fd, (struct sockaddr *)&saddr, sizeof(saddr)) != 0)
       return errno_to_error();
 
-   *fd_out = fd;
-   fd = -1;
+   *stream_out = stream;
+   stream.fd = -1;
 
    return no_error;
 }
@@ -183,17 +183,17 @@ http_get_url(const struct string *url, struct string *output)
    }
 
    // Create the tcp connection
-   create_fd(fd, -1);
-   epass(tcp_connect(&domain, port, &fd));
+   create(file, tcp_stream);
+   epass(tcp_connect(&domain, port, &tcp_stream));
 
    // Send the GET request
    create(string, req);
    string_append_format(&req, "GET %s HTTP/1.1\n", print(string, &path));
    string_append_format(&req, "host: %s\n\n", print(string, &domain));
-   epass(string_write_fd(&req, fd));
+   epass(file_write(&tcp_stream, &req));
 
    create(line_reader, lr);
-   line_reader_open_fd(&lr, fd);
+   line_reader_open(&lr, &tcp_stream);
 
    create_regex(kv_reg, strw("(.+): (.+)"));
    create(string_string_map, header);

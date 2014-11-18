@@ -20,23 +20,23 @@ subprocess_run(const struct string *command, struct string *output)
    int fds[2];
    if (pipe(fds) != 0)
       return error_make(subprocess_error, "Failed to make pipe");
-   create_fd(write_pipe, fds[1]);
-   create_fd(read_pipe, fds[0]);
+   create_file_fd(write_pipe, fds[1]);
+   create_file_fd(read_pipe, fds[0]);
 
    pid_t pid = fork();
    switch (pid) {
       case 0: // child
       {
          // set up the stdout file descriptor to point to our pipe's write end
-         if (dup2(write_pipe, STDOUT_FILENO) == -1) {
+         if (dup2(write_pipe.fd, STDOUT_FILENO) == -1) {
             panic("Failed to link stdout to pipe");
          }
-         if (dup2(write_pipe, STDERR_FILENO) == -1) {
+         if (dup2(write_pipe.fd, STDERR_FILENO) == -1) {
             panic("Failed to link stderr to pipe");
          }
          // these are now not needed on the child, and the cleanup won't work
-         fd_destroy(&write_pipe);
-         fd_destroy(&read_pipe);
+         file_close(&write_pipe);
+         file_close(&read_pipe);
          if (execvp(argv[0], (char * const *)argv))
             panic("Failed to exec binary");
       }
@@ -47,7 +47,7 @@ subprocess_run(const struct string *command, struct string *output)
       default: // parent
       {
          // the write pipe has to close before reading
-         fd_destroy(&write_pipe);
+         file_close(&write_pipe);
          int status;
          if (waitpid(pid, &status, 0) == -1) {
             return error_make(subprocess_error, "Failed to wait for child");
@@ -57,7 +57,7 @@ subprocess_run(const struct string *command, struct string *output)
             return error_make(subprocess_error,
                "Subprocess had non-zero exit status");
 
-         epass(string_read_fd(output, read_pipe));
+         epass(file_read(&read_pipe, output));
       }
    }
 

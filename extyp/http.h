@@ -23,7 +23,7 @@ struct error
 http_get_url(const struct string *url, struct string *output);
 
 struct error
-tcp_connect(struct string *server, int port, int *fd_out);
+tcp_connect(struct string *server, int port, struct file *);
 
 
 #endif // __HTTP_H__

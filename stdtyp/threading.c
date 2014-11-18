@@ -1,9 +1,13 @@
 #include <adt.h>
 
-#include <stdtyp/threading.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdtyp/threading.h>
+#include <unistd.h>
+
+create_error_body(mutex_already_owned_error);
+create_error_body(mutex_not_owned_error);
 
 struct thread {
    pthread_t t;
@@ -109,14 +113,34 @@ mutex_destroy(struct mutex *m)
    pthread_mutex_destroy(&m->_lock);
 }
 
-void
+struct error
 mutex_lock(struct mutex *m)
 {
-   pthread_mutex_lock(&m->_lock);
+   int error = pthread_mutex_lock(&m->_lock);
+
+   assert_msg(error != EINVAL, "Lock was invalid");
+   assert_msg(error != EAGAIN, "Too many recursive locks taken");
+
+   if (error == EDEADLK)
+      return error_make(mutex_already_owned_error, "");
+   else {
+      assert_msg(error == 0, "Unexpected error");
+      return no_error;
+   }
 }
 
-void
+struct error
 mutex_unlock(struct mutex *m)
 {
-   pthread_mutex_unlock(&m->_lock);
+   int error = pthread_mutex_unlock(&m->_lock);
+
+   assert_msg(error != EINVAL, "Lock was invalid");
+   assert_msg(error != EAGAIN, "Too many recursive locks taken");
+
+   if (error == EPERM)
+      return error_make(mutex_not_owned_error, "");
+   else {
+      assert_msg(error == 0, "Unexpected error");
+      return no_error;
+   }
 }

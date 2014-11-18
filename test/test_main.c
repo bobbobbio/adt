@@ -35,7 +35,8 @@ arg_main(struct arg_dict *args)
          create(string, path);
          if (valgrind) {
             string_append_cstring(&path,
-               "valgrind --tool=memcheck --leak-check=full ./");
+               "valgrind --tool=memcheck --leak-check=full "
+               "--suppressions=valgrind.supp ./");
          } else {
             string_append_cstring(&path, "./");
          }

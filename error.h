@@ -49,6 +49,8 @@ create_error_header(_no_error);
 #define assert_msg(test, ...) \
    adt_print(_assert_msg, test, #test, __VA_ARGS__)
 
+#define noop_error(...) no_error
+
 void error_panic(struct error e, char *code);
 void _panic(char *fmt, ...);
 char *error_msg(struct error e);

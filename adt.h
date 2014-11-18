@@ -16,6 +16,8 @@ struct string;
 #define _unq(a, b, c) __unq(a, b, c)
 #define unq(x) _unq(x, __COUNTER__, __LINE__)
 
+#define noop(...)
+
 #define once_loop(expr, once) \
    for (bool once = true; once; ) \
    for (expr; once; once = false)

@@ -15,11 +15,86 @@ create_error_body(file_out_of_space_error);
 create_error_body(file_already_exists_error);
 create_error_body(errno_unknown_error);
 
+adt_func_body(file);
+
+context_manager_gen_body(file_cm, file, noop_error, file_close);
+
 void
-fd_destroy(int *fd) {
-   if (*fd != -1)
-      close(*fd);
-   *fd = -1;
+file_init(struct file *f)
+{
+   f->fd = -1;
+}
+
+struct error
+file_open(struct file * f, const struct string *path, int flags)
+{
+   f->fd = open(string_to_cstring(path), flags);
+   if (f->fd == -1)
+      return errno_to_error();
+   else
+      return no_error;
+}
+
+struct file
+file_open_cm(const struct string *path, int flags)
+{
+   struct file file;
+   file_init(&file);
+   echeck(file_open(&file, path, flags));
+   return file;
+}
+
+struct error
+file_close(struct file *f)
+{
+   if (f->fd == -1)
+      return no_error;
+
+   if (close(f->fd) == -1)
+      return errno_to_error();
+   else
+      f->fd = -1;
+      return no_error;
+}
+
+void
+file_destroy(struct file *f)
+{
+   file_close(f);
+}
+
+struct error
+file_read(struct file *f, struct string *buff)
+{
+   return string_read_fd(buff, f->fd, 0);
+}
+
+struct error
+file_read_n(struct file *f, struct string *buff, size_t length)
+{
+   return string_read_fd(buff, f->fd, length);
+}
+
+struct error
+file_write(struct file *f, struct string *data)
+{
+   assert_msg(f->fd != -1, "File not open");
+
+   unsigned to_write = string_length(data);
+   const char *d = string_to_cstring(data);
+
+   while (to_write > 0) {
+      int written = write(f->fd, &d[string_length(data) - to_write], to_write);
+      if (written == -1) {
+         if (errno == EINTR || errno == EAGAIN)
+            continue;
+         else
+            return error_make(file_write_error, "Couldn't write to file");
+      }
+      to_write -= written;
+   }
+
+   return no_error;
 }
 
 struct error

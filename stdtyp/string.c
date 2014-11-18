@@ -205,14 +205,20 @@ string_append_string(struct string *s, const struct string *a)
 }
 
 struct error
-string_read_fd(struct string *s, int fd)
+string_read_fd(struct string *s, int fd, size_t want)
 {
    assert(s->mallocd);
    string_clear(s);
 
    int bytes_read = 0;
    while (true) {
-      bytes_read = read(fd, &(s->buff[s->length]), s->buff_len - s->length);
+      size_t space = s->buff_len - s->length;
+      size_t to_read;
+      if (want > 0)
+         to_read = min(space, want);
+      else
+         to_read = space;
+      bytes_read = read(fd, &(s->buff[s->length]), to_read);
       if (bytes_read == 0)
          break;
       if (bytes_read == -1) { // error
@@ -223,6 +229,7 @@ string_read_fd(struct string *s, int fd)
          }
       } else { // we actually read data
          s->length += bytes_read;
+         want -= bytes_read;
          if (s->length == s->buff_len) {
             string_expand(s);
          }
@@ -240,7 +247,7 @@ string_append_int(struct string *s, int i)
 
    char b[20]; // should be long enough to hold any 64 bit int
    sprintf(b, "%d", i);
-   string_append_cstring(s, b); 
+   string_append_cstring(s, b);
 }
 
 int
@@ -254,50 +261,6 @@ bool
 string_equal(const struct string *a, const struct string *b)
 {
    return strcmp(a->buff, b->buff) == 0;
-}
-
-struct error
-string_read_from_file(struct string *s, const struct string *path)
-{
-   assert(s->mallocd);
-
-   create_fd(fd, open(string_to_cstring(path), O_RDONLY));
-   if (fd == -1)
-      return errno_to_error();
-
-   epass(string_read_fd(s, fd));
-
-   return no_error;
-}
-
-struct error
-string_write_fd(const struct string *data, int fd)
-{
-   unsigned to_write = data->length;
-   const char *d = string_to_cstring(data);
-
-   while (to_write > 0) {
-      int written = write(fd, &d[data->length - to_write], to_write);
-      if (written == -1) {
-         if (errno == EINTR || errno == EAGAIN)
-            continue;
-         else
-            return error_make(file_write_error, "Couldn't write to file");
-      }
-      to_write -= written;
-   }
-
-   return no_error;
-}
-
-struct error
-string_write_to_file(const struct string *data, const struct string *path)
-{
-   create_fd(fd, open(string_to_cstring(path), O_WRONLY | O_CREAT, 0666));
-   if (fd == -1)
-      return errno_to_error();
-
-   return string_write_fd(data, fd);
 }
 
 void

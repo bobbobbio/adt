@@ -19,8 +19,6 @@ adt_func_header(thread_pool);
 #define mkvar(t, v) \
    t v;
 
-#define noop(...)
-
 #define _struct_make(name, a, b, c, d, e, _a, _b, _c, _d, _e, \
    __a, __b, __c, __d, __e, ...) \
    struct name { \
@@ -137,10 +135,16 @@ struct mutex {
 };
 adt_func_header(mutex);
 
-void
+// The current thread already owns the lock
+create_error_header(mutex_already_owned_error);
+
+// Tried to unlock but calling thread doesn't own lock
+create_error_header(mutex_not_owned_error);
+
+struct error
 mutex_lock(struct mutex *m);
 
-void
+struct error
 mutex_unlock(struct mutex *m);
 
 context_manager_gen_header(mutex_cm, mutex);
