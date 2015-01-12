@@ -17,8 +17,6 @@ create_error_body(errno_unknown_error);
 
 adt_func_body(file);
 
-context_manager_gen_body(file_cm, file, noop_error, file_close);
-
 void
 file_init(struct file *f)
 {
@@ -36,7 +34,7 @@ file_open(struct file * f, const struct string *path, int flags)
 }
 
 struct file
-file_open_cm(const struct string *path, int flags)
+file_make_open(const struct string *path, int flags)
 {
    struct file file;
    file_init(&file);

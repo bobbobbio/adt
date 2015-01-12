@@ -1,6 +1,8 @@
 #ifndef __FILE_H__
 #define __FILE_H__
 
+#include <fcntl.h>
+
 #include <adt.h>
 
 #include <stdtyp/string.h>
@@ -22,6 +24,10 @@ adt_func_header(file);
 #define create_file_fd(name, fd) \
    struct file name a_cleanup(file_destroy) = { fd };
 
+#define file_stdin (&(struct file){ .fd = STDIN_FILENO })
+#define file_stdout (&(struct file){ .fd = STDOUT_FILENO })
+#define file_stderr (&(struct file){ .fd = STDERR_FILENO })
+
 struct error
 file_read(struct file *f, struct string *buff);
 
@@ -35,7 +41,7 @@ struct error
 file_open(struct file *, const struct string *path, int flags);
 
 struct file
-file_open_cm(const struct string *path, int flags);
+file_make_open(const struct string *path, int flags);
 
 struct error
 file_close(struct file *f);
@@ -46,10 +52,7 @@ file_list_directory(const struct string *, struct string_vec *);
 struct error
 errno_to_error(void);
 
-context_manager_gen_header(file_cm, file);
-
 #define with_file_open(name, path, flags) \
-   ctx_def(struct file name = file_open_cm(path, flags)) \
-   with_context_manager(file_cm, &name) \
+   with_create_var(file, name, file_make_open, path, flags)
 
 #endif // __FILE_H__

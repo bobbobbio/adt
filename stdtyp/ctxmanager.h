@@ -31,4 +31,10 @@
    ctx_def(struct name unq(cm) a_cleanup(name##_context_manager_exit) = \
       name##_context_manager_enter(t))
 
+#define with_create_var(type, name, cfunc, ...) \
+   ctx_def(struct type name a_cleanup(type##_destroy) = cfunc(__VA_ARGS__))
+
+#define with_create(type, name) \
+   ctx_def(struct type name a_cleanup(type##_destroy) = type##_make())
+
 #endif // __CTXMANAGER_H__

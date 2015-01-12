@@ -1,8 +1,9 @@
 #include <adt.h>
 #include <stdtyp/argparse.h>
+#include <stdtyp/file.h>
 #include <stdtyp/linereader.h>
-#include <stdtyp/vector.h>
 #include <stdtyp/tokenizer.h>
+#include <stdtyp/vector.h>
 
 #include <inttypes.h>
 
@@ -172,7 +173,7 @@ arg_main(struct arg_dict *args)
    if (files == NULL) {
       // If no files are given, read stdin
       create(line_reader, lr);
-      echeck(line_reader_open_stdin(&lr));
+      line_reader_open(&lr, file_stdin);
 
       create(file_stats, fs);
       analyze_file(&lr, &fs);
@@ -181,22 +182,23 @@ arg_main(struct arg_dict *args)
       // For each file given, analyze it
       iter_value (string_vec, files, file) {
          create(line_reader, lr);
+         create(file, file_stream);
          if (string_equal(file, strw("-")))
-            echeck(line_reader_open_stdin(&lr));
+            line_reader_open(&lr, file_stdin);
          else {
-            ehandle (error, line_reader_open_file(&lr, file)) {
+            ehandle (error, file_open(&file_stream, file, O_RDONLY)) {
                afprintf(stderr, "%s: %s: %s\n", args->prog_name,
                   print(string, file), error_msg(error));
+               continue;
             }
+            line_reader_open(&lr, &file_stream);
          }
 
          // If we were able to open the file, analyze it
-         if (line_reader_opened(&lr)) {
-            create(file_stats, fs);
-            analyze_file(&lr, &fs);
-            string_copy(&fs.name, file);
-            file_stats_vec_append(&all_file_stats, &fs);
-         }
+         create(file_stats, fs);
+         analyze_file(&lr, &fs);
+         string_copy(&fs.name, file);
+         file_stats_vec_append(&all_file_stats, &fs);
       }
    }
 

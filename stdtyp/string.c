@@ -225,7 +225,7 @@ string_read_fd(struct string *s, int fd, size_t want)
          if (errno == EINTR || errno == EAGAIN)
             continue;
          else {
-            return error_make(file_read_error, "Failed to read from fd");
+            return errno_to_error();
          }
       } else { // we actually read data
          s->length += bytes_read;
