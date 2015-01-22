@@ -9,7 +9,7 @@ main(int argc, char **argv)
    create(line_reader, lr);
 
    int tokens = 0;
-   with_file_open(file, strw("linereader_test.c"), 0) {
+   with_file_open (file, strw("linereader_test.c"), 0) {
       line_reader_open(&lr, &file);
 
       create(string, line);
