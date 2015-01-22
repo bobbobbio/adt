@@ -1,3 +1,6 @@
+#ifndef __REGEX_H__
+#define __REGEX_H__
+
 #include <adt.h>
 #include <stdtyp/string.h>
 
@@ -27,3 +30,5 @@ _regex_match(struct regex *, const struct string *s, ...);
 bool
 regex_match_all(struct regex *r, const struct string *s,
    struct string_vec_vec *matches_out);
+
+#endif // __REGEX_H__

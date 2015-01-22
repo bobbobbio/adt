@@ -1,3 +1,6 @@
+#ifndef __LINE_READER_H__
+#define __LINE_READER_H__
+
 #include <stdtyp/string.h>
 
 struct line_reader {
@@ -16,3 +19,5 @@ line_reader_get_line(struct line_reader *, struct string *);
 
 bool
 line_reader_opened(const struct line_reader *);
+
+#endif // __LINE_READER_H__

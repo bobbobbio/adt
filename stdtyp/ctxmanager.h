@@ -52,7 +52,7 @@
  * for the file object with close the file automatically.
  *
  * TODO: A current limitation is that the enter, exit function must have return
- * type struct error *, and have only the object pointer as arguments.
+ * type struct error, and have only the object pointer as arguments.
  * TODO: Another thing that would be nice, would be if the wth_context_manager
  * somehow could take arguments to pass to the enter function.
  *
