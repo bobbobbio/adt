@@ -7,6 +7,73 @@
 #include <stdtyp/string.h>
 #include <stdtyp/ctxmanager.h>
 
+/*
+ * This file provides utilities for working with threads, and multithreaded
+ * applications.
+ *
+ * Functions that are run by threads need to be wrapped in a special function
+ * pointer type.  Do that like this:
+ *
+ * void
+ * my_func(void)
+ * {
+ *    printf("Another thread");
+ * }
+ * fptr_define_void_noargs(my_func);
+ *
+ * or like this:
+ *
+ * bool
+ * equal(int a, int b)
+ * {
+ *    return a == b;
+ * }
+ * fptr_define(add, bool, int, int);
+ *
+ * Start a thread like this:
+ *
+ * struct thread *t = thread_run_noargs(my_func);
+ *
+ * or like this:
+ *
+ * struct thread *t = thread_run(equal, 4, 5);
+ *
+ * When you join the thread, it gives you the value returned from the fptr.  If
+ * the thread function is void return type, just pass NULL for the second
+ * argument to thread_join.It will also free the thread pointer, (and is the
+ * only way to do so)
+ *
+ * int result;
+ * thread_join(t, &result);
+ *
+ * When working with multiple thread, use the thread pool type.
+ *
+ * create(thread_pool, tp);
+ *
+ * thread_pool_run(&tp, equal, 2, 3);
+ * thread_pool_run(&tp, equal, 4, 5);
+ * thread_pool_run(&tp, equal, 6, 9);
+ *
+ * thread_pool_join(&tp);
+ *
+ * The thread pool doesn't yet support getting the return values of the threads.
+ *
+ * There is a mutex type for locking:
+ *
+ * create(mutex, m);
+ *
+ * mutex_lock(&m);
+ * // protected by the lock
+ * mutex_unlock(&m);
+ *
+ * There is also a context manager:
+ *
+ * with_mutex (&m) {
+ *    // this is also protected
+ * }
+ *
+ */
+
 struct thread;
 
 vector_gen_header(thread_vec, thread);
