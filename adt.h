@@ -29,6 +29,7 @@ struct string;
 #define SWALLOWSEMICOLON extern void __BODYCODEGENEND99893__
 
 #define a_cleanup(n) __attribute__ ((__cleanup__(n)))
+#define a_packed __attribute__ ((__packed__))
 
 #define create(type, name) \
    struct type name a_cleanup(type##_destroy) = type##_make()

@@ -204,11 +204,13 @@ string_append_string(struct string *s, const struct string *a)
    string_append_cstring(s, string_to_cstring(a));
 }
 
-static struct error
-string_read_fd_internal(struct string *s, int fd, size_t want, size_t *got)
+struct error
+string_read_fd(struct string *s, int fd, size_t want, size_t *got, bool *done)
 {
    assert(s->mallocd);
    string_clear(s);
+
+   *done = false;
 
    int bytes_read = 0;
    int total_bytes_read = 0;
@@ -221,8 +223,10 @@ string_read_fd_internal(struct string *s, int fd, size_t want, size_t *got)
          to_read = space;
       bytes_read = read(fd, &(s->buff[s->length]), to_read);
       total_bytes_read += bytes_read;
-      if (bytes_read == 0)
+      if (bytes_read == 0) {
+         *done = true;
          break;
+      }
       if (bytes_read == -1) { // error
          if (errno == EINTR || errno == EAGAIN)
             continue;
@@ -245,18 +249,6 @@ string_read_fd_internal(struct string *s, int fd, size_t want, size_t *got)
       *got = total_bytes_read;
 
    return no_error;
-}
-
-struct error
-string_read_fd_non_blocking(struct string *s, int fd, size_t want, size_t *got)
-{
-   return string_read_fd_internal(s, fd, want, got);
-}
-
-struct error
-string_read_fd(struct string *s, int fd, size_t want)
-{
-   return string_read_fd_internal(s, fd, want, NULL);
 }
 
 void
@@ -287,7 +279,9 @@ string_split(const struct string *s, char c, struct string_vec *vec_out)
 {
    string_vec_clear(vec_out);
 
-   create_tokenizer(tkn, s);
+   // XXX This is all kind of messed up
+   create_string_stream(ss, (struct string *)&s);
+   create_tokenizer(tkn, (struct stream *)&ss);
    create(string, sc);
    string_append_char(&sc, c);
    tokenizer_set_skip_chars(&tkn, &sc);
@@ -303,7 +297,9 @@ string_tokenize(const struct string *s, struct string_vec *vec_out)
 {
    string_vec_clear(vec_out);
 
-   create_tokenizer(tkn, s);
+   // XXX This is also messed up...
+   create_string_stream(ss, (struct string *)s);
+   create_tokenizer(tkn, (struct stream *)&ss);
    create(string, t);
    while (tokenizer_get_next(&tkn, &t))
       string_vec_append(vec_out, &t);

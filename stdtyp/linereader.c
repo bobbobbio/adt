@@ -1,5 +1,5 @@
 #include <stdtyp/linereader.h>
-#include <stdtyp/file.h>
+#include <stdtyp/stream.h>
 
 #include <fcntl.h>
 #include <errno.h>
@@ -15,14 +15,14 @@ line_reader_init(struct line_reader *l)
    string_init(&l->buff);
    l->start = 0;
    l->done = false;
-   l->file = NULL;
+   l->stream = NULL;
 }
 
 struct line_reader
-line_reader_make_var(struct file *file)
+line_reader_make_var(struct stream *stream)
 {
    struct line_reader l = line_reader_make();
-   line_reader_set_file(&l, file);
+   line_reader_set_stream(&l, stream);
    return l;
 }
 
@@ -35,10 +35,10 @@ line_reader_destroy(struct line_reader *l)
 static struct error
 line_reader_read(struct line_reader *l, bool *done)
 {
-   assert(l->file != NULL);
+   assert(l->stream != NULL);
 
    size_t bytes_read;
-   epass(file_read_n_or_less(l->file, &l->buff, BUFFER_SIZE, &bytes_read));
+   epass(stream_read_n_or_less(l->stream, &l->buff, BUFFER_SIZE, &bytes_read));
 
    if (string_length(&l->buff) == 0)
       l->done = true;
@@ -49,10 +49,10 @@ line_reader_read(struct line_reader *l, bool *done)
 }
 
 void
-line_reader_set_file(struct line_reader *l, struct file *file)
+line_reader_set_stream(struct line_reader *l, struct stream *stream)
 {
-   assert(l->file == NULL);
-   l->file = file;
+   assert(l->stream == NULL);
+   l->stream = stream;
 }
 
 bool

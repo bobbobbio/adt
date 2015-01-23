@@ -7,8 +7,6 @@
 #include <dirent.h>
 #include <errno.h>
 
-create_error_body(file_write_error);
-create_error_body(file_read_error);
 create_error_body(file_not_found_error);
 create_error_body(file_access_error);
 create_error_body(file_out_of_space_error);
@@ -20,17 +18,19 @@ adt_func_body(file);
 void
 file_init(struct file *f)
 {
-   f->fd = -1;
+   fd_stream_init(&f->stream);
 }
 
 struct error
 file_open(struct file * f, const struct string *path, int flags)
 {
-   f->fd = open(string_to_cstring(path), flags);
-   if (f->fd == -1)
+   int fd = open(string_to_cstring(path), flags);
+   if (fd == -1)
       return errno_to_error();
-   else
+   else {
+      fd_stream_set_fd(&f->stream, fd);
       return no_error;
+   }
 }
 
 struct file
@@ -45,61 +45,28 @@ file_make_open(const struct string *path, int flags)
 struct error
 file_close(struct file *f)
 {
-   if (f->fd == -1)
+   if (f->stream.fd == -1)
       return no_error;
 
-   if (close(f->fd) == -1)
+   if (close(f->stream.fd) == -1)
       return errno_to_error();
-   else
-      f->fd = -1;
+   else {
+      f->stream.fd = -1;
       return no_error;
+   }
+}
+
+int
+file_fd(struct file *f)
+{
+   return f->stream.fd;
 }
 
 void
 file_destroy(struct file *f)
 {
    file_close(f);
-}
-
-struct error
-file_read(struct file *f, struct string *buff)
-{
-   return string_read_fd(buff, f->fd, 0);
-}
-
-struct error
-file_read_n(struct file *f, struct string *buff, size_t length)
-{
-   return string_read_fd(buff, f->fd, length);
-}
-
-struct error
-file_read_n_or_less(struct file *f, struct string *buff, size_t length,
-   size_t *got)
-{
-   return string_read_fd_non_blocking(buff, f->fd, length, got);
-}
-
-struct error
-file_write(struct file *f, struct string *data)
-{
-   assert_msg(f->fd != -1, "File not open");
-
-   unsigned to_write = string_length(data);
-   const char *d = string_to_cstring(data);
-
-   while (to_write > 0) {
-      int written = write(f->fd, &d[string_length(data) - to_write], to_write);
-      if (written == -1) {
-         if (errno == EINTR || errno == EAGAIN)
-            continue;
-         else
-            return error_make(file_write_error, "Couldn't write to file");
-      }
-      to_write -= written;
-   }
-
-   return no_error;
+   fd_stream_destroy(&f->stream);
 }
 
 struct error

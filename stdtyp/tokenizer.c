@@ -1,42 +1,45 @@
 #include <stdtyp/tokenizer.h>
+#include <stdtyp/stream.h>
 
 adt_func_body(tokenizer);
 
+#define READ_SIZE 4096
+
 void tokenizer_init(struct tokenizer *t)
 {
-   t->data = string_new();
    t->pos = 0;
    t->allow_empty = false;
+   string_init(&t->buff);
    string_init(&t->skip_chars);
    string_copy(&t->skip_chars, strw(" \t\r\n"));
 }
 
 void tokenizer_destroy(struct tokenizer *t)
 {
-   string_free(t->data);
+   string_destroy(&t->buff);
    string_destroy(&t->skip_chars);
 }
 
 struct tokenizer
-tokenizer_make_var(const struct string *s)
+tokenizer_make_var(struct stream *s)
 {
    struct tokenizer t = tokenizer_make();
-   tokenizer_set_string(&t, s);
+   tokenizer_set_stream(&t, s);
    return t;
 }
 
 struct tokenizer *
-tokenizer_new_var(const struct string *s)
+tokenizer_new_var(struct stream *s)
 {
    struct tokenizer *t = tokenizer_new();
-   tokenizer_set_string(t, s);
+   tokenizer_set_stream(t, s);
    return t;
 }
 
 void
-tokenizer_set_string(struct tokenizer *t, const struct string *s)
+tokenizer_set_stream(struct tokenizer *t, struct stream *s)
 {
-   string_copy(t->data, s);
+   t->stream = s;
    t->pos = 0;
 }
 
@@ -47,30 +50,52 @@ is_skipchar(struct tokenizer *t, char c)
 }
 
 static void
+_tokenizer_read(struct tokenizer *t)
+{
+   size_t bytes_read;
+   stream_read_n_or_less(t->stream, &t->buff, READ_SIZE, &bytes_read);
+   t->pos = 0;
+}
+
+
+static void
 _tokenizer_skip(struct tokenizer *t)
 {
-   while (t->pos < string_length(t->data)
-      && is_skipchar(t, string_char_at_index(t->data, t->pos)))
+   while (is_skipchar(t, string_char_at_index(&t->buff, t->pos))) {
       t->pos++;
+      if (t->pos >= string_length(&t->buff)) {
+         if (!stream_has_more(t->stream))
+            break;
+         else
+            _tokenizer_read(t);
+      }
+   }
 }
 
 static bool
 non_empty_get_next(struct tokenizer *t, struct string *s)
 {
-   assert(t->data != NULL);
+   assert(t->stream != NULL);
+
+   while (t->pos >= string_length(&t->buff)) {
+      if (!stream_has_more(t->stream)) {
+         return false;
+      } else
+         _tokenizer_read(t);
+   }
 
    _tokenizer_skip(t);
 
-   if (t->pos >= string_length(t->data))
-      return false;
-
    string_clear(s);
-   while (t->pos < string_length(t->data)) {
-      char c = string_char_at_index(t->data, t->pos);
+   while (t->pos < string_length(&t->buff)) {
+      char c = string_char_at_index(&t->buff, t->pos);
       if (is_skipchar(t, c))
          break;
       string_append_char(s, c);
       t->pos++;
+
+      if (t->pos >= string_length(&t->buff))
+         _tokenizer_read(t);
    }
 
    return true;
@@ -79,20 +104,25 @@ non_empty_get_next(struct tokenizer *t, struct string *s)
 static bool
 empty_get_next(struct tokenizer *t, struct string *s)
 {
-   assert(t->data != NULL);
+   assert(t->stream != NULL);
 
-   if (t->pos > string_length(t->data))
-      return false;
+   while (t->pos >= string_length(&t->buff)) {
+      if (!stream_has_more(t->stream))
+         return false;
+      else
+         _tokenizer_read(t);
+   }
 
    string_clear(s);
-   while (t->pos <= string_length(t->data)) {
-      if (t->pos == string_length(t->data)) 
-         break;
-      char c = string_char_at_index(t->data, t->pos);
+   while (t->pos < string_length(&t->buff)) {
+      char c = string_char_at_index(&t->buff, t->pos);
       if (is_skipchar(t, c))
          break;
       string_append_char(s, c);
       t->pos++;
+
+      if (t->pos >= string_length(&t->buff))
+         _tokenizer_read(t);
    }
 
    t->pos++;
@@ -109,21 +139,8 @@ tokenizer_get_next(struct tokenizer *t, struct string *s)
       return non_empty_get_next(t, s);
 }
 
-bool
-tokenizer_has_next(struct tokenizer *t)
-{
-   assert(t->data != NULL);
-
-   if (t->allow_empty && t->pos < string_length(t->data))
-      return true;
-
-   _tokenizer_skip(t);
-
-   return (t->pos < string_length(t->data));
-}
-
 void
-tokenizer_set_skip_chars(struct tokenizer *t, const struct string *s)
+tokenizer_set_skip_chars(struct tokenizer *t, struct string *s)
 {
    string_copy(&t->skip_chars, s);
 }

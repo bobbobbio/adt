@@ -28,10 +28,10 @@ subprocess_run(const struct string *command, struct string *output)
       case 0: // child
       {
          // set up the stdout file descriptor to point to our pipe's write end
-         if (dup2(write_pipe.fd, STDOUT_FILENO) == -1) {
+         if (dup2(file_fd(&write_pipe), STDOUT_FILENO) == -1) {
             panic("Failed to link stdout to pipe");
          }
-         if (dup2(write_pipe.fd, STDERR_FILENO) == -1) {
+         if (dup2(file_fd(&write_pipe), STDERR_FILENO) == -1) {
             panic("Failed to link stderr to pipe");
          }
          // these are now not needed on the child, and the cleanup won't work
@@ -57,7 +57,7 @@ subprocess_run(const struct string *command, struct string *output)
             return error_make(subprocess_error,
                "Subprocess had non-zero exit status");
 
-         epass(file_read(&read_pipe, output));
+         epass(stream_read((struct stream *)&read_pipe, output));
       }
    }
 

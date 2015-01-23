@@ -136,7 +136,8 @@ analyze_file(struct line_reader *lr, struct file_stats *fs_out)
 {
    create(string, line);
    while (line_reader_get_line(lr, &line)) {
-      create_tokenizer(tkn, &line);
+      create_string_stream(ss, &line);
+      create_tokenizer(tkn, (struct stream *)&ss);
       create(string, token);
       while (tokenizer_get_next(&tkn, &token))
          (*stat_map_at(&fs_out->stats, strw("words")))++;
@@ -172,7 +173,7 @@ arg_main(struct arg_dict *args)
 
    if (files == NULL) {
       // If no files are given, read stdin
-      create_line_reader(lr, file_stdin);
+      create_line_reader(lr, (struct stream *)file_stdin);
 
       create(file_stats, fs);
       analyze_file(&lr, &fs);
@@ -183,14 +184,14 @@ arg_main(struct arg_dict *args)
          create(line_reader, lr);
          create(file, file);
          if (string_equal(file_path, strw("-")))
-            line_reader_set_file(&lr, file_stdin);
+            line_reader_set_stream(&lr, (struct stream *)file_stdin);
          else {
             ehandle (error, file_open(&file, file_path, O_RDONLY)) {
                afprintf(stderr, "%s: %s: %s\n", args->prog_name,
                   print(string, file_path), error_msg(error));
                continue;
             }
-            line_reader_set_file(&lr, &file);
+            line_reader_set_stream(&lr, (struct stream *)&file);
          }
 
          // If we were able to open the file, analyze it

@@ -1,13 +1,14 @@
-#include <stdtyp/map.h>
-#include <stdtyp/linereader.h>
 #include <extyp/http.h>
+#include <stdtyp/linereader.h>
+#include <stdtyp/map.h>
 #include <stdtyp/regex.h>
+#include <stdtyp/stream.h>
 
+#include <errno.h>
+#include <limits.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <errno.h>
-#include <limits.h>
 
 create_error_body(http_addr_error);
 create_error_body(http_addr_hostname_error);
@@ -136,7 +137,7 @@ tcp_connect(struct string *server, int port, struct file* stream_out)
 
    // Create tcp connection
    create_file_fd(stream, socket(AF_INET, SOCK_STREAM, 0));
-   if (stream.fd == -1)
+   if (file_fd(&stream) == -1)
       return errno_to_error();
 
    struct sockaddr_in saddr = {
@@ -146,11 +147,13 @@ tcp_connect(struct string *server, int port, struct file* stream_out)
    };
 
    // Connect to the server
-   if (connect(stream.fd, (struct sockaddr *)&saddr, sizeof(saddr)) != 0)
+   if (connect(file_fd(&stream), (struct sockaddr *)&saddr, sizeof(saddr)) != 0)
       return errno_to_error();
 
+   // XXX This should not be reaching inside of the object, there needs to be a
+   // way to hand this off correctly
    *stream_out = stream;
-   stream.fd = -1;
+   stream.stream.fd = -1;
 
    return no_error;
 }
@@ -192,9 +195,9 @@ http_get_url(const struct string *url, struct string *output)
    // alive, and we don't support that exactly.
    string_append_format(&req, "GET %s HTTP/1.0\n", print(string, &path));
    string_append_format(&req, "host: %s\n\n", print(string, &domain));
-   epass(file_write(&tcp_stream, &req));
+   epass(stream_write((struct stream *)&tcp_stream, &req));
 
-   create_line_reader(lr, &tcp_stream);
+   create_line_reader(lr, (struct stream *)&tcp_stream);
 
    create_regex(kv_reg, strw("(.+): (.+)"));
    create(string_string_map, header);

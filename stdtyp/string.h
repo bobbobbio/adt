@@ -106,13 +106,8 @@ string_append_cstring_length(struct string *, const char *, size_t);
 void
 string_append_string(struct string *, const struct string *);
 
-// Read from given file descriptor.  Reads the whole file when length is 0.
-// Don't call this, instead call file_read
 struct error
-string_read_fd(struct string *s, int fd, size_t length);
-
-struct error
-string_read_fd_non_blocking(struct string *s, int fd, size_t want, size_t *got);
+string_read_fd(struct string *s, int fd, size_t want, size_t *got, bool *done);
 
 struct string
 string_make_var(const char *cstr);

@@ -1,4 +1,4 @@
-libadt.a: error.o string.o vector.o map.o list.o linereader.o tokenizer.o subprocess.o argparse.o file.o http.o regex.o threading.o
+libadt.a: error.o string.o vector.o map.o list.o linereader.o tokenizer.o subprocess.o argparse.o file.o http.o regex.o threading.o stream.o fd_stream.o string_stream.o
 	ar rcs $@ $^
 
 error.o: error.c error.h
@@ -36,6 +36,15 @@ regex.o: stdtyp/regex.c stdtyp/regex.h adt.h
 
 threading.o: stdtyp/threading.c stdtyp/threading.h stdtyp/ctxmanager.h adt.h error.h stdtyp/vector.h
 	c99 -I./ -D_POSIX_C_SOURCE -D_C99_SOURCE -g -c stdtyp/threading.c
+
+stream.o: stdtyp/stream.c stdtyp/stream.h adt.h error.h stdtyp/file.h
+	c99 -I./ -D_POSIX_C_SOURCE -D_C99_SOURCE -g -c stdtyp/stream.c
+
+fd_stream.o: stdtyp/fd_stream.c stdtyp/stream.h adt.h error.h stdtyp/file.h
+	c99 -I./ -D_POSIX_C_SOURCE -D_C99_SOURCE -g -c stdtyp/fd_stream.c
+
+string_stream.o: stdtyp/string_stream.c stdtyp/stream.h adt.h error.h
+	c99 -I./ -D_POSIX_C_SOURCE -D_C99_SOURCE -g -c stdtyp/string_stream.c
 
 http.o: extyp/http.c extyp/http.h adt.h
 	c99 -I./ -D_POSIX_C_SOURCE -D_C99_SOURCE -g -c extyp/http.c

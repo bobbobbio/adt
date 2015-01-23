@@ -7,39 +7,27 @@
 
 #include <stdtyp/string.h>
 #include <stdtyp/ctxmanager.h>
+#include <stdtyp/stream.h>
 
-create_error_header(file_write_error);
-create_error_header(file_read_error);
 create_error_header(file_not_found_error);
 create_error_header(file_access_error);
 create_error_header(file_out_of_space_error);
 create_error_header(file_already_exists_error);
 create_error_header(errno_unknown_error);
 
-struct file {
-   int fd;
+struct a_packed file {
+   struct fd_stream stream;
 };
 adt_func_header(file);
 
 #define create_file_fd(name, fd) \
-   struct file name a_cleanup(file_destroy) = { fd };
+   struct file name a_cleanup(file_destroy) = { FD_STREAM, fd };
 
-#define file_stdin (&(struct file){ .fd = STDIN_FILENO })
-#define file_stdout (&(struct file){ .fd = STDOUT_FILENO })
-#define file_stderr (&(struct file){ .fd = STDERR_FILENO })
-
-struct error
-file_read(struct file *f, struct string *buff);
-
-struct error
-file_read_n(struct file *f, struct string *buff, size_t len);
-
-struct error
-file_read_n_or_less(struct file *f, struct string *buff, size_t length,
-   size_t *got);
-
-struct error
-file_write(struct file *f, struct string *);
+#define fd_wrap(fd_name) \
+   (&(struct file){ (struct fd_stream){.fd = fd_name, .type = FD_STREAM } })
+#define file_stdin fd_wrap(STDIN_FILENO)
+#define file_stdout fd_wrap(STDOUT_FILENO)
+#define file_stderr fd_wrap(STDERR_FILENO)
 
 struct error
 file_open(struct file *, const struct string *path, int flags);
@@ -49,6 +37,9 @@ file_make_open(const struct string *path, int flags);
 
 struct error
 file_close(struct file *f);
+
+int
+file_fd(struct file *f);
 
 struct error
 file_list_directory(const struct string *, struct string_vec *);
