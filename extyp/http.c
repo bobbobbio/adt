@@ -188,7 +188,9 @@ http_get_url(const struct string *url, struct string *output)
 
    // Send the GET request
    create(string, req);
-   string_append_format(&req, "GET %s HTTP/1.1\n", print(string, &path));
+   // Use HTTP/1.0 because otherwise the server will try to keep the connection
+   // alive, and we don't support that exactly.
+   string_append_format(&req, "GET %s HTTP/1.0\n", print(string, &path));
    string_append_format(&req, "host: %s\n\n", print(string, &domain));
    epass(file_write(&tcp_stream, &req));
 
@@ -217,27 +219,10 @@ http_get_url(const struct string *url, struct string *output)
       line_number++;
    }
 
-   // XXX fix this!
-   if (string_string_map_contains(&header, strw("Transfer-Encoding"))) {
-      if (string_equal(string_string_map_at(&header, strw("Transfer-Encoding")),
-         strw("chunked")))
-         panic("chunked encoding not supported");
-   }
-
-   // Start of content
-   int clength = INT_MAX;
-   if (string_string_map_contains(&header, strw("Content-Length")))
-      clength = string_to_int(string_string_map_at(&header,
-         strw("Content-Length")));
-
+   // Read the whole body, now that we got all the headers.
    create(string, line);
-   while (line_reader_get_line(&lr, &line)) {
+   while (line_reader_get_line(&lr, &line))
       string_append_format(output, "%s\n", string_to_cstring(&line));
-      // XXX This isn't exact, because we're eating \r doh!
-      clength -= (string_length(&line) + 1);
-      if (clength <= 0)
-         break;
-   }
 
    return no_error;
 }
