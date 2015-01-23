@@ -204,13 +204,14 @@ string_append_string(struct string *s, const struct string *a)
    string_append_cstring(s, string_to_cstring(a));
 }
 
-struct error
-string_read_fd(struct string *s, int fd, size_t want)
+static struct error
+string_read_fd_internal(struct string *s, int fd, size_t want, size_t *got)
 {
    assert(s->mallocd);
    string_clear(s);
 
    int bytes_read = 0;
+   int total_bytes_read = 0;
    while (true) {
       size_t space = s->buff_len - s->length;
       size_t to_read;
@@ -219,6 +220,7 @@ string_read_fd(struct string *s, int fd, size_t want)
       else
          to_read = space;
       bytes_read = read(fd, &(s->buff[s->length]), to_read);
+      total_bytes_read += bytes_read;
       if (bytes_read == 0)
          break;
       if (bytes_read == -1) { // error
@@ -234,10 +236,27 @@ string_read_fd(struct string *s, int fd, size_t want)
             string_expand(s);
          }
          s->buff[s->length] = '\0';
+         if (bytes_read < to_read && got != NULL)
+            break;
       }
    }
 
+   if (got != NULL)
+      *got = total_bytes_read;
+
    return no_error;
+}
+
+struct error
+string_read_fd_non_blocking(struct string *s, int fd, size_t want, size_t *got)
+{
+   return string_read_fd_internal(s, fd, want, got);
+}
+
+struct error
+string_read_fd(struct string *s, int fd, size_t want)
+{
+   return string_read_fd_internal(s, fd, want, NULL);
 }
 
 void

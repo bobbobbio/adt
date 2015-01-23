@@ -172,32 +172,31 @@ arg_main(struct arg_dict *args)
 
    if (files == NULL) {
       // If no files are given, read stdin
-      create(line_reader, lr);
-      line_reader_open(&lr, file_stdin);
+      create_line_reader(lr, file_stdin);
 
       create(file_stats, fs);
       analyze_file(&lr, &fs);
       file_stats_vec_append(&all_file_stats, &fs);
    } else {
       // For each file given, analyze it
-      iter_value (string_vec, files, file) {
+      iter_value (string_vec, files, file_path) {
          create(line_reader, lr);
-         create(file, file_stream);
-         if (string_equal(file, strw("-")))
-            line_reader_open(&lr, file_stdin);
+         create(file, file);
+         if (string_equal(file_path, strw("-")))
+            line_reader_set_file(&lr, file_stdin);
          else {
-            ehandle (error, file_open(&file_stream, file, O_RDONLY)) {
+            ehandle (error, file_open(&file, file_path, O_RDONLY)) {
                afprintf(stderr, "%s: %s: %s\n", args->prog_name,
-                  print(string, file), error_msg(error));
+                  print(string, file_path), error_msg(error));
                continue;
             }
-            line_reader_open(&lr, &file_stream);
+            line_reader_set_file(&lr, &file);
          }
 
          // If we were able to open the file, analyze it
          create(file_stats, fs);
          analyze_file(&lr, &fs);
-         string_copy(&fs.name, file);
+         string_copy(&fs.name, file_path);
          file_stats_vec_append(&all_file_stats, &fs);
       }
    }

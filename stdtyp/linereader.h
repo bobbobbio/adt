@@ -11,13 +11,17 @@ struct line_reader {
 };
 adt_func_header(line_reader);
 
+#define create_line_reader(name, file) \
+   struct line_reader name a_cleanup(line_reader_destroy) = \
+      line_reader_make_var(file)
+
+struct line_reader
+line_reader_make_var(struct file *file);
+
 void
-line_reader_open(struct line_reader *, struct file *);
+line_reader_set_file(struct line_reader *, struct file *);
 
 bool
 line_reader_get_line(struct line_reader *, struct string *);
-
-bool
-line_reader_opened(const struct line_reader *);
 
 #endif // __LINE_READER_H__

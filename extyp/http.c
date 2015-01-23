@@ -194,8 +194,7 @@ http_get_url(const struct string *url, struct string *output)
    string_append_format(&req, "host: %s\n\n", print(string, &domain));
    epass(file_write(&tcp_stream, &req));
 
-   create(line_reader, lr);
-   line_reader_open(&lr, &tcp_stream);
+   create_line_reader(lr, &tcp_stream);
 
    create_regex(kv_reg, strw("(.+): (.+)"));
    create(string_string_map, header);

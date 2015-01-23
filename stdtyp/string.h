@@ -111,6 +111,9 @@ string_append_string(struct string *, const struct string *);
 struct error
 string_read_fd(struct string *s, int fd, size_t length);
 
+struct error
+string_read_fd_non_blocking(struct string *s, int fd, size_t want, size_t *got);
+
 struct string
 string_make_var(const char *cstr);
 

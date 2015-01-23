@@ -18,6 +18,14 @@ line_reader_init(struct line_reader *l)
    l->file = NULL;
 }
 
+struct line_reader
+line_reader_make_var(struct file *file)
+{
+   struct line_reader l = line_reader_make();
+   line_reader_set_file(&l, file);
+   return l;
+}
+
 void
 line_reader_destroy(struct line_reader *l)
 {
@@ -27,9 +35,10 @@ line_reader_destroy(struct line_reader *l)
 static struct error
 line_reader_read(struct line_reader *l, bool *done)
 {
-   assert(line_reader_opened(l));
+   assert(l->file != NULL);
 
-   epass(file_read_n(l->file, &l->buff, BUFFER_SIZE));
+   size_t bytes_read;
+   epass(file_read_n_or_less(l->file, &l->buff, BUFFER_SIZE, &bytes_read));
 
    if (string_length(&l->buff) == 0)
       l->done = true;
@@ -40,8 +49,9 @@ line_reader_read(struct line_reader *l, bool *done)
 }
 
 void
-line_reader_open(struct line_reader *l, struct file *file)
+line_reader_set_file(struct line_reader *l, struct file *file)
 {
+   assert(l->file == NULL);
    l->file = file;
 }
 
@@ -74,10 +84,4 @@ line_reader_get_line(struct line_reader *l, struct string *s)
    l->start = i + 1;
 
    return true;
-}
-
-bool
-line_reader_opened(const struct line_reader *l)
-{
-   return l->file != NULL;
 }

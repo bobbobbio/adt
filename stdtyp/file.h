@@ -35,6 +35,10 @@ struct error
 file_read_n(struct file *f, struct string *buff, size_t len);
 
 struct error
+file_read_n_or_less(struct file *f, struct string *buff, size_t length,
+   size_t *got);
+
+struct error
 file_write(struct file *f, struct string *);
 
 struct error

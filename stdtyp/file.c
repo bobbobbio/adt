@@ -74,6 +74,13 @@ file_read_n(struct file *f, struct string *buff, size_t length)
 }
 
 struct error
+file_read_n_or_less(struct file *f, struct string *buff, size_t length,
+   size_t *got)
+{
+   return string_read_fd_non_blocking(buff, f->fd, length, got);
+}
+
+struct error
 file_write(struct file *f, struct string *data)
 {
    assert_msg(f->fd != -1, "File not open");
