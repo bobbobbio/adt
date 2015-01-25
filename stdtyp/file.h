@@ -2,6 +2,7 @@
 #define __FILE_H__
 
 #include <fcntl.h>
+#include <unistd.h>
 
 #include <adt.h>
 

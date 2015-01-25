@@ -1,11 +1,18 @@
 #include <error.h>
+#include <stdtyp/file.h>
+#include <execinfo.h>
+
+// We panic by default
+__thread enum error_mode current_error_mode = ERROR_PANIC;
 
 create_error_body(_no_error);
 
 void
-error_panic(struct error e, char *code)
+_error_panic(struct error e, char *code, const char *file, int line)
 {
-   _panic("Got error: %s : \"%s\" : %s\n", e.type, code, e.msg);
+   print_backtrace(2);
+   _panic("Got error: %s : \"%s\" : %s\n in file %s on line %d",
+      e.type, code, e.msg, file, line);
 }
 
 void
@@ -27,19 +34,36 @@ error_msg(struct error e)
 }
 
 void
-_assert_msg(bool test, const char *code, char *fmt, ...)
+_adt_assert(bool test, const char *code, const char *file,
+   int line, char *fmt, ...)
 {
    va_list args;
    va_start(args, fmt);
 
    if (!test) {
+      print_backtrace(2);
+      fprintf(stderr, "Assert failed: %s : ", code);
       if (fmt != NULL) {
-         fprintf(stderr, "Assert failed: %s : ", code);
          vfprintf(stderr, fmt, args);
-         fprintf(stderr, "\n");
+         fprintf(stderr, " : ");
       }
+      fprintf(stderr, "in file %s on line %d", file, line);
+      fprintf(stderr, "\n");
       abort();
    }
 
    va_end(args);
+}
+
+void
+print_backtrace(int skip_frames)
+{
+   void *call_stack[1000];
+   int call_stack_size = backtrace(call_stack, 1000);
+   if (call_stack_size <= 0)
+      fprintf(stderr, "Failed to get backtrace");
+   else {
+      backtrace_symbols_fd(
+         &call_stack[skip_frames], call_stack_size - skip_frames, STDERR_FILENO);
+   }
 }

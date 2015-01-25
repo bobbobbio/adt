@@ -7,20 +7,20 @@ main(int argc, char **argv)
 {
    create_string(str, "FORMAT: ");
    string_append_format(&str, "%d, %d, %s", 1, 2, "THREE");
-   assert(string_equal(&str, strw("FORMAT: 1, 2, THREE")));
+   adt_assert(string_equal(&str, strw("FORMAT: 1, 2, THREE")));
 
    create_string(str2, "nothing apple cat apple banana");
 
    create_regex(reg, strw("apple"));
    string_replace(&str2, &reg, strw("steve jobs"));
 
-   assert(string_equal(&str2,
+   adt_assert(string_equal(&str2,
       strw("nothing steve jobs cat steve jobs banana")));
 
    create_regex(reg2, strw("(a)"));
    string_replace(&str2, &reg2, strw("$1=[$1]\\$1"));
 
-   assert(string_equal(&str2,
+   adt_assert(string_equal(&str2,
       strw("nothing steve jobs ca=[a]$1t steve jobs "
       "ba=[a]$1na=[a]$1na=[a]$1")));
 
@@ -29,9 +29,9 @@ main(int argc, char **argv)
 
    create(string, my_str);
    string_append_format(&my_str, "%s", print(string_vec, &p));
-   assert(string_equal(&my_str, strw("[ apple, banana, cat, LERP ]")));
+   adt_assert(string_equal(&my_str, strw("[ apple, banana, cat, LERP ]")));
 
-   assert_msg(string_length(&my_str) > 2,
+   adt_assert(string_length(&my_str) > 2,
       "String is much shorter than expected");
 
    return EXIT_SUCCESS;

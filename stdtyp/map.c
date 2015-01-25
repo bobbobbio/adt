@@ -35,9 +35,9 @@ map_init(struct map *m)
    m->hash = NULL;
 
    for (unsigned i = 0; i < MAP_START_SIZE; i++) {
-      assert(map_table_at(m->buckets, i)->key == NULL);
-      assert(map_table_at(m->buckets, i)->data == NULL);
-      assert(map_table_at(m->buckets, i)->deleted == false);
+      adt_assert(map_table_at(m->buckets, i)->key == NULL);
+      adt_assert(map_table_at(m->buckets, i)->data == NULL);
+      adt_assert(map_table_at(m->buckets, i)->deleted == false);
    }
 }
 
@@ -51,7 +51,7 @@ static uint64_t
 _map_nbuckets(const struct map *m)
 {
    uint64_t s = map_table_size(m->buckets);
-   assert(s > 0);
+   adt_assert(s > 0);
    return s;
 }
 
@@ -69,8 +69,8 @@ _map_resize(struct map *m)
       if (!item->deleted && item->key != NULL)
          map_insert(m, item->key, item->data, NULL, NULL);
    }
-   assert(m->size < _map_nbuckets(m));
-   assert(m->size == old_size);
+   adt_assert(m->size < _map_nbuckets(m));
+   adt_assert(m->size == old_size);
 
    map_table_free(old_buckets);
 }
@@ -80,14 +80,14 @@ _map_resize_check(struct map *m)
 {
    if (m->size >= _map_nbuckets(m) * MAP_RESIZE_FACTOR) {
       _map_resize(m);
-      assert(m->size < _map_nbuckets(m) * MAP_RESIZE_FACTOR);
+      adt_assert(m->size < _map_nbuckets(m) * MAP_RESIZE_FACTOR);
    }
 }
 
 static struct map_table_item *
 _map_get(const struct map *m, const void *k)
 {
-   assert(k != NULL);
+   adt_assert(k != NULL);
 
    uint64_t l = m->hash(k) % _map_nbuckets(m);
 
@@ -132,7 +132,7 @@ map_get(const struct map *m, const void *k)
 void
 map_insert(struct map *m, void *k, void *v, void **ko, void **vo)
 {
-   assert(k != NULL);
+   adt_assert(k != NULL);
 
    // Set to NULL if we replace nothing
    if (ko != NULL)
@@ -174,8 +174,8 @@ map_insert(struct map *m, void *k, void *v, void **ko, void **vo)
          // If we are replacing something, return out the value
          if (item->key != NULL && !item->deleted) {
             // We can't return two things out at once
-            assert(*ko == NULL);
-            assert(*vo == NULL);
+            adt_assert(*ko == NULL);
+            adt_assert(*vo == NULL);
             if (ko != NULL)
                *ko = item->key;
             if (vo != NULL)
@@ -198,7 +198,7 @@ map_insert(struct map *m, void *k, void *v, void **ko, void **vo)
 
       not_seen--;
    }
-   assert_msg(inserted,
+   adt_assert(inserted,
       "Map is totally broken, somehow didn't find room for item");
 }
 
@@ -221,7 +221,7 @@ map_remove(struct map *m, const void *k, void **k_out, void **v_out)
 void
 map_get_random(const struct map *m, void **k_out, void **v_out)
 {
-   assert(m->size > 0);
+   adt_assert(m->size > 0);
    uint64_t c_index = rand() % m->size;
 
    uint64_t index = 0;

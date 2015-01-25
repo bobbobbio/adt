@@ -70,7 +70,7 @@ merge_sort(const struct int_vec *vec)
          i++;
       }
    }
-   assert(int_vec_size(ret) ==
+   adt_assert(int_vec_size(ret) ==
       int_vec_size(new_left) + int_vec_size(new_right));
 
    return ret;
@@ -93,7 +93,7 @@ main(int argc, char **argv)
    int val;
    thread_join(t, &val);
 
-   assert(val == 420);
+   adt_assert(val == 420);
 
    create_int_vec(to_sort, 8, 3, 4, 2, 7, 1, 8, 2, 1, 4, 7, 4, 7, 2);
 
@@ -102,7 +102,7 @@ main(int argc, char **argv)
 
    create_int_vec(expected_sorted, 1, 1, 2, 2, 2, 3, 4, 4, 4, 7, 7, 7, 8, 8);
 
-   assert(int_vec_equal(actual_sorted, &expected_sorted));
+   adt_assert(int_vec_equal(actual_sorted, &expected_sorted));
 
    create(mutex, mutex);
 

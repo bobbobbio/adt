@@ -38,7 +38,7 @@ file_make_open(const struct string *path, int flags)
 {
    struct file file;
    file_init(&file);
-   echeck(file_open(&file, path, flags));
+   file_open(&file, path, flags);
    return file;
 }
 
@@ -83,15 +83,15 @@ errno_to_error(void)
       panic("oflag was not set");
 
    if (errno == EACCES)
-      return error_make(file_access_error, strerror(errno));
+      raise(file_access_error, strerror(errno));
    else if (errno == ENOENT)
-      return error_make(file_not_found_error, strerror(errno));
+      raise(file_not_found_error, strerror(errno));
    else if (errno == EEXIST)
-      return error_make(file_already_exists_error, strerror(errno));
+      raise(file_already_exists_error, strerror(errno));
    else if (errno == ENOSPC)
-      return error_make(file_out_of_space_error, strerror(errno));
+      raise(file_out_of_space_error, strerror(errno));
    else
-      return error_make(errno_unknown_error, strerror(errno));
+      raise(errno_unknown_error, strerror(errno));
 }
 
 

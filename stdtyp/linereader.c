@@ -35,10 +35,11 @@ line_reader_destroy(struct line_reader *l)
 static struct error
 line_reader_read(struct line_reader *l, bool *done)
 {
-   assert(l->stream != NULL);
+   adt_assert(l->stream != NULL);
 
    size_t bytes_read;
-   epass(stream_read_n_or_less(l->stream, &l->buff, BUFFER_SIZE, &bytes_read));
+   reraise(
+      stream_read_n_or_less(l->stream, &l->buff, BUFFER_SIZE, &bytes_read));
 
    if (string_length(&l->buff) == 0)
       l->done = true;
@@ -51,7 +52,7 @@ line_reader_read(struct line_reader *l, bool *done)
 void
 line_reader_set_stream(struct line_reader *l, struct stream *stream)
 {
-   assert(l->stream == NULL);
+   adt_assert(l->stream == NULL);
    l->stream = stream;
 }
 
@@ -62,7 +63,7 @@ line_reader_get_line(struct line_reader *l, struct string *s)
       return false;
 
    if (l->start >= string_length(&l->buff)) {
-      echeck(line_reader_read(l, &l->done));
+      line_reader_read(l, &l->done);
       if (l->done)
          return false;
    }
@@ -75,7 +76,7 @@ line_reader_get_line(struct line_reader *l, struct string *s)
          string_append_char(s, string_char_at_index(&l->buff, i));
       i++;
       if (i >= string_length(&l->buff)) {
-         echeck(line_reader_read(l, &l->done));
+         line_reader_read(l, &l->done);
          if (l->done)
             break;
          i = l->start;

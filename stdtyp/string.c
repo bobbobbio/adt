@@ -107,7 +107,7 @@ string_destroy(struct string *s)
 void
 string_copy(struct string *dest, const struct string *src)
 {
-   assert(dest->mallocd);
+   adt_assert(dest->mallocd);
 
    string_destroy(dest);
    dest->length = src->length;
@@ -119,7 +119,7 @@ string_copy(struct string *dest, const struct string *src)
 void
 string_clear(struct string *s)
 {
-   assert(s->mallocd);
+   adt_assert(s->mallocd);
    s->length = 0;
    s->buff[0] = '\0';
 }
@@ -152,14 +152,14 @@ string_length(const struct string *s)
 char
 string_char_at_index(const struct string *s, uint64_t i)
 {
-   assert(i < s->length);
+   adt_assert(i < s->length);
    return s->buff[i];
 }
 
 static void
 string_expand(struct string *s)
 {
-   assert(s->mallocd);
+   adt_assert(s->mallocd);
 
    s->buff_len *= 2;
    s->buff = (char *)realloc(s->buff, s->buff_len);
@@ -168,7 +168,7 @@ string_expand(struct string *s)
 static void
 _string_append_char(struct string *s, char c)
 {
-   assert(s->mallocd);
+   adt_assert(s->mallocd);
    s->length++;
    if (s->length + 1 > s->buff_len)
       string_expand(s);
@@ -207,7 +207,7 @@ string_append_string(struct string *s, const struct string *a)
 struct error
 string_read_fd(struct string *s, int fd, size_t want, size_t *got, bool *done)
 {
-   assert(s->mallocd);
+   adt_assert(s->mallocd);
    string_clear(s);
 
    *done = false;
@@ -254,7 +254,7 @@ string_read_fd(struct string *s, int fd, size_t want, size_t *got, bool *done)
 void
 string_append_int(struct string *s, int i)
 {
-   assert(s->mallocd);
+   adt_assert(s->mallocd);
 
    char b[20]; // should be long enough to hold any 64 bit int
    sprintf(b, "%d", i);
@@ -264,7 +264,7 @@ string_append_int(struct string *s, int i)
 int
 string_to_int(const struct string *s)
 {
-   assert(s->length > 0);
+   adt_assert(s->length > 0);
    return atoi(s->buff);
 }
 
@@ -390,10 +390,10 @@ string_vec_join(struct string *d, const struct string_vec *v, char s)
 void
 string_remove_substring(struct string *s, int si, int ei)
 {
-   assert(s->mallocd);
-   assert(si <= ei);
-   assert(si >= 0);
-   assert(ei < s->length);
+   adt_assert(s->mallocd);
+   adt_assert(si <= ei);
+   adt_assert(si >= 0);
+   adt_assert(ei < s->length);
 
    int nbuff_len = s->buff_len - (ei - si + 1);
    char *nbuff = (char *)malloc(nbuff_len);
@@ -403,7 +403,7 @@ string_remove_substring(struct string *s, int si, int ei)
       if (i < si || i > ei)
          nbuff[bi++] = s->buff[i];
    }
-   assert(bi == nbuff_len);
+   adt_assert(bi == nbuff_len);
 
    free(s->buff);
    s->buff = nbuff;
@@ -425,7 +425,7 @@ _string_append_format(struct string *s, char *fmt, ...)
       string_expand(s);
       fs = s->buff_len - s->length;
    }
-   assert(vsnprintf(&s->buff[s->length], fs, fmt, args2) < fs);
+   adt_assert(vsnprintf(&s->buff[s->length], fs, fmt, args2) < fs);
    s->length += len;
 
    va_end(args);
@@ -438,7 +438,7 @@ static bool
 _string_replace(struct string *s, const struct regex *r, const struct string *n,
    bool all)
 {
-   assert(s->mallocd);
+   adt_assert(s->mallocd);
 
    char *tm = s->buff;
    string_init(s);
@@ -461,13 +461,13 @@ _string_replace(struct string *s, const struct regex *r, const struct string *n,
          if (regexec(&ce_reg.r, p2, 3, m2, 0))
             break;
 
-         assert(m2[1].rm_so != -1);
+         adt_assert(m2[1].rm_so != -1);
          char num[10];
          memset(num, 0, 10);
-         assert(m2[1].rm_eo - m[1].rm_so < 10);
+         adt_assert(m2[1].rm_eo - m[1].rm_so < 10);
          strncpy(num, p2 + m2[1].rm_so, m2[1].rm_eo - m2[1].rm_so);
          int gn = atoi(num);
-         assert(gn <= r->num_groups && gn >= 1);
+         adt_assert(gn <= r->num_groups && gn >= 1);
          bool escape = m2[0].rm_so > 0 && p2[m2[0].rm_so - 1] == '\\';
 
          if (m[gn].rm_so != -1 && !escape) {

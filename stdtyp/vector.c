@@ -53,7 +53,7 @@ _vector_expand(struct vector *v)
 void *
 vector_at(const struct vector *v, uint64_t i, size_t s)
 {
-   assert(i < v->size);
+   adt_assert(i < v->size);
    uint8_t *b = (uint8_t *)v->buff;
    return &b[i * s];
 }
@@ -97,7 +97,7 @@ vector_extend(struct vector *v, int len, size_t s)
 void
 vector_remove(struct vector *v, uint64_t i, size_t s)
 {
-   assert(i < v->size);
+   adt_assert(i < v->size);
    if (i < v->size - 1) {
       uint8_t *b = (uint8_t *)v->buff;
       void *pos = &b[i * s];

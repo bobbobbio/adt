@@ -16,7 +16,7 @@ arg_main(struct arg_dict *args)
          aprintf("hostname '%s' not found\n", print(string, hostname));
          return EXIT_FAILURE;
       } else
-         echeck(error);
+         error_panic(error, "Failed to look up hostname");
    }
    aprintf("%s\n", print(inet_addr, &ia));
 

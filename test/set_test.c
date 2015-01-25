@@ -25,70 +25,70 @@ main(int argc, char **argv)
    int_set_insert(&is, 4);
    int_set_insert(&is, 4);
 
-   assert(int_set_size(&is) == 3);
+   adt_assert(int_set_size(&is) == 3);
 
-   assert(int_set_contains(&is, 4));
-   assert(int_set_contains(&is, 5));
-   assert(int_set_contains(&is, 6));
+   adt_assert(int_set_contains(&is, 4));
+   adt_assert(int_set_contains(&is, 5));
+   adt_assert(int_set_contains(&is, 6));
 
-   assert(int_set_remove(&is, 4));
-   assert(!int_set_remove(&is, 4));
-   assert(!int_set_contains(&is, 4));
+   adt_assert(int_set_remove(&is, 4));
+   adt_assert(!int_set_remove(&is, 4));
+   adt_assert(!int_set_contains(&is, 4));
 
    int cnt = 0;
    iter_value (int_set, &is, i) {
-      assert(*i == 5 || *i == 6);
+      adt_assert(*i == 5 || *i == 6);
       cnt++;
    }
 
    cnt = 0;
    iter_key (int_set, &is, i) {
-      assert(i == cnt);
+      adt_assert(i == cnt);
       cnt++;
    }
 
    cnt = 0;
    iter (int_set, &is, item) {
-      assert(item.key == cnt);
-      assert(*item.value == 5 || *item.value == 6);
+      adt_assert(item.key == cnt);
+      adt_assert(*item.value == 5 || *item.value == 6);
       cnt++;
    }
 
-   assert(cnt == 2);
-   assert(int_set_size(&is) == 2);
+   adt_assert(cnt == 2);
+   adt_assert(int_set_size(&is) == 2);
 
-   assert(string_set_insert(&ss, strw("apple")));
-   assert(string_set_insert(&ss, strw("book")));
-   assert(string_set_insert(&ss, strw("cat")));
-   assert(!string_set_insert(&ss, strw("apple")));
-   assert(!string_set_insert(&ss, strw("apple")));
-   assert(!string_set_insert(&ss, strw("apple")));
+   adt_assert(string_set_insert(&ss, strw("apple")));
+   adt_assert(string_set_insert(&ss, strw("book")));
+   adt_assert(string_set_insert(&ss, strw("cat")));
+   adt_assert(!string_set_insert(&ss, strw("apple")));
+   adt_assert(!string_set_insert(&ss, strw("apple")));
+   adt_assert(!string_set_insert(&ss, strw("apple")));
 
-   assert(string_set_size(&ss) == 3);
+   adt_assert(string_set_size(&ss) == 3);
 
    create_string(diff_str, "cat");
    string_set_insert(&ss, &diff_str);
 
-   assert(string_set_size(&ss) == 3);
+   adt_assert(string_set_size(&ss) == 3);
 
-   assert(string_set_contains(&ss, strw("cat")));
-   assert(string_set_contains(&ss, strw("book")));
-   assert(string_set_contains(&ss, strw("apple")));
+   adt_assert(string_set_contains(&ss, strw("cat")));
+   adt_assert(string_set_contains(&ss, strw("book")));
+   adt_assert(string_set_contains(&ss, strw("apple")));
 
-   assert(string_set_remove(&ss, strw("apple")));
-   assert(!string_set_remove(&ss, strw("apple")));
+   adt_assert(string_set_remove(&ss, strw("apple")));
+   adt_assert(!string_set_remove(&ss, strw("apple")));
 
-   assert(!string_set_contains(&ss, strw("apple")));
+   adt_assert(!string_set_contains(&ss, strw("apple")));
 
    cnt = 0;
    iter_value (string_set, &ss, str) {
-      assert(string_equal(str, strw("book")) ||
+      adt_assert(string_equal(str, strw("book")) ||
          string_equal(str, strw("cat")));
       cnt++;
    }
 
-   assert(cnt == 2);
-   assert(string_set_size(&ss) == 2);
+   adt_assert(cnt == 2);
+   adt_assert(string_set_size(&ss) == 2);
 
    create(some_type, a);
    a.a = 1;
@@ -100,28 +100,28 @@ main(int argc, char **argv)
    b.b = 'g';
    b.c = 8;
 
-   assert(some_type_equal(&a, &b));
-   assert(some_type_hash(&a) == some_type_hash(&b));
+   adt_assert(some_type_equal(&a, &b));
+   adt_assert(some_type_hash(&a) == some_type_hash(&b));
 
    create(some_type_set, sts);
 
-   assert(some_type_set_insert(&sts, &a));
-   assert(!some_type_set_insert(&sts, &b));
+   adt_assert(some_type_set_insert(&sts, &a));
+   adt_assert(!some_type_set_insert(&sts, &b));
 
-   assert(some_type_set_size(&sts) == 1);
+   adt_assert(some_type_set_size(&sts) == 1);
 
    create(int_set, res);
    for (int i = 0; i < 1000; i++)
-      assert(int_set_insert(&res, i));
+      adt_assert(int_set_insert(&res, i));
 
    for (int i = 0; i < 40; i++)
-      assert(!int_set_insert(&res, i));
+      adt_assert(!int_set_insert(&res, i));
 
    for (int i = 0; i < 500; i++)
-      assert(int_set_remove(&res, i));
+      adt_assert(int_set_remove(&res, i));
 
    for (int i = 0; i < 250; i++)
-      assert(int_set_insert(&res, i));
+      adt_assert(int_set_insert(&res, i));
 
    create(int_set, res_copy);
    int_set_copy(&res_copy, &res);

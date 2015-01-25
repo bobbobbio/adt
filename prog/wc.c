@@ -183,22 +183,27 @@ arg_main(struct arg_dict *args)
       iter_value (string_vec, files, file_path) {
          create(line_reader, lr);
          create(file, file);
+
+         bool file_opened = true;
          if (string_equal(file_path, strw("-")))
             line_reader_set_stream(&lr, (struct stream *)file_stdin);
          else {
             ehandle (error, file_open(&file, file_path, O_RDONLY)) {
                afprintf(stderr, "%s: %s: %s\n", args->prog_name,
                   print(string, file_path), error_msg(error));
-               continue;
+               file_opened = false;
             }
-            line_reader_set_stream(&lr, (struct stream *)&file);
+            if (file_opened)
+               line_reader_set_stream(&lr, (struct stream *)&file);
          }
 
          // If we were able to open the file, analyze it
-         create(file_stats, fs);
-         analyze_file(&lr, &fs);
-         string_copy(&fs.name, file_path);
-         file_stats_vec_append(&all_file_stats, &fs);
+         if (file_opened) {
+            create(file_stats, fs);
+            analyze_file(&lr, &fs);
+            string_copy(&fs.name, file_path);
+            file_stats_vec_append(&all_file_stats, &fs);
+         }
       }
    }
 

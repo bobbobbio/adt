@@ -42,11 +42,11 @@ static void *
 get_arg_no_type(const struct arg_dict *dict, const struct string *cmd)
 {
    // Make sure this is a real argument
-   assert(string_arg_template_map_contains(&dict->templates, cmd));
+   adt_assert(string_arg_template_map_contains(&dict->templates, cmd));
 
    if (!string_arg_map_contains(&dict->values, cmd)) {
       // If we don't have the arg, it had to have been an optional one
-      assert(string_arg_template_map_at(&dict->templates, cmd)->needs_type ==
+      adt_assert(string_arg_template_map_at(&dict->templates, cmd)->needs_type ==
          ARG_OPTIONAL);
       return NULL;
    }
@@ -59,7 +59,7 @@ get_arg(const struct arg_dict *dict, enum arg_type type,
    const struct string *cmd)
 {
    void *arg = get_arg_no_type(dict, cmd);
-   assert(string_arg_template_map_at(&dict->templates, cmd)->type == type);
+   adt_assert(string_arg_template_map_at(&dict->templates, cmd)->type == type);
 
    return arg;
 }
@@ -68,7 +68,7 @@ enum arg_type
 get_arg_type(const struct arg_dict *dict, const struct string *cmd)
 {
    // Make sure this is a real argument
-   assert(string_arg_template_map_contains(&dict->templates, cmd));
+   adt_assert(string_arg_template_map_contains(&dict->templates, cmd));
 
    return string_arg_template_map_at(&dict->templates, cmd)->type;
 }
@@ -78,7 +78,7 @@ has_arg(const struct arg_dict *dict, const struct string *cmd)
 {
    void *a = get_arg_no_type(dict, cmd);
    if (string_arg_template_map_at(&dict->templates, cmd)->type == ARG_BOOL) {
-      assert(a != NULL);
+      adt_assert(a != NULL);
       return *(bool *)a;
    }
 
@@ -211,7 +211,7 @@ arg_dict_copy(struct arg_dict *dst, const struct arg_dict *src)
 static void
 arg_print_help(struct arg_dict *dict)
 {
-   assert(dict->prog_name != NULL);
+   adt_assert(dict->prog_name != NULL);
 
    bool multi_options;
    if (string_arg_template_map_contains(&dict->templates, strw("")))

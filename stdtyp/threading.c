@@ -118,13 +118,13 @@ mutex_lock(struct mutex *m)
 {
    int error = pthread_mutex_lock(&m->_lock);
 
-   assert_msg(error != EINVAL, "Lock was invalid");
-   assert_msg(error != EAGAIN, "Too many recursive locks taken");
+   adt_assert(error != EINVAL, "Lock was invalid");
+   adt_assert(error != EAGAIN, "Too many recursive locks taken");
 
    if (error == EDEADLK)
-      return error_make(mutex_already_owned_error, "");
+      raise(mutex_already_owned_error, "");
    else {
-      assert_msg(error == 0, "Unexpected error");
+      adt_assert(error == 0, "Unexpected error");
       return no_error;
    }
 }
@@ -134,13 +134,13 @@ mutex_unlock(struct mutex *m)
 {
    int error = pthread_mutex_unlock(&m->_lock);
 
-   assert_msg(error != EINVAL, "Lock was invalid");
-   assert_msg(error != EAGAIN, "Too many recursive locks taken");
+   adt_assert(error != EINVAL, "Lock was invalid");
+   adt_assert(error != EAGAIN, "Too many recursive locks taken");
 
    if (error == EPERM)
-      return error_make(mutex_not_owned_error, "");
+      raise(mutex_not_owned_error, "");
    else {
-      assert_msg(error == 0, "Unexpected error");
+      adt_assert(error == 0, "Unexpected error");
       return no_error;
    }
 }

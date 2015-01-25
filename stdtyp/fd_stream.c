@@ -33,9 +33,9 @@ fd_stream_set_fd(struct fd_stream *s, int fd)
 struct error
 fd_stream_read(struct stream *s, struct string *buff, size_t want, size_t *got)
 {
-   assert(s->type == FD_STREAM);
+   adt_assert(s->type == FD_STREAM);
    struct fd_stream *fd_s = (struct fd_stream *)s;
-   assert_msg(fd_s->fd != -1, "File descriptor not open");
+   adt_assert(fd_s->fd != -1, "File descriptor not open");
 
    return string_read_fd(buff, fd_s->fd, want, got, &fd_s->done);
 }
@@ -43,9 +43,9 @@ fd_stream_read(struct stream *s, struct string *buff, size_t want, size_t *got)
 struct error
 fd_stream_write(struct stream *s, struct string *data)
 {
-   assert(s->type == FD_STREAM);
+   adt_assert(s->type == FD_STREAM);
    struct fd_stream *fd_s = (struct fd_stream *)s;
-   assert_msg(fd_s->fd != -1, "File descriptor not open");
+   adt_assert(fd_s->fd != -1, "File descriptor not open");
 
    unsigned to_write = string_length(data);
    const char *d = string_to_cstring(data);
@@ -68,9 +68,9 @@ fd_stream_write(struct stream *s, struct string *data)
 bool
 fd_stream_has_more(struct stream *s)
 {
-   assert(s->type == FD_STREAM);
+   adt_assert(s->type == FD_STREAM);
    struct fd_stream *fd_s = (struct fd_stream *)s;
-   assert_msg(fd_s->fd != -1, "File descriptor not open");
+   adt_assert(fd_s->fd != -1, "File descriptor not open");
 
    return !fd_s->done;
 }

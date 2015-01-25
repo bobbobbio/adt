@@ -71,12 +71,12 @@
 #define context_manager_gen_body(name, type, enter, exit) \
    struct name \
    name##_context_manager_enter(struct type *t) { \
-      echeck(enter(t)); \
+      enter(t); \
       return (struct name) { t }; \
    } \
    void \
    name##_context_manager_exit(struct name *n) { \
-      echeck(exit(n->v)); \
+      exit(n->v); \
    } \
    SWALLOWSEMICOLON
 

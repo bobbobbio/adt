@@ -24,24 +24,24 @@ eai_to_error(int ecode)
    else if (ecode == EAI_BADFLAGS)
       panic("invalid value for ai_flags");
    else if (ecode == EAI_FAIL)
-      return error_make(http_addr_error,
+      raise(http_addr_error,
          "non-recoverable failure in name resolution");
    else if (ecode == EAI_FAMILY)
-      return error_make(http_addr_error, "ai_family not supported");
+      raise(http_addr_error, "ai_family not supported");
    else if (ecode == EAI_MEMORY)
-      return error_make(http_addr_error, "memory allocation failure");
+      raise(http_addr_error, "memory allocation failure");
    else if (ecode == EAI_NONAME)
-      return error_make(http_addr_hostname_error,
+      raise(http_addr_hostname_error,
          "hostname or servname not provided, or not known");
    else if (ecode == EAI_OVERFLOW)
-      return error_make(http_addr_error, "argument buffer overflow");
+      raise(http_addr_error, "argument buffer overflow");
    else if (ecode == EAI_SERVICE)
-      return error_make(http_addr_error,
+      raise(http_addr_error,
          "servname not supported for ai_socktype");
    else if (ecode == EAI_SOCKTYPE)
-      return error_make(http_addr_error, "ai_socktype not supported");
+      raise(http_addr_error, "ai_socktype not supported");
    else if (ecode == EAI_SYSTEM)
-      return errno_to_error();
+      reraise(errno_to_error());
    else
       panic("Invalid error code");
 
@@ -81,7 +81,7 @@ adt_func_pod_body(inet_addr);
 void
 inet_addr_print(const struct inet_addr *a, struct string *s)
 {
-   assert(a->version == 4);
+   adt_assert(a->version == 4);
 
    string_append_format(s, "%u", a->addr[0]);
    for (unsigned i = 1; i < 4; i++) {
@@ -133,7 +133,7 @@ tcp_connect(struct string *server, int port, struct file* stream_out)
 {
    // Do the DNS lookup
    create(inet_addr, ia);
-   epass(dns_lookup(server, &ia));
+   reraise(dns_lookup(server, &ia));
 
    // Create tcp connection
    create_file_fd(stream, socket(AF_INET, SOCK_STREAM, 0));
@@ -187,7 +187,7 @@ http_get_url(const struct string *url, struct string *output)
 
    // Create the tcp connection
    create(file, tcp_stream);
-   epass(tcp_connect(&domain, port, &tcp_stream));
+   reraise(tcp_connect(&domain, port, &tcp_stream));
 
    // Send the GET request
    create(string, req);
@@ -195,7 +195,7 @@ http_get_url(const struct string *url, struct string *output)
    // alive, and we don't support that exactly.
    string_append_format(&req, "GET %s HTTP/1.0\n", print(string, &path));
    string_append_format(&req, "host: %s\n\n", print(string, &domain));
-   epass(stream_write((struct stream *)&tcp_stream, &req));
+   reraise(stream_write((struct stream *)&tcp_stream, &req));
 
    create_line_reader(lr, (struct stream *)&tcp_stream);
 
@@ -215,7 +215,7 @@ http_get_url(const struct string *url, struct string *output)
          create(string, key);
          create(string, value);
          // XXX Rather than assert return some error
-         assert(regex_match(&kv_reg, &line, &key, &value));
+         adt_assert(regex_match(&kv_reg, &line, &key, &value));
          string_string_map_insert(&header, &key, &value);
       }
       line_number++;

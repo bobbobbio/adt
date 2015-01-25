@@ -75,7 +75,7 @@ _tokenizer_skip(struct tokenizer *t)
 static bool
 non_empty_get_next(struct tokenizer *t, struct string *s)
 {
-   assert(t->stream != NULL);
+   adt_assert(t->stream != NULL);
 
    while (t->pos >= string_length(&t->buff)) {
       if (!stream_has_more(t->stream)) {
@@ -104,7 +104,7 @@ non_empty_get_next(struct tokenizer *t, struct string *s)
 static bool
 empty_get_next(struct tokenizer *t, struct string *s)
 {
-   assert(t->stream != NULL);
+   adt_assert(t->stream != NULL);
 
    while (t->pos >= string_length(&t->buff)) {
       if (!stream_has_more(t->stream))

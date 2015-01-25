@@ -18,32 +18,32 @@ main(int argc, char **argv)
          while (tokenizer_get_next(&tkn, &t)) {
             tokens++;
             aprintf("%s, ", print(string, &t));
-            assert(string_length(&t) > 0);
+            adt_assert(string_length(&t) > 0);
          }
       }
    }
 
-   assert(tokens > 10);
+   adt_assert(tokens > 10);
 
    create_string_stream(ss, (struct string *)strw("this is a sentence"));
-   assert(stream_has_more((struct stream *)&ss));
+   adt_assert(stream_has_more((struct stream *)&ss));
 
    create_tokenizer(tkn, (struct stream *)&ss);
    create(string, token);
 
-   assert(tokenizer_get_next(&tkn, &token));
-   assert(string_equal(&token, strw("this")));
+   adt_assert(tokenizer_get_next(&tkn, &token));
+   adt_assert(string_equal(&token, strw("this")));
 
-   assert(tokenizer_get_next(&tkn, &token));
-   assert(string_equal(&token, strw("is")));
+   adt_assert(tokenizer_get_next(&tkn, &token));
+   adt_assert(string_equal(&token, strw("is")));
 
-   assert(tokenizer_get_next(&tkn, &token));
-   assert(string_equal(&token, strw("a")));
+   adt_assert(tokenizer_get_next(&tkn, &token));
+   adt_assert(string_equal(&token, strw("a")));
 
-   assert(tokenizer_get_next(&tkn, &token));
-   assert(string_equal(&token, strw("sentence")));
+   adt_assert(tokenizer_get_next(&tkn, &token));
+   adt_assert(string_equal(&token, strw("sentence")));
 
-   assert(!tokenizer_get_next(&tkn, &token));
+   adt_assert(!tokenizer_get_next(&tkn, &token));
 
    return EXIT_SUCCESS;
 }

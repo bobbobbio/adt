@@ -31,9 +31,9 @@ struct error
 string_stream_read(struct stream *s, struct string *buff,
    size_t want, size_t *got)
 {
-   assert(s->type == STRING_STREAM);
+   adt_assert(s->type == STRING_STREAM);
    struct string_stream *ss = (struct string_stream *)s;
-   assert(ss->string != NULL);
+   adt_assert(ss->string != NULL);
 
    string_clear(buff);
    size_t to_copy = min(want, string_length(ss->string) - ss->offset);
@@ -50,9 +50,9 @@ string_stream_read(struct stream *s, struct string *buff,
 struct error
 string_stream_write(struct stream *s, struct string *data)
 {
-   assert(s->type == STRING_STREAM);
+   adt_assert(s->type == STRING_STREAM);
    struct string_stream *ss = (struct string_stream *)s;
-   assert(ss->string != NULL);
+   adt_assert(ss->string != NULL);
 
    string_append_string(ss->string, data);
 
@@ -62,9 +62,9 @@ string_stream_write(struct stream *s, struct string *data)
 bool
 string_stream_has_more(struct stream *s)
 {
-   assert(s->type == STRING_STREAM);
+   adt_assert(s->type == STRING_STREAM);
    struct string_stream *ss = (struct string_stream *)s;
-   assert(ss->string != NULL);
+   adt_assert(ss->string != NULL);
 
    return ss->offset < string_length(ss->string);
 }

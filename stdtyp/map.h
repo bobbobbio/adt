@@ -87,7 +87,7 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
    f void name##_get(const struct name *a, ktype k, type_ref o)                \
    {                                                                           \
       type_ref v = map_get(&a->map, ktype_in(k));                              \
-      assert(v != NULL);                                                       \
+      adt_assert(v != NULL);                                                   \
       typename##_copy(o, v);                                                   \
    }                                                                           \
    f type_ref name##_at(const struct name *a, ktype k)                         \
@@ -143,7 +143,7 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
       type_ref v;                                                              \
       struct aiter i; i.ipos = 0;                                              \
       while (map_iterate(&src->map, &i, (void **)&k, (void **)&v))             \
-         assert(name##_insert_(dst, ktype_out(k), v));                         \
+         adt_assert(name##_insert_(dst, ktype_out(k), v));                     \
    }                                                                           \
    SWALLOWSEMICOLON
 

@@ -1,20 +1,27 @@
 #include <error.h>
+#include <stdtyp/file.h>
 
-create_error(test_error);
-
-struct error a()
-{
-   return error_make(test_error, "Failed to do something");
-}
+create_error_body(test_error);
 
 struct error b()
 {
-   return no_error;
+   raise(test_error, "Failed to do something b");
+}
+
+struct error a()
+{
+   raise(test_error, "Failed to do something a");
 }
 
 int main()
 {
-   echeck(b());
+   ehandle(error, a()) {
+      // if we get an error, ignore it!
+   }
 
-   echeck(a());
+   adt_assert(4 < 2, "this is a message");
+
+   // this one should crash
+   b();
+
 }

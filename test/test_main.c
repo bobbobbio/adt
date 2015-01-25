@@ -12,7 +12,7 @@ int
 arg_main(struct arg_dict *args)
 {
    create(string_vec, files);
-   echeck(file_list_directory(strw("."), &files));
+   file_list_directory(strw("."), &files);
 
    bool valgrind = false;
    #ifdef __linux
