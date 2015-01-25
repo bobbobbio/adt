@@ -17,13 +17,16 @@ struct inet_addr {
 adt_func_pod_header(inet_addr);
 
 struct error
-dns_lookup(const struct string *dname, struct inet_addr *);
+dns_lookup(const struct string *dname, struct inet_addr *)
+   a_warn_unused_result;
 
 struct error
-http_get_url(const struct string *url, struct string *output);
+http_get_url(const struct string *url, struct string *output)
+   a_warn_unused_result;
 
 struct error
-tcp_connect(struct string *server, int port, struct file *);
+tcp_connect(struct string *server, int port, struct file *)
+   a_warn_unused_result;
 
 
 #endif // __HTTP_H__

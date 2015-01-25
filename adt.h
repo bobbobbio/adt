@@ -30,6 +30,7 @@ struct string;
 
 #define a_cleanup(n) __attribute__ ((__cleanup__(n)))
 #define a_packed __attribute__ ((__packed__))
+#define a_warn_unused_result __attribute__((warn_unused_result))
 
 #define create(type, name) \
    struct type name a_cleanup(type##_destroy) = type##_make()

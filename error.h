@@ -55,9 +55,25 @@ create_error_header(_no_error);
       ename = no_error) \
    for (current_error_mode = old_error_mode; ponce; ponce = false)
 
+#define epanic(expr) \
+   _epanic(expr, unq(old_error_mode), unq(e))
+
+#define _epanic(expr, old_error_mode, e) \
+   do { \
+      enum error_mode old_error_mode = current_error_mode; \
+      current_error_mode = ERROR_PANIC; \
+      struct error e = expr; \
+      if (e.type != _no_error) \
+         error_panic(e, #expr); \
+      current_error_mode = old_error_mode; \
+   } while(0)
+
 #define no_error ((struct error){ .type = _no_error, .msg = "" })
 
 #define reraise(expr) \
+   _reraise(expr, unq(e))
+
+#define _reraise(expr, e) \
    do { struct error e = expr; \
       if (e.type != _no_error) { \
          if (current_error_mode == ERROR_PANIC) \

@@ -22,10 +22,12 @@ struct string_stream
 string_stream_make_var(struct string *);
 
 struct error
-string_stream_read(struct stream *, struct string *, size_t want, size_t *got);
+string_stream_read(struct stream *, struct string *, size_t want, size_t *got)
+   a_warn_unused_result;
 
 struct error
-string_stream_write(struct stream *, struct string *);
+string_stream_write(struct stream *, struct string *)
+   a_warn_unused_result;
 
 bool
 string_stream_has_more(struct stream *);

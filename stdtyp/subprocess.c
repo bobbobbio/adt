@@ -35,8 +35,8 @@ subprocess_run(const struct string *command, struct string *output)
             panic("Failed to link stderr to pipe");
          }
          // these are now not needed on the child, and the cleanup won't work
-         file_close(&write_pipe);
-         file_close(&read_pipe);
+         epanic(file_close(&write_pipe));
+         epanic(file_close(&read_pipe));
          if (execvp(argv[0], (char * const *)argv))
             panic("Failed to exec binary");
       }
@@ -47,7 +47,7 @@ subprocess_run(const struct string *command, struct string *output)
       default: // parent
       {
          // the write pipe has to close before reading
-         file_close(&write_pipe);
+         reraise(file_close(&write_pipe));
          int status;
          if (waitpid(pid, &status, 0) == -1) {
             raise(subprocess_error, "Failed to wait for child");

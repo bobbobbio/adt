@@ -7,6 +7,7 @@
 create_error_header(subprocess_error);
 
 struct error
-subprocess_run(const struct string *, struct string *);
+subprocess_run(const struct string *, struct string *)
+   a_warn_unused_result;
 
 #endif // __SUBPROCESS_H__

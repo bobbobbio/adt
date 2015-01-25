@@ -10,6 +10,8 @@ struct error b()
 
 struct error a()
 {
+   reraise(b());
+
    raise(test_error, "Failed to do something a");
 }
 
@@ -19,9 +21,8 @@ int main()
       // if we get an error, ignore it!
    }
 
-   adt_assert(4 < 2, "this is a message");
+   adt_assert(1 < 2, "this is a message");
 
    // this one should crash
    b();
-
 }

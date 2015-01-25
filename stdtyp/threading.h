@@ -209,10 +209,12 @@ create_error_header(mutex_already_owned_error);
 create_error_header(mutex_not_owned_error);
 
 struct error
-mutex_lock(struct mutex *m);
+mutex_lock(struct mutex *m)
+   a_warn_unused_result;
 
 struct error
-mutex_unlock(struct mutex *m);
+mutex_unlock(struct mutex *m)
+   a_warn_unused_result;
 
 context_manager_gen_header(mutex_cm, mutex);
 

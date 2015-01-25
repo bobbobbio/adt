@@ -38,7 +38,7 @@ file_make_open(const struct string *path, int flags)
 {
    struct file file;
    file_init(&file);
-   file_open(&file, path, flags);
+   epanic(file_open(&file, path, flags));
    return file;
 }
 
@@ -49,11 +49,12 @@ file_close(struct file *f)
       return no_error;
 
    if (close(f->stream.fd) == -1)
-      return errno_to_error();
+      reraise(errno_to_error());
    else {
       f->stream.fd = -1;
-      return no_error;
    }
+
+   return no_error;
 }
 
 int
@@ -65,7 +66,7 @@ file_fd(struct file *f)
 void
 file_destroy(struct file *f)
 {
-   file_close(f);
+   epanic(file_close(f));
    fd_stream_destroy(&f->stream);
 }
 

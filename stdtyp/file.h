@@ -31,22 +31,26 @@ adt_func_header(file);
 #define file_stderr fd_wrap(STDERR_FILENO)
 
 struct error
-file_open(struct file *, const struct string *path, int flags);
+file_open(struct file *, const struct string *path, int flags)
+   a_warn_unused_result;
 
 struct file
 file_make_open(const struct string *path, int flags);
 
 struct error
-file_close(struct file *f);
+file_close(struct file *f)
+   a_warn_unused_result;
 
 int
 file_fd(struct file *f);
 
 struct error
-file_list_directory(const struct string *, struct string_vec *);
+file_list_directory(const struct string *, struct string_vec *)
+   a_warn_unused_result;
 
 struct error
-errno_to_error(void);
+errno_to_error(void)
+   a_warn_unused_result;
 
 #define with_file_open(name, path, flags) \
    with_create_var(file, name, file_make_open, path, flags)

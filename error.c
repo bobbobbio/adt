@@ -11,7 +11,7 @@ void
 _error_panic(struct error e, char *code, const char *file, int line)
 {
    print_backtrace(2);
-   _panic("Got error: %s : \"%s\" : %s\n in file %s on line %d",
+   _panic("Got error: %s : \"%s\" : %s : in file %s on line %d\n",
       e.type, code, e.msg, file, line);
 }
 

@@ -107,7 +107,8 @@ void
 string_append_string(struct string *, const struct string *);
 
 struct error
-string_read_fd(struct string *s, int fd, size_t want, size_t *got, bool *done);
+string_read_fd(struct string *s, int fd, size_t want, size_t *got, bool *done)
+   a_warn_unused_result;
 
 struct string
 string_make_var(const char *cstr);

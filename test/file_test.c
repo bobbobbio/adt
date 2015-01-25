@@ -5,7 +5,7 @@ int
 main(int argc, char **argv)
 {
    create(string_vec, files);
-   file_list_directory(strw("."), &files);
+   epanic(file_list_directory(strw("."), &files));
 
    adt_assert(string_vec_contains(&files, strw("file_test")));
 
