@@ -8,6 +8,81 @@
 
 #include <adt.h>
 
+/*
+ * This file contains functions for dealing with errors.
+ *
+ * When a function needs to throw an error, it must have struct error as it's
+ * return type. Like follows:
+ *
+ * struct error
+ * do_file_io(void)
+ * {
+ *    if (bad_things())
+ *       eraise(file_read_error, "Something has gone wrong...");
+ *    else
+ *       return no_error;
+ * }
+ *
+ * A good pattern to use is to use the warn_unused_result attribute with this
+ * function like follows when declaring the function:
+ *
+ * struct error
+ * do_file_io(void)
+ *    a_warn_unused_result;
+ *
+ * This tries to ensure that error don't get lost.
+ *
+ * When calling a function that may raise an error, there are 3 options for what
+ * to do wit that error.  If that function wants the error to just crash, it can
+ * do:
+ *    ecrash(do_file_io());
+ *
+ * If it wants to handle the error it can do this:
+ *    ehandle (error, do_file_io()) {
+ *       // handle the error here.
+ *    }
+ *
+ * You can use the following pattern to filter errors:
+ *    ehandle (error, do_file_io()) {
+ *       if (error_is_type(error, transient_error)) {
+ *          printf("WARN: Got a transient error\n")
+ *       } else
+ *          error_panic(error);
+ *    }
+ *
+ * It will ignore errors of type transient_error, and crash if it got some other
+ * error type.
+ *
+ * If the calling function itself returns an error, it can use the ereraise
+ * macro raise and potential error as if this function was raising an error
+ * itself.
+ *
+ * struct error
+ * do_file_io(void)
+ * {
+ *    ereraise(other_function());
+ *
+ *    return no_error;
+ * }
+ *
+ * The following function just passes on errors that other_function may raise,
+ * and the caller of do_file_io now has to deal with the error.
+ *
+ * Note that you can use the ehandle in conjunction with ereraise to filter the
+ * errors that get passed out like so:
+ *    ehandle (error, do_file_io()) {
+ *       if (error_is_type(error, transient_error)) {
+ *          printf("WARN: Got a transient error\n")
+ *       } else
+ *          ereraise(error);
+ *    }
+ *
+ * Be careful using this pattern so as to not loose errors.  If you forget to
+ * either reraise or crash at the end of an ehandle, it may just swallow an
+ * error.
+ *
+ */
+
 struct error {
    char *type;
    char *msg;
@@ -85,12 +160,12 @@ create_error_header(_no_error);
 #define panic(...) \
    adt_print(_panic, __VA_ARGS__)
 
+// This is like a regular assert except that you can add an optional message as
+// the second argument, and it accepts adt printing (see string.h).
 #define adt_assert(...) \
    __adt_assert(__VA_ARGS__, NULL)
 #define __adt_assert(test, ...) \
    adt_print(_adt_assert, test, #test, __FILE__, __LINE__, __VA_ARGS__)
-
-#define noop_error(...) no_error
 
 void _error_panic(struct error e, char *code, const char *file, int line);
 void _panic(char *fmt, ...);
