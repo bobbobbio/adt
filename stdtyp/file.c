@@ -49,7 +49,7 @@ file_close(struct file *f)
       return no_error;
 
    if (close(f->stream.fd) == -1)
-      reraise(errno_to_error());
+      ereraise(errno_to_error());
    else {
       f->stream.fd = -1;
    }
@@ -84,15 +84,15 @@ errno_to_error(void)
       panic("oflag was not set");
 
    if (errno == EACCES)
-      raise(file_access_error, strerror(errno));
+      eraise(file_access_error, strerror(errno));
    else if (errno == ENOENT)
-      raise(file_not_found_error, strerror(errno));
+      eraise(file_not_found_error, strerror(errno));
    else if (errno == EEXIST)
-      raise(file_already_exists_error, strerror(errno));
+      eraise(file_already_exists_error, strerror(errno));
    else if (errno == ENOSPC)
-      raise(file_out_of_space_error, strerror(errno));
+      eraise(file_out_of_space_error, strerror(errno));
    else
-      raise(errno_unknown_error, strerror(errno));
+      eraise(errno_unknown_error, strerror(errno));
 }
 
 

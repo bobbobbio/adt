@@ -24,24 +24,24 @@ eai_to_error(int ecode)
    else if (ecode == EAI_BADFLAGS)
       panic("invalid value for ai_flags");
    else if (ecode == EAI_FAIL)
-      raise(http_addr_error,
+      eraise(http_addr_error,
          "non-recoverable failure in name resolution");
    else if (ecode == EAI_FAMILY)
-      raise(http_addr_error, "ai_family not supported");
+      eraise(http_addr_error, "ai_family not supported");
    else if (ecode == EAI_MEMORY)
-      raise(http_addr_error, "memory allocation failure");
+      eraise(http_addr_error, "memory allocation failure");
    else if (ecode == EAI_NONAME)
-      raise(http_addr_hostname_error,
+      eraise(http_addr_hostname_error,
          "hostname or servname not provided, or not known");
    else if (ecode == EAI_OVERFLOW)
-      raise(http_addr_error, "argument buffer overflow");
+      eraise(http_addr_error, "argument buffer overflow");
    else if (ecode == EAI_SERVICE)
-      raise(http_addr_error,
+      eraise(http_addr_error,
          "servname not supported for ai_socktype");
    else if (ecode == EAI_SOCKTYPE)
-      raise(http_addr_error, "ai_socktype not supported");
+      eraise(http_addr_error, "ai_socktype not supported");
    else if (ecode == EAI_SYSTEM)
-      reraise(errno_to_error());
+      ereraise(errno_to_error());
    else
       panic("Invalid error code");
 
@@ -133,7 +133,7 @@ tcp_connect(struct string *server, int port, struct file* stream_out)
 {
    // Do the DNS lookup
    create(inet_addr, ia);
-   reraise(dns_lookup(server, &ia));
+   ereraise(dns_lookup(server, &ia));
 
    // Create tcp connection
    create_file_fd(stream, socket(AF_INET, SOCK_STREAM, 0));
@@ -187,7 +187,7 @@ http_get_url(const struct string *url, struct string *output)
 
    // Create the tcp connection
    create(file, tcp_stream);
-   reraise(tcp_connect(&domain, port, &tcp_stream));
+   ereraise(tcp_connect(&domain, port, &tcp_stream));
 
    // Send the GET request
    create(string, req);
@@ -195,7 +195,7 @@ http_get_url(const struct string *url, struct string *output)
    // alive, and we don't support that exactly.
    string_append_format(&req, "GET %s HTTP/1.0\n", print(string, &path));
    string_append_format(&req, "host: %s\n\n", print(string, &domain));
-   reraise(stream_write((struct stream *)&tcp_stream, &req));
+   ereraise(stream_write((struct stream *)&tcp_stream, &req));
 
    create_line_reader(lr, (struct stream *)&tcp_stream);
 

@@ -122,7 +122,7 @@ mutex_lock(struct mutex *m)
    adt_assert(error != EAGAIN, "Too many recursive locks taken");
 
    if (error == EDEADLK)
-      raise(mutex_already_owned_error, "");
+      eraise(mutex_already_owned_error, "");
    else {
       adt_assert(error == 0, "Unexpected error");
       return no_error;
@@ -138,7 +138,7 @@ mutex_unlock(struct mutex *m)
    adt_assert(error != EAGAIN, "Too many recursive locks taken");
 
    if (error == EPERM)
-      raise(mutex_not_owned_error, "");
+      eraise(mutex_not_owned_error, "");
    else {
       adt_assert(error == 0, "Unexpected error");
       return no_error;

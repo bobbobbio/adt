@@ -28,7 +28,7 @@ extern __thread enum error_mode current_error_mode;
 #define error_panic(e, msg) \
    _error_panic(e, msg, __FILE__, __LINE__)
 
-#define raise(name, message) \
+#define eraise(name, message) \
    do { struct error e = { .type = name, .msg = message }; \
       if (current_error_mode == ERROR_PANIC) \
          error_panic(e, #name); \
@@ -70,7 +70,7 @@ create_error_header(_no_error);
 
 #define no_error ((struct error){ .type = _no_error, .msg = "" })
 
-#define reraise(expr) \
+#define ereraise(expr) \
    _reraise(expr, unq(e))
 
 #define _reraise(expr, e) \

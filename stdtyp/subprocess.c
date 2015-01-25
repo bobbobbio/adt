@@ -19,7 +19,7 @@ subprocess_run(const struct string *command, struct string *output)
    // write_pipe ---> read_pipe
    int fds[2];
    if (pipe(fds) != 0)
-      raise(subprocess_error, "Failed to make pipe");
+      eraise(subprocess_error, "Failed to make pipe");
    create_file_fd(write_pipe, fds[1]);
    create_file_fd(read_pipe, fds[0]);
 
@@ -42,22 +42,22 @@ subprocess_run(const struct string *command, struct string *output)
       }
       case -1: // error
       {
-         raise(subprocess_error, "Failed to fork a child process");
+         eraise(subprocess_error, "Failed to fork a child process");
       }
       default: // parent
       {
          // the write pipe has to close before reading
-         reraise(file_close(&write_pipe));
+         ereraise(file_close(&write_pipe));
          int status;
          if (waitpid(pid, &status, 0) == -1) {
-            raise(subprocess_error, "Failed to wait for child");
+            eraise(subprocess_error, "Failed to wait for child");
          }
 
          if (!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS)
-            raise(subprocess_error,
+            eraise(subprocess_error,
                "Subprocess had non-zero exit status");
 
-         reraise(stream_read((struct stream *)&read_pipe, output));
+         ereraise(stream_read((struct stream *)&read_pipe, output));
       }
    }
 

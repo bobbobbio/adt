@@ -32,7 +32,7 @@ string_stream_write(struct stream *, struct string *)
 bool
 string_stream_has_more(struct stream *);
 
-#define string_stream_interface (struct stream_interface){ \
+#define string_stream_interface { \
    .stream_read = string_stream_read, \
    .stream_write = string_stream_write, \
    .stream_has_more = string_stream_has_more \

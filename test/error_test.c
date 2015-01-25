@@ -5,14 +5,14 @@ create_error_body(test_error);
 
 struct error b()
 {
-   raise(test_error, "Failed to do something b");
+   eraise(test_error, "Failed to do something b");
 }
 
 struct error a()
 {
-   reraise(b());
+   ereraise(b());
 
-   raise(test_error, "Failed to do something a");
+   eraise(test_error, "Failed to do something a");
 }
 
 int main()

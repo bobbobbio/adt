@@ -31,7 +31,7 @@ fd_stream_write(struct stream *, struct string *)
 bool
 fd_stream_has_more(struct stream *);
 
-#define fd_stream_interface (struct stream_interface){ \
+#define fd_stream_interface { \
    .stream_read = fd_stream_read, \
    .stream_write = fd_stream_write, \
    .stream_has_more = fd_stream_has_more \
