@@ -1,5 +1,13 @@
 #include <stdtyp/threading.h>
 
+create_error_body(test_error);
+
+struct error
+raise_test_error(void)
+{
+   eraise(test_error, "This is a test error.");
+}
+
 void
 hello(int thread_id)
 {
@@ -9,6 +17,9 @@ fptr_define_void(hello, int);
 void
 hello2(void)
 {
+   ehandle(error, raise_test_error()) {
+      printf("got a test error, nbd\n");
+   }
 }
 fptr_define_void_noargs(hello2);
 
