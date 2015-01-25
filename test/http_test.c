@@ -17,7 +17,7 @@ main(int argc, char **argv)
        && ia.addr[3] == 1);
 
    create(string, response);
-   epanic(http_get_url(strw("http://abort.cc:80/"), &response));
+   ecrash(http_get_url(strw("http://abort.cc:80/"), &response));
    adt_assert(string_length(&response) > 0);
    printf("%s", string_to_cstring(&response));
 

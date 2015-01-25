@@ -55,10 +55,10 @@ create_error_header(_no_error);
       ename = no_error) \
    for (current_error_mode = old_error_mode; ponce; ponce = false)
 
-#define epanic(expr) \
-   _epanic(expr, unq(old_error_mode), unq(e))
+#define ecrash(expr) \
+   _ecrash(expr, unq(old_error_mode), unq(e))
 
-#define _epanic(expr, old_error_mode, e) \
+#define _ecrash(expr, old_error_mode, e) \
    do { \
       enum error_mode old_error_mode = current_error_mode; \
       current_error_mode = ERROR_PANIC; \

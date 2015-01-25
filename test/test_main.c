@@ -12,7 +12,7 @@ int
 arg_main(struct arg_dict *args)
 {
    create(string_vec, files);
-   epanic(file_list_directory(strw("."), &files));
+   ecrash(file_list_directory(strw("."), &files));
 
    bool valgrind = false;
    #ifdef __linux

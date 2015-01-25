@@ -35,8 +35,8 @@ subprocess_run(const struct string *command, struct string *output)
             panic("Failed to link stderr to pipe");
          }
          // these are now not needed on the child, and the cleanup won't work
-         epanic(file_close(&write_pipe));
-         epanic(file_close(&read_pipe));
+         ecrash(file_close(&write_pipe));
+         ecrash(file_close(&read_pipe));
          if (execvp(argv[0], (char * const *)argv))
             panic("Failed to exec binary");
       }
