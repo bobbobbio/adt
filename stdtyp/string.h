@@ -171,7 +171,8 @@ void
 string_vec_join(struct string *, const struct string_vec *, char);
 
 int
-_string_append_format(struct string *, char *, ...);
+_string_append_format(struct string *, char *, ...)
+   a_format(printf, 2, 3);
 
 bool
 string_replace(struct string *s, const struct regex *r, const struct string *n);

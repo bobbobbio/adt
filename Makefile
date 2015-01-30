@@ -1,4 +1,4 @@
-libadt.a: error.o string.o vector.o map.o list.o linereader.o tokenizer.o subprocess.o argparse.o file.o http.o regex.o threading.o stream.o fd_stream.o string_stream.o
+libadt.a: error.o string.o vector.o map.o list.o linereader.o tokenizer.o subprocess.o argparse.o file.o network.o http.o regex.o threading.o stream.o fd_stream.o string_stream.o
 	ar rcs $@ $^
 
 error.o: error.c error.h
@@ -45,6 +45,9 @@ fd_stream.o: stdtyp/fd_stream.c stdtyp/stream.h adt.h error.h stdtyp/file.h
 
 string_stream.o: stdtyp/string_stream.c stdtyp/stream.h adt.h error.h
 	c99 -I./ -D_POSIX_C_SOURCE -D_C99_SOURCE -g -c stdtyp/string_stream.c
+
+network.o: extyp/network.c extyp/network.h adt.h
+	c99 -I./ -D_POSIX_C_SOURCE -D_C99_SOURCE -g -c extyp/network.c
 
 http.o: extyp/http.c extyp/http.h adt.h
 	c99 -I./ -D_POSIX_C_SOURCE -D_C99_SOURCE -g -c extyp/http.c

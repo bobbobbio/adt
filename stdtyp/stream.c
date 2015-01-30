@@ -19,10 +19,10 @@ stream_read_n(struct stream *s, struct string *str, size_t want)
 }
 
 struct error
-stream_read_n_or_less(struct stream *s, struct string *str, size_t want,
-   size_t *got)
+stream_read_n_or_less(struct stream *s, struct string *str, size_t want)
 {
-   return stream_vtable[s->type].stream_read(s, str, want, got);
+   size_t _got;
+   return stream_vtable[s->type].stream_read(s, str, want, &_got);
 }
 
 struct error

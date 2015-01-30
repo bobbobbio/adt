@@ -17,6 +17,12 @@ fd_stream_init(struct fd_stream *s)
 void
 fd_stream_destroy(struct fd_stream *s) {}
 
+void
+fd_stream_copy(struct fd_stream *d, const struct fd_stream *s)
+{
+   *d = *s;
+}
+
 struct fd_stream
 fd_stream_make_var(int fd) {
    struct fd_stream s = fd_stream_make();

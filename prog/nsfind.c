@@ -1,5 +1,5 @@
 #include <adt.h>
-#include <extyp/http.h>
+#include <extyp/network.h>
 #include <stdtyp/argparse.h>
 
 define_args(
@@ -12,7 +12,7 @@ arg_main(struct arg_dict *args)
    const struct string *hostname = get_arg_string(args, strw(""));
    create(inet_addr, ia);
    ehandle (error, dns_lookup(hostname, &ia)) {
-      if (error_is_type(error, http_addr_hostname_error)) {
+      if (error_is_type(error, network_hostname_error)) {
          aprintf("hostname '%s' not found\n", print(string, hostname));
          return EXIT_FAILURE;
       } else

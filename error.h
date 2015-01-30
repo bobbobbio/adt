@@ -168,7 +168,8 @@ create_error_header(_no_error);
    adt_print(_adt_assert, test, #test, __FILE__, __LINE__, __VA_ARGS__)
 
 void _error_panic(struct error e, char *code, const char *file, int line);
-void _panic(char *fmt, ...);
+void _panic(char *fmt, ...)
+   a_format(printf, 1, 2) a_noreturn;
 char *error_msg(struct error e);
 void _adt_assert(
    bool test, const char *code, const char *file, int line, char *fmt, ...);

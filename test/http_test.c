@@ -1,3 +1,4 @@
+#include <extyp/network.h>
 #include <extyp/http.h>
 
 int
@@ -5,7 +6,7 @@ main(int argc, char **argv)
 {
    create(inet_addr, ia);
    ehandle (error, dns_lookup(strw("127.0.0.1"), &ia)) {
-      if (error_is_type(error, http_addr_hostname_error)) {
+      if (error_is_type(error, network_hostname_error)) {
          return EXIT_FAILURE;
       } else
          error_panic(error, "");

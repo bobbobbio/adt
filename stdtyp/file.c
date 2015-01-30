@@ -21,6 +21,12 @@ file_init(struct file *f)
    fd_stream_init(&f->stream);
 }
 
+void
+file_copy(struct file *d, const struct file *s)
+{
+   fd_stream_copy(&d->stream, &s->stream);
+}
+
 struct error
 file_open(struct file * f, const struct string *path, int flags)
 {
@@ -58,7 +64,7 @@ file_close(struct file *f)
 }
 
 int
-file_fd(struct file *f)
+file_fd(const struct file *f)
 {
    return f->stream.fd;
 }
@@ -138,4 +144,54 @@ file_list_directory(const struct string *path, struct string_vec *files_out)
       return errno_to_error();
 
    return no_error;
+}
+
+adt_func_pod_body(file_set);
+
+struct file_set
+file_set_make_var(const struct file *a, ...)
+{
+   va_list argp;
+   va_start(argp, a);
+
+   struct file_set out = file_set_make();
+
+   while (a != NULL) {
+      file_set_set(&out, a);
+      a = va_arg(argp, const struct file *);
+   }
+
+   return out;
+}
+
+void
+file_set_zero(struct file_set *f)
+{
+   FD_ZERO(&f->fds);
+}
+
+void
+file_set_set(struct file_set *f, const struct file *file)
+{
+   if (file_fd(file) > f->highest_fd)
+      f->highest_fd = file_fd(file);
+
+   FD_SET(file_fd(file), &f->fds);
+}
+
+struct error
+file_set_select(struct file_set *f)
+{
+   int err = select(f->highest_fd + 1, &f->fds, NULL, NULL, NULL);
+
+   if (err < 0)
+      ereraise(errno_to_error());
+
+   return no_error;
+}
+
+bool
+file_set_is_set(struct file_set *f, const struct file *file)
+{
+   return FD_ISSET(file_fd(file), &f->fds);
 }

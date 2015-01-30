@@ -32,7 +32,7 @@ stream_read_n(struct stream *, struct string *, size_t)
    a_warn_unused_result;
 
 struct error
-stream_read_n_or_less(struct stream *, struct string *, size_t, size_t *)
+stream_read_n_or_less(struct stream *, struct string *, size_t)
    a_warn_unused_result;
 
 struct error

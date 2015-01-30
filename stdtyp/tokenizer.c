@@ -52,8 +52,7 @@ is_skipchar(struct tokenizer *t, char c)
 static void
 _tokenizer_read(struct tokenizer *t)
 {
-   size_t bytes_read;
-   ecrash(stream_read_n_or_less(t->stream, &t->buff, READ_SIZE, &bytes_read));
+   ecrash(stream_read_n_or_less(t->stream, &t->buff, READ_SIZE));
    t->pos = 0;
 }
 

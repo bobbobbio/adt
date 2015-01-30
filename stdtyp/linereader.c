@@ -37,9 +37,7 @@ line_reader_read(struct line_reader *l, bool *done)
 {
    adt_assert(l->stream != NULL);
 
-   size_t bytes_read;
-   ereraise(
-      stream_read_n_or_less(l->stream, &l->buff, BUFFER_SIZE, &bytes_read));
+   ereraise(stream_read_n_or_less(l->stream, &l->buff, BUFFER_SIZE));
 
    if (string_length(&l->buff) == 0)
       l->done = true;
