@@ -4,6 +4,7 @@
 #include <stdtyp/linereader.h>
 #include <stdtyp/tokenizer.h>
 #include <stdtyp/vector.h>
+#include <stdtyp/string_stream.h>
 
 #include <inttypes.h>
 

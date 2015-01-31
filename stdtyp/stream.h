@@ -18,10 +18,10 @@ struct stream_interface {
    bool (*stream_has_more)(struct stream *);
 };
 
-#include <stdtyp/fd_stream.h>
-#include <stdtyp/string_stream.h>
+extern const struct stream_interface fd_stream_interface;
+extern const struct stream_interface string_stream_interface;
 
-extern const struct stream_interface stream_vtable[];
+extern const struct stream_interface *stream_vtable[];
 
 struct error
 stream_read(struct stream *, struct string *)

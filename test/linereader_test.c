@@ -1,6 +1,7 @@
 #include <stdtyp/linereader.h>
 #include <stdtyp/tokenizer.h>
 #include <stdtyp/file.h>
+#include <stdtyp/string_stream.h>
 #include <error.h>
 
 int

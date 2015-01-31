@@ -1,4 +1,5 @@
 #include <stdtyp/file.h>
+#include <stdtyp/stream.h>
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -18,23 +19,25 @@ adt_func_body(file);
 void
 file_init(struct file *f)
 {
-   fd_stream_init(&f->stream);
+   f->type = FD_STREAM;
+   f->fd = -1;
+   f->done = false;
 }
 
 void
 file_copy(struct file *d, const struct file *s)
 {
-   fd_stream_copy(&d->stream, &s->stream);
+   *d = *s;
 }
 
 struct error
-file_open(struct file * f, const struct string *path, int flags)
+file_open(struct file *f, const struct string *path, int flags)
 {
    int fd = open(string_to_cstring(path), flags);
    if (fd == -1)
       return errno_to_error();
    else {
-      fd_stream_set_fd(&f->stream, fd);
+      f->fd = fd;
       return no_error;
    }
 }
@@ -51,13 +54,13 @@ file_make_open(const struct string *path, int flags)
 struct error
 file_close(struct file *f)
 {
-   if (f->stream.fd == -1)
+   if (f->fd == -1)
       return no_error;
 
-   if (close(f->stream.fd) == -1)
+   if (close(f->fd) == -1)
       ereraise(errno_to_error());
    else {
-      f->stream.fd = -1;
+      f->fd = -1;
    }
 
    return no_error;
@@ -66,14 +69,15 @@ file_close(struct file *f)
 int
 file_fd(const struct file *f)
 {
-   return f->stream.fd;
+   return f->fd;
 }
 
 void
 file_destroy(struct file *f)
 {
    ecrash(file_close(f));
-   fd_stream_destroy(&f->stream);
+   f->fd = -1;
+   f->done = true;
 }
 
 struct error
@@ -146,6 +150,14 @@ file_list_directory(const struct string *path, struct string_vec *files_out)
    return no_error;
 }
 
+/*  __ _ _                 _
+ * / _(_) | ___   ___  ___| |_
+ * | |_| | |/ _ \ / __|/ _ \ __|
+ * |  _| | |  __/ \__ \  __/ |_
+ * |_| |_|_|\___| |___/\___|\__|
+ *
+ */
+
 adt_func_pod_body(file_set);
 
 struct file_set
@@ -194,4 +206,62 @@ bool
 file_set_is_set(struct file_set *f, const struct file *file)
 {
    return FD_ISSET(file_fd(file), &f->fds);
+}
+
+/*   __ _ _            _
+ *  / _(_) | ___   ___| |_ _ __ ___  __ _ _ __ ___
+ * | |_| | |/ _ \ / __| __| '__/ _ \/ _` | '_ ` _ \
+ * |  _| | |  __/ \__ \ |_| | |  __/ (_| | | | | | |
+ * |_| |_|_|\___| |___/\__|_|  \___|\__,_|_| |_| |_|
+ */
+
+const struct stream_interface fd_stream_interface = {
+   .stream_read = fd_stream_read,
+   .stream_write = fd_stream_write,
+   .stream_has_more = fd_stream_has_more
+};
+
+struct error
+fd_stream_read(struct stream *s, struct string *buff, size_t want, size_t *got)
+{
+   adt_assert(s->type == FD_STREAM);
+   struct file *fd_s = (struct file *)s;
+   adt_assert(fd_s->fd != -1, "File descriptor not open");
+
+   return string_read_fd(buff, fd_s->fd, want, got, &fd_s->done);
+}
+
+struct error
+fd_stream_write(struct stream *s, const struct string *data)
+{
+   adt_assert(s->type == FD_STREAM);
+   struct file *fd_s = (struct file *)s;
+   adt_assert(fd_s->fd != -1, "File descriptor not open");
+
+   unsigned to_write = string_length(data);
+   const char *d = string_to_cstring(data);
+
+   while (to_write > 0) {
+      int written = write(
+         fd_s->fd, &d[string_length(data) - to_write], to_write);
+      if (written == -1) {
+         if (errno == EINTR || errno == EAGAIN)
+            continue;
+         else
+            return errno_to_error();
+      }
+      to_write -= written;
+   }
+
+   return no_error;
+}
+
+bool
+fd_stream_has_more(struct stream *s)
+{
+   adt_assert(s->type == FD_STREAM);
+   struct file *fd_s = (struct file *)s;
+   adt_assert(fd_s->fd != -1, "File descriptor not open");
+
+   return !fd_s->done;
 }

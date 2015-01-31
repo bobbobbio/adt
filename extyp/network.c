@@ -148,7 +148,7 @@ tcp_connect(struct string *server, int port, struct file* file_out)
    // XXX This should not be reaching inside of the object, there needs to be a
    // way to hand this off correctly
    file_copy(file_out, &tcp_socket);
-   tcp_socket.stream.fd = -1;
+   tcp_socket.fd = -1;
 
    return no_error;
 }
@@ -173,7 +173,7 @@ tcp_bind(int port, struct file *file_out)
       ereraise(errno_to_error());
 
    file_copy(file_out, &tcp_socket);
-   tcp_socket.stream.fd = -1;
+   tcp_socket.fd = -1;
 
    return no_error;
 }
@@ -206,7 +206,7 @@ tcp_accept(struct file *tcp_socket, struct file *file_out,
    *((uint32_t *)client_addr.addr) = caddr.sin_addr.s_addr;
 
    file_copy(file_out, &client_conn);
-   client_conn.stream.fd = -1;
+   client_conn.fd = -1;
 
    if (client_address != NULL)
       inet_addr_copy(client_address, &client_addr);

@@ -1,7 +1,13 @@
-#include <stdtyp/stream.h>
+#include <stdtyp/string_stream.h>
 #include <stdtyp/string.h>
 
 adt_func_body(string_stream);
+
+const struct stream_interface string_stream_interface = {
+   .stream_read = string_stream_read,
+   .stream_write = string_stream_write,
+   .stream_has_more = string_stream_has_more
+};
 
 void
 string_stream_init(struct string_stream *s)

@@ -2,6 +2,7 @@
 #include <stdtyp/regex.h>
 #include <stdtyp/string.h>
 #include <stdtyp/tokenizer.h>
+#include <stdtyp/string_stream.h>
 
 #include <errno.h>
 #include <fcntl.h>

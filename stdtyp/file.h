@@ -18,15 +18,17 @@ create_error_header(file_already_exists_error);
 create_error_header(errno_unknown_error);
 
 struct file {
-   struct fd_stream stream;
-};
+   enum stream_type type;
+   int fd;
+   bool done;
+} a_packed;
 adt_func_header(file);
 
 #define create_file_fd(name, fd) \
-   struct file name a_cleanup(file_destroy) = { FD_STREAM, fd };
+   struct file name a_cleanup(file_destroy) = { FD_STREAM, fd, false };
 
 #define fd_wrap(fd_name) \
-   (&(struct file){ (struct fd_stream){.fd = fd_name, .type = FD_STREAM } })
+   (&(struct file){ FD_STREAM, fd_name, false })
 #define file_stdin fd_wrap(STDIN_FILENO)
 #define file_stdout fd_wrap(STDOUT_FILENO)
 #define file_stderr fd_wrap(STDERR_FILENO)
@@ -56,6 +58,14 @@ errno_to_error(void)
 #define with_file_open(name, path, flags) \
    with_create_var(file, name, file_make_open, path, flags)
 
+/*  __ _ _                 _
+ * / _(_) | ___   ___  ___| |_
+ * | |_| | |/ _ \ / __|/ _ \ __|
+ * |  _| | |  __/ \__ \  __/ |_
+ * |_| |_|_|\___| |___/\___|\__|
+ *
+ */
+
 struct file_set {
    fd_set fds;
    int highest_fd;
@@ -81,5 +91,23 @@ file_set_select(struct file_set *)
 
 bool
 file_set_is_set(struct file_set *, const struct file *);
+
+/*   __ _ _            _
+ *  / _(_) | ___   ___| |_ _ __ ___  __ _ _ __ ___
+ * | |_| | |/ _ \ / __| __| '__/ _ \/ _` | '_ ` _ \
+ * |  _| | |  __/ \__ \ |_| | |  __/ (_| | | | | | |
+ * |_| |_|_|\___| |___/\__|_|  \___|\__,_|_| |_| |_|
+ */
+
+struct error
+fd_stream_read(struct stream *, struct string *, size_t want, size_t *got)
+   a_warn_unused_result;
+
+struct error
+fd_stream_write(struct stream *, const struct string *)
+   a_warn_unused_result;
+
+bool
+fd_stream_has_more(struct stream *);
 
 #endif // __FILE_H__
