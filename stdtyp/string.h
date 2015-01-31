@@ -44,10 +44,6 @@ adt_func_header(string);
 vector_gen_header(string_vec, string);
 vector_gen_header(string_vec_vec, string_vec);
 
-char *
-_printer(struct string_vec *sv, void(*p)(const void *, struct string *),
-   const void *v);
-
 // adt printing.  This section defines aprintf and its variants.  This function
 // allows you to print adt types inside one function call. It turns this:
 //
@@ -64,11 +60,11 @@ _printer(struct string_vec *sv, void(*p)(const void *, struct string *),
 // aprintf("%s", print(string_vec, &my_list));
 
 #define print(type, v) \
-   _printer(&__b__, (void(*)(const void *, struct string *))&type##_print, v)
+   type##_printer(v, &__PRINT_BUFFER__, type##_print)
 
 #define adt_print(func, ...) \
 do { \
-   create(string_vec, __b__); \
+   create(string_vec, __PRINT_BUFFER__); \
    func(__VA_ARGS__); \
 } while (0)
 

@@ -32,15 +32,6 @@ _strvw(const char *a, ...)
    return out;
 }
 
-char *
-_printer(struct string_vec *sv, void(*p)(const void *, struct string *),
-   const void *v)
-{
-   struct string *str = string_vec_grow(sv);
-   p(v, str);
-   return str->buff;
-}
-
 void
 carr_freer(const char ***c)
 {

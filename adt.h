@@ -7,6 +7,7 @@
 #include <string.h>
 
 struct string;
+struct string_vec;
 
 // XXX These don't go here
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -33,6 +34,7 @@ struct string;
 #define a_warn_unused_result __attribute__((warn_unused_result))
 #define a_format(...) __attribute__((format(__VA_ARGS__)))
 #define a_noreturn __attribute__((noreturn))
+#define a_unused __attribute__((unused))
 
 #define create(type, name) \
    struct type name a_cleanup(type##_destroy) = type##_make()
@@ -62,20 +64,42 @@ struct string;
    f struct type type##_make(void); \
    f void type##_destroy(struct type *); \
    f void type##_print(const struct type *, struct string *); \
+   /* We pass the print function in so that we don't link against it. */ \
+   /* This avoids having to have the print function always defined. */ \
+   f char * type##_printer(const struct type *, struct string_vec *, \
+      void(*p)(const struct type *, struct string *)); \
    f void type##_copy(struct type *, const struct type *)
 
 #define _adt_func_body(type, f) \
-   f struct type type##_make(void) { \
-   struct type a; type##_init(&a); return a; } \
-   f struct type * type##_new(void) { \
-   struct type *a = type_malloc(type); \
-   type##_init(a); return a; } \
-   f void type##_free(struct type *a) { \
-   type##_destroy(a); \
-   free(a); } \
-   f void type##_freer(struct type **a) { \
-   if (*a != NULL) \
-      type##_free(*a); } \
+   f struct type type##_make(void) \
+   { \
+      struct type a; \
+      type##_init(&a); \
+      return a; \
+   } \
+   f struct type * type##_new(void) \
+   { \
+      struct type *a = type_malloc(type); \
+      type##_init(a); \
+      return a; \
+   } \
+   f void type##_free(struct type *a) \
+   { \
+      type##_destroy(a); \
+      free(a); \
+   } \
+   f void type##_freer(struct type **a) \
+   { \
+      if (*a != NULL) \
+         type##_free(*a); \
+   } \
+   f char * type##_printer(const struct type *v, struct string_vec *sv, \
+      void(*p)(const struct type *, struct string *)) \
+   { \
+      struct string *str = string_vec_grow(sv); \
+      p(v, str); \
+      return str->buff; \
+   } \
    SWALLOWSEMICOLON
 
 #define adt_func_body(type) _adt_func_body(type, )
