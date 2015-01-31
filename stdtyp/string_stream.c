@@ -9,6 +9,12 @@ const struct stream_interface string_stream_interface = {
    .stream_has_more = string_stream_has_more
 };
 
+struct stream *
+string_stream_to_stream(struct string_stream *s)
+{
+   return (struct stream *)s;
+}
+
 void
 string_stream_init(struct string_stream *s)
 {

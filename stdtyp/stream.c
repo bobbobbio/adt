@@ -1,5 +1,8 @@
 #include <stdtyp/stream.h>
 
+extern const struct stream_interface fd_stream_interface;
+extern const struct stream_interface string_stream_interface;
+
 const struct stream_interface *stream_vtable[] = {
    &fd_stream_interface,
    &string_stream_interface,

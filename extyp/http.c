@@ -43,9 +43,9 @@ http_get_url(const struct string *url, struct string *output)
    // alive, and we don't support that exactly.
    string_append_format(&req, "GET %s HTTP/1.0\n", print(string, &path));
    string_append_format(&req, "host: %s\n\n", print(string, &domain));
-   ereraise(stream_write((struct stream *)&tcp_stream, &req));
+   ereraise(stream_write(file_to_stream(&tcp_stream), &req));
 
-   create_line_reader(lr, (struct stream *)&tcp_stream);
+   create_line_reader(lr, file_to_stream(&tcp_stream));
 
    create_regex(kv_reg, strw("(.+): (.+)"));
    create(string_string_map, header);

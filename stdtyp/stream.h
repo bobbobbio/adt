@@ -18,9 +18,6 @@ struct stream_interface {
    bool (*stream_has_more)(struct stream *);
 };
 
-extern const struct stream_interface fd_stream_interface;
-extern const struct stream_interface string_stream_interface;
-
 extern const struct stream_interface *stream_vtable[];
 
 struct error

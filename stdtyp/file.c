@@ -221,6 +221,12 @@ const struct stream_interface fd_stream_interface = {
    .stream_has_more = fd_stream_has_more
 };
 
+struct stream *
+file_to_stream(struct file *f)
+{
+   return (struct stream *)f;
+}
+
 struct error
 fd_stream_read(struct stream *s, struct string *buff, size_t want, size_t *got)
 {

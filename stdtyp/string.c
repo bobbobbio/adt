@@ -273,7 +273,7 @@ string_split(const struct string *s, char c, struct string_vec *vec_out)
 
    // XXX This is all kind of messed up
    create_string_stream(ss, (struct string *)&s);
-   create_tokenizer(tkn, (struct stream *)&ss);
+   create_tokenizer(tkn, string_stream_to_stream(&ss));
    create(string, sc);
    string_append_char(&sc, c);
    tokenizer_set_skip_chars(&tkn, &sc);
@@ -291,7 +291,7 @@ string_tokenize(const struct string *s, struct string_vec *vec_out)
 
    // XXX This is also messed up...
    create_string_stream(ss, (struct string *)s);
-   create_tokenizer(tkn, (struct stream *)&ss);
+   create_tokenizer(tkn, string_stream_to_stream(&ss));
    create(string, t);
    while (tokenizer_get_next(&tkn, &t))
       string_vec_append(vec_out, &t);

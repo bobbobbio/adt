@@ -9,14 +9,14 @@ client_404(struct file *client_conn)
 {
    const struct string *req =
       strw("HTTP/1.0 404 Not Found\n\n<html><h1>Not Found</h1></html>");
-   ecrash(stream_write((struct stream *)client_conn, req));
+   ecrash(stream_write(file_to_stream(client_conn), req));
 }
 
 static void
 serve_client(struct file *client_conn, struct inet_addr *client_addr)
 {
    create(string, buff);
-   create_line_reader(client_lr, (struct stream *)client_conn);
+   create_line_reader(client_lr, file_to_stream(client_conn));
    line_reader_get_line(&client_lr, &buff);
 
    aprintf("%s -- \"%s\"\n",
@@ -40,10 +40,10 @@ serve_client(struct file *client_conn, struct inet_addr *client_addr)
       }
    }
 
-   ecrash(stream_read((struct stream *)&file, &buff));
-   ecrash(stream_write((struct stream *)client_conn,
+   ecrash(stream_read(file_to_stream(&file), &buff));
+   ecrash(stream_write(file_to_stream(client_conn),
       strw("HTTP/1.0 200 OK\n\n")));
-   ecrash(stream_write((struct stream *)client_conn, &buff));
+   ecrash(stream_write(file_to_stream(client_conn), &buff));
 }
 
 int

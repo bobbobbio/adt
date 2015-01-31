@@ -11,6 +11,9 @@ struct a_packed string_stream {
 };
 adt_func_header(string_stream);
 
+struct stream *
+string_stream_to_stream(struct string_stream *);
+
 #define create_string_stream(name, string) \
    struct string_stream name a_cleanup(string_stream_destroy) = \
       string_stream_make_var(string)

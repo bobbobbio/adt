@@ -99,6 +99,9 @@ file_set_is_set(struct file_set *, const struct file *);
  * |_| |_|_|\___| |___/\__|_|  \___|\__,_|_| |_| |_|
  */
 
+struct stream *
+file_to_stream(struct file *f);
+
 struct error
 fd_stream_read(struct stream *, struct string *, size_t want, size_t *got)
    a_warn_unused_result;

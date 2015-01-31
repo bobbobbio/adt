@@ -28,23 +28,23 @@ arg_main(struct arg_dict *args)
 
    aprintf("Got connection from %s\n\n", print(inet_addr, &client_addr));
 
-   create_line_reader(stdin_lr, (struct stream *)file_stdin);
+   create_line_reader(stdin_lr, file_to_stream(file_stdin));
 
    create(string, buff);
-   while (stream_has_more((struct stream *)&client_conn)) {
+   while (stream_has_more(file_to_stream(&client_conn))) {
       create_file_set(fd_set, &client_conn, file_stdin);
       ecrash(file_set_select(&fd_set));
 
       if (file_set_is_set(&fd_set, &client_conn)) {
          ecrash(stream_read_n_or_less(
-            (struct stream *)&client_conn, &buff, 1024));
+            file_to_stream(&client_conn), &buff, 1024));
          printf("%s", string_to_cstring(&buff));
       }
 
       if (file_set_is_set(&fd_set, file_stdin)) {
          line_reader_get_line(&stdin_lr, &buff);
          string_append_cstring(&buff, "\n");
-         ecrash(stream_write((struct stream *)&client_conn, &buff));
+         ecrash(stream_write(file_to_stream(&client_conn), &buff));
       }
    }
 
