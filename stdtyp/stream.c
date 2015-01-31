@@ -26,7 +26,7 @@ stream_read_n_or_less(struct stream *s, struct string *str, size_t want)
 }
 
 struct error
-stream_write(struct stream *s, struct string *str)
+stream_write(struct stream *s, const struct string *str)
 {
    return stream_vtable[s->type].stream_write(s, str);
 }

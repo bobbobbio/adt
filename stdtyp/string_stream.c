@@ -48,7 +48,7 @@ string_stream_read(struct stream *s, struct string *buff,
 }
 
 struct error
-string_stream_write(struct stream *s, struct string *data)
+string_stream_write(struct stream *s, const struct string *data)
 {
    adt_assert(s->type == STRING_STREAM);
    struct string_stream *ss = (struct string_stream *)s;

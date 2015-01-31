@@ -47,7 +47,7 @@ fd_stream_read(struct stream *s, struct string *buff, size_t want, size_t *got)
 }
 
 struct error
-fd_stream_write(struct stream *s, struct string *data)
+fd_stream_write(struct stream *s, const struct string *data)
 {
    adt_assert(s->type == FD_STREAM);
    struct fd_stream *fd_s = (struct fd_stream *)s;

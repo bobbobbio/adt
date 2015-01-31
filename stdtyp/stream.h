@@ -14,7 +14,7 @@ struct a_packed stream {
 
 struct stream_interface {
    struct error (*stream_read)(struct stream *, struct string *, size_t, size_t *);
-   struct error (*stream_write)(struct stream *, struct string *);
+   struct error (*stream_write)(struct stream *, const struct string *);
    bool (*stream_has_more)(struct stream *);
 };
 
@@ -36,7 +36,7 @@ stream_read_n_or_less(struct stream *, struct string *, size_t)
    a_warn_unused_result;
 
 struct error
-stream_write(struct stream *, struct string *)
+stream_write(struct stream *, const struct string *)
    a_warn_unused_result;
 
 bool
