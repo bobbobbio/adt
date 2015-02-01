@@ -58,6 +58,21 @@ errno_to_error(void)
 #define with_file_open(name, path, flags) \
    with_create_var(file, name, file_make_open, path, flags)
 
+#define file_read(file, ...) \
+   stream_read(file_to_stream(file), __VA_ARGS__)
+
+#define file_read_n(file, ...) \
+   stream_read_n(file_to_stream(file), __VA_ARGS__)
+
+#define file_read_n_or_less(file, ...) \
+   stream_read_n_or_less(file_to_stream(file), __VA_ARGS__)
+
+#define file_write(file, ...) \
+   stream_write(file_to_stream(file), __VA_ARGS__)
+
+#define file_has_more(file) \
+   stream_has_more(file_to_stream(file))
+
 /*  __ _ _                 _
  * / _(_) | ___   ___  ___| |_
  * | |_| | |/ _ \ / __|/ _ \ __|

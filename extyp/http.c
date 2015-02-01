@@ -34,8 +34,8 @@ http_get_url(const struct string *url, struct string *output)
    }
 
    // Create the tcp connection
-   create(file, tcp_stream);
-   ereraise(tcp_connect(&domain, port, &tcp_stream));
+   create(socket, tcp_stream);
+   ereraise(socket_connect(&domain, port, &tcp_stream));
 
    // Send the GET request
    create(string, req);
@@ -43,9 +43,9 @@ http_get_url(const struct string *url, struct string *output)
    // alive, and we don't support that exactly.
    string_append_format(&req, "GET %s HTTP/1.0\n", print(string, &path));
    string_append_format(&req, "host: %s\n\n", print(string, &domain));
-   ereraise(stream_write(file_to_stream(&tcp_stream), &req));
+   ereraise(socket_write(&tcp_stream, &req));
 
-   create_line_reader(lr, file_to_stream(&tcp_stream));
+   create_line_reader(lr, socket_to_stream(&tcp_stream));
 
    create_regex(kv_reg, strw("(.+): (.+)"));
    create(string_string_map, header);

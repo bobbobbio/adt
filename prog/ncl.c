@@ -16,35 +16,34 @@ arg_main(struct arg_dict *args)
 {
    int port = get_arg_num(args, strw(""));
 
-   create(file, tcp_socket);
-   ecrash(tcp_bind(port, &tcp_socket));
-   ecrash(tcp_listen(&tcp_socket, 0));
+   create(socket, tcp_socket);
+   ecrash(socket_bind(port, &tcp_socket));
+   ecrash(socket_listen(&tcp_socket, 0));
 
    printf("Listening for connections on port %d\n", port);
 
-   create(file, client_conn);
+   create(socket, client_conn);
    create(inet_addr, client_addr);
-   ecrash(tcp_accept(&tcp_socket, &client_conn, &client_addr));
+   ecrash(socket_accept(&tcp_socket, &client_conn, &client_addr));
 
    aprintf("Got connection from %s\n\n", print(inet_addr, &client_addr));
 
    create_line_reader(stdin_lr, file_to_stream(file_stdin));
 
    create(string, buff);
-   while (stream_has_more(file_to_stream(&client_conn))) {
-      create_file_set(fd_set, &client_conn, file_stdin);
+   while (socket_has_more(&client_conn)) {
+      create_file_set(fd_set, &client_conn.file, file_stdin);
       ecrash(file_set_select(&fd_set));
 
-      if (file_set_is_set(&fd_set, &client_conn)) {
-         ecrash(stream_read_n_or_less(
-            file_to_stream(&client_conn), &buff, 1024));
+      if (file_set_is_set(&fd_set, &client_conn.file)) {
+         ecrash(socket_read_n_or_less(&client_conn, &buff, 1024));
          printf("%s", string_to_cstring(&buff));
       }
 
       if (file_set_is_set(&fd_set, file_stdin)) {
          line_reader_get_line(&stdin_lr, &buff);
          string_append_cstring(&buff, "\n");
-         ecrash(stream_write(file_to_stream(&client_conn), &buff));
+         ecrash(socket_write(&client_conn, &buff));
       }
    }
 

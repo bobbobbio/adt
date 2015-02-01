@@ -10,6 +10,21 @@
 create_error_body(network_error);
 create_error_body(network_hostname_error);
 
+adt_func_body(socket);
+
+void
+socket_init(struct socket *s)
+{
+   file_init(&s->file);
+}
+
+void
+socket_destroy(struct socket *s)
+{
+   ecrash(file_close(&s->file));
+   file_destroy(&s->file);
+}
+
 static struct error
 eai_to_error(int ecode)
 {
@@ -122,16 +137,39 @@ dns_lookup(const struct string *dname, struct inet_addr *iaddr_out)
    return no_error;
 }
 
+int
+socket_fd(struct socket *s)
+{
+   return file_fd(&s->file);
+}
+
+struct socket
+socket_make_var(int fd)
+{
+   struct socket s;
+   socket_init(&s);
+   s.file.fd = fd;
+
+   return s;
+}
+
+void
+socket_copy(struct socket *d, const struct socket *s)
+{
+   file_copy(&d->file, &s->file);
+}
+
 struct error
-tcp_connect(struct string *server, int port, struct file* file_out)
+socket_connect(struct string *server, int port, struct socket* socket_out)
 {
    // Do the DNS lookup
    create(inet_addr, ia);
    ereraise(dns_lookup(server, &ia));
 
    // Create tcp connection
-   create_file_fd(tcp_socket, socket(AF_INET, SOCK_STREAM, 0));
-   if (file_fd(&tcp_socket) == -1)
+   create_socket(tcp_socket, socket(AF_INET, SOCK_STREAM, 0));
+
+   if (socket_fd(&tcp_socket) == -1)
       return errno_to_error();
 
    struct sockaddr_in saddr = {
@@ -141,23 +179,22 @@ tcp_connect(struct string *server, int port, struct file* file_out)
    };
 
    // Connect to the server
-   if (connect(file_fd(&tcp_socket),
+   if (connect(socket_fd(&tcp_socket),
       (struct sockaddr *)&saddr, sizeof(saddr)) != 0)
       return errno_to_error();
 
-   // XXX This should not be reaching inside of the object, there needs to be a
-   // way to hand this off correctly
-   file_copy(file_out, &tcp_socket);
-   tcp_socket.fd = -1;
+   socket_copy(socket_out, &tcp_socket);
+   tcp_socket.file.fd = -1;
 
    return no_error;
 }
 
 struct error
-tcp_bind(int port, struct file *file_out)
+socket_bind(int port, struct socket *socket_out)
 {
-   create_file_fd(tcp_socket, socket(AF_INET, SOCK_STREAM, 0));
-   if (file_fd(&tcp_socket) == -1)
+   create_socket(tcp_socket, socket(AF_INET, SOCK_STREAM, 0));
+
+   if (socket_fd(&tcp_socket) == -1)
       ereraise(errno_to_error());
 
    struct sockaddr_in saddr = {
@@ -167,21 +204,21 @@ tcp_bind(int port, struct file *file_out)
    };
 
    int err =
-      bind(file_fd(&tcp_socket), (struct sockaddr *)&saddr, sizeof(saddr));
+      bind(socket_fd(&tcp_socket), (struct sockaddr *)&saddr, sizeof(saddr));
 
    if (err != 0)
       ereraise(errno_to_error());
 
-   file_copy(file_out, &tcp_socket);
-   tcp_socket.fd = -1;
+   socket_copy(socket_out, &tcp_socket);
+   tcp_socket.file.fd = -1;
 
    return no_error;
 }
 
 struct error
-tcp_listen(struct file *tcp_socket, int backlog)
+socket_listen(struct socket *tcp_socket, int backlog)
 {
-   int err = listen(file_fd(tcp_socket), 5);
+   int err = listen(socket_fd(tcp_socket), backlog);
 
    if (err != 0)
       ereraise(errno_to_error());
@@ -190,23 +227,23 @@ tcp_listen(struct file *tcp_socket, int backlog)
 }
 
 struct error
-tcp_accept(struct file *tcp_socket, struct file *file_out,
+socket_accept(struct socket *tcp_socket, struct socket *socket_out,
    struct inet_addr *client_address)
 {
    struct sockaddr_in caddr;
    socklen_t clen = sizeof(caddr);
-   create_file_fd(client_conn,
-      accept(file_fd(tcp_socket), (struct sockaddr *)&caddr, &clen));
+   create_socket(client_conn,
+      accept(socket_fd(tcp_socket), (struct sockaddr *)&caddr, &clen));
 
-   if (file_fd(&client_conn) == -1)
+   if (socket_fd(&client_conn) == -1)
       ereraise(errno_to_error());
 
    create(inet_addr, client_addr);
    client_addr.version = 4;
    *((uint32_t *)client_addr.addr) = caddr.sin_addr.s_addr;
 
-   file_copy(file_out, &client_conn);
-   client_conn.fd = -1;
+   socket_copy(socket_out, &client_conn);
+   client_conn.file.fd = -1;
 
    if (client_address != NULL)
       inet_addr_copy(client_address, &client_addr);

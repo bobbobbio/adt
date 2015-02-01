@@ -57,7 +57,7 @@ subprocess_run(const struct string *command, struct string *output)
             eraise(subprocess_error,
                "Subprocess had non-zero exit status");
 
-         ereraise(stream_read(file_to_stream(&read_pipe), output));
+         ereraise(file_read(&read_pipe, output));
       }
    }
 
