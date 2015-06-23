@@ -2,6 +2,13 @@ include_rules
 
 CFLAGS += -I../
 
+# This is lame. OS X clang linking doesn't work with -pthread
+ifeq (@(TUP_PLATFORM),macosx)
+   PTHREAD = -lpthread
+else
+   PTHREAD = -pthread
+endif
+
 : argparse_test.c ../libadt.a |> !cc_prog |> argparse_test
 : file_test.c ../libadt.a |> !cc_prog |> file_test
 : http_test.c ../libadt.a |> !cc_prog |> http_test
@@ -12,8 +19,7 @@ CFLAGS += -I../
 : set_test.c ../libadt.a |> !cc_prog |> set_test
 : string_test.c ../libadt.a |> !cc_prog |> string_test
 : vector_test.c ../libadt.a |> !cc_prog |> vector_test
-
-: thread_test.c ../libadt.a |> !cc_prog -lpthread |> thread_test
+: thread_test.c ../libadt.a |> !cc_prog $(PTHREAD) |> thread_test
 
 : test_main.c |> !cc |>
 : test_main.o ../libadt.a | *_test |> !cc_prog |> all_tests
