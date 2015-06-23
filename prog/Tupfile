@@ -1,0 +1,8 @@
+include_rules
+
+CFLAGS += -I../
+
+: nsfind.c ../libadt.a |> !cc_prog |> nsfind
+: wc.c ../libadt.a |> !cc_prog |> wc
+: ncl.c ../libadt.a |> !cc_prog |> ncl
+: http_server.c ../libadt.a |> !cc_prog |> http_server

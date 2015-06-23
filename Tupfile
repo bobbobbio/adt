@@ -1,0 +1,8 @@
+include_rules
+
+CFLAGS += -I./
+
+: foreach *.c |> !cc |>
+: foreach stdtyp/*.c |> !cc |>
+: foreach extyp/*.c |> !cc |>
+: *.o |> !ar |> libadt.a

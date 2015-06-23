@@ -1,0 +1,19 @@
+include_rules
+
+CFLAGS += -I../
+
+: argparse_test.c ../libadt.a |> !cc_prog |> argparse_test
+: file_test.c ../libadt.a |> !cc_prog |> file_test
+: http_test.c ../libadt.a |> !cc_prog |> http_test
+: linereader_test.c ../libadt.a |> !cc_prog |> linereader_test
+: list_test.c ../libadt.a |> !cc_prog |> list_test
+: map_test.c ../libadt.a |> !cc_prog |> map_test
+: regex_test.c ../libadt.a |> !cc_prog |> regex_test
+: set_test.c ../libadt.a |> !cc_prog |> set_test
+: string_test.c ../libadt.a |> !cc_prog |> string_test
+: vector_test.c ../libadt.a |> !cc_prog |> vector_test
+
+: thread_test.c ../libadt.a |> !cc_prog -lpthread |> thread_test
+
+: test_main.c |> !cc |>
+: test_main.o ../libadt.a | *_test |> !cc_prog |> all_tests

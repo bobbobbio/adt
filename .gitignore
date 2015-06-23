@@ -1,7 +1,0 @@
-*.o
-*.a
-*.dSYM
-.DS_Store
-*.swp
-*.swo
-cscope.*
