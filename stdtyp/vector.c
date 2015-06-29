@@ -24,11 +24,12 @@ vector_init(struct vector *v)
 }
 
 void
-vector_init_size(struct vector *v, uint64_t s, size_t size)
+vector_init_size(struct vector *v, uint64_t s, size_t elem_size)
 {
-   v->buff = malloc(s * size);
-   v->buff_len = s;
+   v->buff = malloc(s * elem_size);
+   v->buff_len = s * elem_size;
    v->size = s;
+   v->elem_size = elem_size;
 }
 
 void
@@ -51,17 +52,17 @@ _vector_expand(struct vector *v)
 }
 
 void *
-vector_at(const struct vector *v, uint64_t i, size_t s)
+vector_at(const struct vector *v, uint64_t i)
 {
    adt_assert(i < v->size);
    uint8_t *b = (uint8_t *)v->buff;
-   return &b[i * s];
+   return &b[i * v->elem_size];
 }
 
 void *
-vector_insert(struct vector *v, uint64_t i, size_t s)
+vector_insert(struct vector *v, uint64_t i)
 {
-   while ((v->size + 1) * s > v->buff_len)
+   while ((v->size + 1) * v->elem_size > v->buff_len)
       _vector_expand(v);
 
    uint8_t *b = (uint8_t *)v->buff;
@@ -70,39 +71,40 @@ vector_insert(struct vector *v, uint64_t i, size_t s)
    // and return last element
    if (i >= v->size) {
       v->size++;
-      return &b[(v->size - 1) * s];
+      return &b[(v->size - 1) * v->elem_size];
    }
 
-   void *pos = &b[i * s];
+   void *pos = &b[i * v->elem_size];
    // Shift down
-   _memcpy(&b[(i + 1) * s], pos, (v->size - i) * s);
+   _memcpy(&b[(i + 1) * v->elem_size], pos, (v->size - i) * v->elem_size);
    v->size++;
 
    return pos;
 }
 
 void *
-vector_extend(struct vector *v, int len, size_t s)
+vector_extend(struct vector *v, int len)
 {
-   int new_size = (v->size + len) * s;
+   int new_size = (v->size + len) * v->elem_size;
    if (v->buff_len < new_size) {
       v->buff_len = new_size;
       v->buff = realloc(v->buff, v->buff_len);
    }
-   void *p = &v->buff[v->size * s];
+   void *p = &v->buff[v->size * v->elem_size];
    v->size += len;
    return p;
 }
 
 void
-vector_remove(struct vector *v, uint64_t i, size_t s)
+vector_remove(struct vector *v, uint64_t i)
 {
    adt_assert(i < v->size);
    if (i < v->size - 1) {
       uint8_t *b = (uint8_t *)v->buff;
-      void *pos = &b[i * s];
+      void *pos = &b[i * v->elem_size];
       // Shift up
-      _memcpy(pos, &b[(i + 1) * s], (v->size - (i + 1)) * s);
+      _memcpy(
+         pos, &b[(i + 1) * v->elem_size], (v->size - (i + 1)) * v->elem_size);
    }
 
    v->size--;
@@ -110,7 +112,7 @@ vector_remove(struct vector *v, uint64_t i, size_t s)
 
 bool
 vector_iterate(const struct vector *v, struct aiter *i, uint64_t *i_out,
-   void **v_out, size_t size)
+   void **v_out)
 {
    i->ipos++;
 
@@ -120,16 +122,15 @@ vector_iterate(const struct vector *v, struct aiter *i, uint64_t *i_out,
       return false;
 
    *i_out = in;
-   *v_out = vector_at(v, in, size);
+   *v_out = vector_at(v, in);
 
    return true;
 }
 
 void
-vector_sort(struct vector *v, int (*compare)(const void *, const void *),
-   size_t s)
+vector_sort(struct vector *v, int (*compare)(const void *, const void *))
 {
-   qsort(v->buff, v->size, s, compare);
+   qsort(v->buff, v->size, v->elem_size, compare);
 }
 
 vector_gen_pod_body(int_vec, int);
@@ -142,6 +143,7 @@ int_vec_make_var(int val[], int len)
    vec.vector.buff = malloc(vec.vector.buff_len);
    memcpy(vec.vector.buff, val, vec.vector.buff_len);
    vec.vector.size = len;
+   vec.vector.elem_size = sizeof(int);
 
    return vec;
 }
