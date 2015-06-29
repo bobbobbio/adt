@@ -51,6 +51,11 @@ struct error
 file_list_directory(const struct string *, struct string_vec *)
    a_warn_unused_result;
 
+// XXX: This doesn't really belong here
+bool
+path_is_dir(const struct string *)
+    a_warn_unused_result;
+
 struct error
 errno_to_error(void)
    a_warn_unused_result;

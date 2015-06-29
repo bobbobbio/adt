@@ -150,6 +150,47 @@ file_list_directory(const struct string *path, struct string_vec *files_out)
    return no_error;
 }
 
+// From the man page (man 2 stat):
+//
+// struct stat {
+//    dev_t     st_dev;     /* ID of device containing file */
+//    ino_t     st_ino;     /* inode number */
+//    mode_t    st_mode;    /* protection */
+//    nlink_t   st_nlink;   /* number of hard links */
+//    uid_t     st_uid;     /* user ID of owner */
+//    gid_t     st_gid;     /* group ID of owner */
+//    dev_t     st_rdev;    /* device ID (if special file) */
+//    off_t     st_size;    /* total size, in bytes */
+//    blksize_t st_blksize; /* blocksize for filesystem I/O */
+//    blkcnt_t  st_blocks;  /* number of 512B blocks allocated */
+//    time_t    st_atime;   /* time of last access */
+//    time_t    st_mtime;   /* time of last modification */
+//    time_t    st_ctime;   /* time of last status change */
+// };
+
+static struct error
+file_stat(const struct string *path, struct stat *stat_out)
+{
+   adt_assert(stat_out != NULL);
+   int err = stat(string_to_cstring(path), stat_out);
+   if (err < 0)
+      ereraise(errno_to_error());
+
+   return no_error;
+}
+
+bool
+path_is_dir(const struct string *path)
+{
+   struct stat res = {};
+
+   // Any error results in false
+   ehandle(error, file_stat(path, &res))
+      return false;
+
+   return S_ISDIR(res.st_mode);
+}
+
 /*  __ _ _                 _
  * / _(_) | ___   ___  ___| |_
  * | |_| | |/ _ \ / __|/ _ \ __|

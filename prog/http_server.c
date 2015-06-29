@@ -15,6 +15,31 @@ client_404(struct socket *client_conn)
 }
 
 static void
+client_redirect(struct socket *client_conn, const struct string* location)
+{
+   ecrash(socket_write(client_conn, strw("HTTP/1.0 301 Moved Permanently\n")));
+   ecrash(socket_write(client_conn, strw("Location: ")));
+   ecrash(socket_write(client_conn, location));
+   ecrash(socket_write(client_conn, strw("\n\n")));
+}
+
+static void
+directory_listing(struct socket *client_conn, struct string_vec *files)
+{
+   ecrash(socket_write(client_conn, strw("HTTP/1.0 200 OK\n\n")));
+   ecrash(socket_write(client_conn, strw("<html><body>")));
+   iter_value (string_vec, files, path) {
+      create(string, line);
+
+      string_append_format(&line, "<a href='%s'>%s</a><br \\>\n",
+         print(string, path), print(string, path));
+
+      ecrash(socket_write(client_conn, &line));
+   }
+   ecrash(socket_write(client_conn, strw("</html></body>")));
+}
+
+static void
 serve_client(struct socket *client_conn, struct inet_addr *client_addr)
 {
    // Read off only the first line of the request.
@@ -34,22 +59,36 @@ serve_client(struct socket *client_conn, struct inet_addr *client_addr)
       return;
    }
 
-   // Look for the path they requested in the current working directory.  If we
-   // couldn't open the path because it doesn't exist, send 404.
-   create(file, file);
-   ehandle(error, file_open(&file, &path, 0)) {
-      if (error_is_type(error, file_not_found_error)) {
-         client_404(client_conn);
-         return;
-      } else {
-         ecrash(error);
-      }
-   }
+   if (string_length(&path) == 0)
+      string_append_cstring(&path, "./");
 
-   // Otherwise we read the file and write the contents back to the client.
-   ecrash(file_read(&file, &buff));
-   ecrash(socket_write(client_conn, strw("HTTP/1.0 200 OK\n\n")));
-   ecrash(socket_write(client_conn, &buff));
+   // If they asked for a directory, read the files in the directory and
+   // generate a page with links.
+   if (path_is_dir(&path)) {
+      create(string_vec, files);
+      ecrash(file_list_directory(&path, &files));
+      if (!string_ends_with(&path, strw("/"))) {
+         string_append_char(&path, '/');
+         client_redirect(client_conn, &path);
+      } else
+         directory_listing(client_conn, &files);
+   } else {
+      // Look for the path they requested in the current working directory.  If we
+      // couldn't open the path because it doesn't exist, send 404.
+      create(file, file);
+      ehandle(error, file_open(&file, &path, 0)) {
+         if (error_is_type(error, file_not_found_error)) {
+            client_404(client_conn);
+            return;
+         } else {
+            ecrash(error);
+         }
+      }
+      // Otherwise we read the file and write the contents back to the client.
+      ecrash(file_read(&file, &buff));
+      ecrash(socket_write(client_conn, strw("HTTP/1.0 200 OK\n\n")));
+      ecrash(socket_write(client_conn, &buff));
+   }
 }
 
 int
