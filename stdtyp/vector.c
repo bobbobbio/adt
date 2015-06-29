@@ -125,6 +125,13 @@ vector_iterate(const struct vector *v, struct aiter *i, uint64_t *i_out,
    return true;
 }
 
+void
+vector_sort(struct vector *v, int (*compare)(const void *, const void *),
+   size_t s)
+{
+   qsort(v->buff, v->size, s, compare);
+}
+
 vector_gen_pod_body(int_vec, int);
 
 struct int_vec

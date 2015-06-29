@@ -33,6 +33,10 @@ bool
 vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **,
    size_t);
 
+void
+vector_sort(struct vector *, int (*compare)(const void *, const void *),
+   size_t);
+
 #define _vector_gen_header(name, type, type_ref, f) \
    struct name { struct vector vector; }; \
    _adt_func_header(name, f); \
@@ -52,7 +56,9 @@ vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **,
    f void name##_init_size(struct name *, uint64_t); \
    f bool name##_contains(const struct name *, type); \
    f void name##_clear(struct name *); \
-   f int name##_size(const struct name *)
+   f int name##_size(const struct name *); \
+   f int name##_sort(struct name *, \
+      int (*comparator)(const type_ref, const type_ref))
 
 #define _vector_gen_body(name, type, type_ref, type_in, so, typename, f)       \
    _adt_func_body(name, f);                                                    \
@@ -145,6 +151,12 @@ vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **,
    f int name##_size(const struct name *a)                                     \
    {                                                                           \
       return vector_size(&a->vector);                                          \
+   }                                                                           \
+   f int name##_sort(struct name *a,                                           \
+      int (*comparator)(const type_ref, const type_ref))                       \
+   {                                                                           \
+      vector_sort(&a->vector,                                                  \
+         (int (*)(const void *, const void *))comparator, so);                 \
    }                                                                           \
    f int name##_index_of(struct name *a, type v)                               \
    {                                                                           \

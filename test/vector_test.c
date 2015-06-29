@@ -137,5 +137,10 @@ int main()
    string_vec_extend(&left, &right);
    adt_assert(string_vec_equal(&left, &expect));
 
+   create_int_vec(sort_test, 4, 5, 2, 3, 7, 6, 8, 9, 1);
+   int_vec_sort(&sort_test, int_compare);
+   create_int_vec(expect_sort_test, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+   adt_assert(int_vec_equal(&sort_test, &expect_sort_test));
+
    return EXIT_SUCCESS;
 }
