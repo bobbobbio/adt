@@ -8,33 +8,34 @@ struct vector {
    char *buff;
    uint64_t buff_len;
    uint64_t size;
-   size_t elem_size;
 };
 adt_func_header(vector);
 
 void *
-vector_at(const struct vector *, uint64_t pos);
+vector_at(const struct vector *, uint64_t, size_t);
 
 void *
-vector_insert(struct vector *, uint64_t pos);
+vector_insert(struct vector *, uint64_t, size_t);
 
 void *
-vector_extend(struct vector *, int length);
+vector_extend(struct vector *, int, size_t);
 
 void
-vector_remove(struct vector *, uint64_t pos);
+vector_remove(struct vector *, uint64_t, size_t);
 
 uint64_t
 vector_size(const struct vector *);
 
 void
-vector_init_size(struct vector *, uint64_t size, size_t elem_size);
+vector_init_size(struct vector *, uint64_t, size_t);
 
 bool
-vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **);
+vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **,
+   size_t);
 
 void
-vector_sort(struct vector *, int (*compare)(const void *, const void *));
+vector_sort(struct vector *, int (*compare)(const void *, const void *),
+   size_t);
 
 #define _vector_gen_header(name, type, type_ref, f) \
    struct name { struct vector vector; }; \
@@ -65,7 +66,7 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *));
    f bool name##_iter_next(const struct name *n, struct name##_iter *i)        \
    {                                                                           \
       uint64_t key;                                                            \
-      if (!vector_iterate(&n->vector, &i->pos, &key, (void **)&i->value))      \
+      if (!vector_iterate(&n->vector, &i->pos, &key, (void **)&i->value, so))  \
          return false;                                                         \
       i->key = key;                                                            \
       return true;                                                             \
@@ -75,7 +76,7 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *));
       struct name *a = type_malloc(name);                                      \
       name##_init_size(a, size);                                               \
       for (unsigned i = 0; i < size; i++)                                      \
-         typename##_init(vector_at(&a->vector, i));                            \
+         typename##_init(vector_at(&a->vector, i, so));                        \
       return a;                                                                \
    }                                                                           \
    f bool name##_equal(const struct name *a, const struct name *b)             \
@@ -90,19 +91,19 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *));
    }                                                                           \
    f void name##_insert(struct name *a, type v, int i)                         \
    {                                                                           \
-      type_ref w = vector_insert(&a->vector, i);                               \
+      type_ref w = vector_insert(&a->vector, i, so);                           \
       typename##_init(w);                                                      \
       typename##_copy(w, type_in (v));                                         \
    }                                                                           \
    f void name##_append(struct name *a, type v)                                \
    {                                                                           \
-      type_ref w = vector_insert(&a->vector, vector_size(&a->vector));         \
+      type_ref w = vector_insert(&a->vector, vector_size(&a->vector), so);     \
       typename##_init(w);                                                      \
       typename##_copy(w, type_in (v));                                         \
    }                                                                           \
    f void name##_extend(struct name *a, const struct name *b)                  \
    {                                                                           \
-      type_ref w = vector_extend(&a->vector, name##_size(b));                  \
+      type_ref w = vector_extend(&a->vector, name##_size(b), so);              \
       for (unsigned i = 0; i < name##_size(b); i++) {                          \
          typename##_init(w);                                                   \
          typename##_copy(w, name##_at(b, i));                                  \
@@ -111,33 +112,32 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *));
    }                                                                           \
    f type_ref name##_grow(struct name *a)                                      \
    {                                                                           \
-      type_ref w = vector_insert(&a->vector, vector_size(&a->vector));         \
+      type_ref w = vector_insert(&a->vector, vector_size(&a->vector), so);     \
       typename##_init(w);                                                      \
       return w;                                                                \
     }                                                                          \
    f void name##_prepend(struct name *a, type v)                               \
    {                                                                           \
-      type_ref w = vector_insert(&a->vector, 0);                               \
+      type_ref w = vector_insert(&a->vector, 0, so);                           \
       typename##_init(w);                                                      \
       typename##_copy(w, type_in (v));                                         \
    }                                                                           \
    f void name##_remove(struct name *a, int i)                                 \
    {                                                                           \
-      typename##_destroy(vector_at(&a->vector, i));                            \
-      vector_remove(&a->vector, i);                                            \
+      typename##_destroy(vector_at(&a->vector, i, so));                        \
+      vector_remove(&a->vector, i, so);                                        \
    }                                                                           \
    f void name##_get(const struct name *a, type_ref r, int i)                  \
    {                                                                           \
-      typename##_copy(r, vector_at(&a->vector, i));                            \
+      typename##_copy(r, vector_at(&a->vector, i, so));                        \
    }                                                                           \
    f type_ref name##_at(const struct name *a, int i)                           \
    {                                                                           \
-      return vector_at(&a->vector, i);                                         \
+      return vector_at(&a->vector, i, so);                                     \
    }                                                                           \
    f void name##_init(struct name *n)                                          \
    {                                                                           \
       vector_init(&n->vector);                                                 \
-      n->vector.elem_size = so;                                                \
    }                                                                           \
    f void name##_init_size(struct name *n, uint64_t size)                      \
    {                                                                           \
@@ -156,12 +156,12 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *));
       int (*comparator)(const type_ref, const type_ref))                       \
    {                                                                           \
       vector_sort(&a->vector,                                                  \
-         (int (*)(const void *, const void *))comparator);                     \
+         (int (*)(const void *, const void *))comparator, so);                 \
    }                                                                           \
    f int name##_index_of(struct name *a, type v)                               \
    {                                                                           \
       for (unsigned i = 0; i < vector_size(&a->vector); i++) {                 \
-         if (typename##_equal(vector_at(&a->vector, i), type_in(v)))           \
+         if (typename##_equal(vector_at(&a->vector, i, so), type_in(v)))       \
             return i;                                                          \
       }                                                                        \
       return -1;                                                               \
@@ -178,10 +178,10 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *));
    {                                                                           \
       string_append_cstring(s, "[ ");                                          \
       if (vector_size(&a->vector) > 0)                                         \
-         typename##_print((const type_ref)vector_at(&a->vector, 0), s);        \
+         typename##_print((const type_ref)vector_at(&a->vector, 0, so), s);    \
       for (unsigned i = 1; i < vector_size(&a->vector); i++) {                 \
          string_append_cstring(s, ", ");                                       \
-         typename##_print((const type_ref)vector_at(&a->vector, i), s);        \
+         typename##_print((const type_ref)vector_at(&a->vector, i, so), s);    \
       }                                                                        \
       string_append_cstring(s, " ]");                                          \
    }                                                                           \
@@ -202,9 +202,9 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *));
    {                                                                           \
       name##_clear(d);                                                         \
       for (unsigned i = 0; i < vector_size(&s->vector); i++) {                 \
-         type_ref w = vector_insert(&d->vector, vector_size(&d->vector));      \
+         type_ref w = vector_insert(&d->vector, vector_size(&d->vector), so);  \
          typename##_init(w);                                                   \
-         typename##_copy(w, vector_at(&s->vector, i));                         \
+         typename##_copy(w, vector_at(&s->vector, i, so));                     \
       }                                                                        \
    }                                                                           \
    SWALLOWSEMICOLON
