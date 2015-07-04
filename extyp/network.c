@@ -4,7 +4,6 @@
 #include <errno.h>
 #include <limits.h>
 #include <netdb.h>
-#include <sys/socket.h>
 #include <sys/types.h>
 
 create_error_body(network_error);
@@ -159,6 +158,17 @@ socket_make_var(int fd)
    return s;
 }
 
+struct error
+socket_set_bool_option(struct socket *s, int optname)
+{
+   int val = 1;
+   int error = setsockopt(socket_fd(s), SOL_SOCKET, optname, &val, sizeof(val));
+   if (error != 0)
+      ereraise(errno_to_error());
+
+   return no_error;
+}
+
 void
 socket_copy(struct socket *d, const struct socket *s)
 {
@@ -209,9 +219,10 @@ socket_connect(struct string *server, int port, struct socket* socket_out)
 }
 
 struct error
-socket_bind(int port, struct socket *socket_out)
+socket_tcp_init(struct socket *socket_out)
 {
    create(socket, tcp_socket);
+
    do {
       socket_set_fd(&tcp_socket, socket(AF_INET, SOCK_STREAM, 0));
 
@@ -222,6 +233,15 @@ socket_bind(int port, struct socket *socket_out)
          break;
    } while (true);
 
+   socket_copy(socket_out, &tcp_socket);
+   tcp_socket.file.fd = -1;
+
+   return no_error;
+}
+
+struct error
+socket_bind(struct socket *tcp_socket, int port)
+{
    struct sockaddr_in saddr = {
       .sin_family = AF_INET,
       .sin_port = htons(port),
@@ -230,7 +250,7 @@ socket_bind(int port, struct socket *socket_out)
 
    do {
       int err =
-         bind(socket_fd(&tcp_socket), (struct sockaddr *)&saddr, sizeof(saddr));
+         bind(socket_fd(tcp_socket), (struct sockaddr *)&saddr, sizeof(saddr));
 
       if (err != 0) {
          if (errno != EAGAIN && errno != EINTR)
@@ -238,9 +258,6 @@ socket_bind(int port, struct socket *socket_out)
       } else
          break;
    } while (true);
-
-   socket_copy(socket_out, &tcp_socket);
-   tcp_socket.file.fd = -1;
 
    return no_error;
 }

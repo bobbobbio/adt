@@ -17,7 +17,8 @@ arg_main(struct arg_dict *args)
    int port = get_arg_num(args, strw(""));
 
    create(socket, tcp_socket);
-   ecrash(socket_bind(port, &tcp_socket));
+   ecrash(socket_tcp_init(&tcp_socket));
+   ecrash(socket_bind(&tcp_socket, port));
    ecrash(socket_listen(&tcp_socket, 0));
 
    printf("Listening for connections on port %d\n", port);

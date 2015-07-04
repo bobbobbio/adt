@@ -19,6 +19,7 @@ endif
 : set_test.c ../libadt.a |> !cc_prog |> set_test
 : string_test.c ../libadt.a |> !cc_prog |> string_test
 : vector_test.c ../libadt.a |> !cc_prog |> vector_test
+: auto_free_pool_test.c ../libadt.a |> !cc_prog |> auto_free_pool_test
 : thread_test.c ../libadt.a |> !cc_prog $(PTHREAD) |> thread_test
 
 : test_main.c |> !cc |>

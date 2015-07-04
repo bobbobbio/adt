@@ -132,9 +132,14 @@ struct string *string_vec_grow(struct string_vec *);
       { return memory_hash((void *)a, sizeof(struct type)); } \
    SWALLOWSEMICOLON
 #define adt_func_pod_body(type) _adt_func_pod_body(type, )
-#define adt_func_pod_header(type) _adt_func_header(type, )
+#define adt_func_pod_header(type) \
+   _adt_func_header(type, ); \
+   int type##_compare(const struct type *a, const struct type *b); \
+   uint64_t type##_hash(const struct type *a)
 #define adt_func_pod_static(type) \
    _adt_func_header(type, static); \
+   static int type##_compare(const struct type *a, const struct type *b); \
+   static uint64_t type##_hash(const struct type *a); \
    _adt_func_pod_body(type, static)
 
 static uint64_t

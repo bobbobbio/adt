@@ -1,6 +1,8 @@
 #ifndef __NETWORK_H__
 #define __NETWORK_H__
 
+#include <sys/socket.h>
+
 #include <adt.h>
 #include <stdtyp/string.h>
 #include <stdtyp/file.h>
@@ -31,6 +33,9 @@ socket_fd(const struct socket *s);
 void
 socket_set_fd(struct socket *s, int fd);
 
+struct error
+socket_set_bool_option(struct socket *s, int optname);
+
 #define create_socket(name, fd) \
    struct socket name a_cleanup(socket_destroy) = socket_make_var(fd)
 
@@ -60,7 +65,11 @@ socket_connect(struct string *server, int port, struct socket *)
    a_warn_unused_result;
 
 struct error
-socket_bind(int port, struct socket *)
+socket_tcp_init(struct socket *socket_out)
+   a_warn_unused_result;
+
+struct error
+socket_bind(struct socket *tcp_socket, int port)
    a_warn_unused_result;
 
 struct error

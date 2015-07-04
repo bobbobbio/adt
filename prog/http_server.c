@@ -1,5 +1,6 @@
 #include <adt.h>
 #include <extyp/network.h>
+#include <stdtyp/auto_free_pool.h>
 #include <stdtyp/file.h>
 #include <stdtyp/linereader.h>
 #include <stdtyp/regex.h>
@@ -93,40 +94,66 @@ serve_client(struct socket *client_conn, struct inet_addr *client_addr)
    }
 }
 
-// XXX In order to free up the server socket, make the server global and clean
-// it up in a signal handler. This doesn't seem like the best thing.
-struct socket tcp_socket = {};
+struct auto_free_pool *g_pool = NULL;
 
 static void
-reap_socket_and_exit(void)
+cleanup_and_exit(void)
 {
-   socket_destroy(&tcp_socket);
-
+   if (g_pool != NULL)
+      auto_free_pool_free(g_pool);
    exit(1);
 }
 
-int
-main(void)
+int main(void)
 {
-   // Clean up the socket on signal
-   set_signal_handler(SIGINT, reap_socket_and_exit);
-   set_signal_handler(SIGTERM, reap_socket_and_exit);
+   // Create an auto_free_pool that will get cleaned up on exit.
+   g_pool = auto_free_pool_new();
+   set_signal_handler(SIGINT, cleanup_and_exit);
+   set_signal_handler(SIGTERM, cleanup_and_exit);
+
+   // Make the socket in the pool so that when we exit via signal we always
+   // destroy the socket.
+   create_ptr_in_pool(g_pool, socket, tcp_socket);
+   ecrash(socket_tcp_init(tcp_socket));
+
+   // By setting this option, we can turn around and reuse the socket
+   // immediately if you restart.
+   ecrash(socket_set_bool_option(tcp_socket, SO_REUSEADDR));
 
    // Listen on port 8080 for incoming connections.
-   ecrash(socket_bind(8080, &tcp_socket));
+   ecrash(socket_bind(tcp_socket, 8080));
+
    // The second argument here is how many connections to queue in the kernel
    // before dropping connections.
-   ecrash(socket_listen(&tcp_socket, 10));
+   ecrash(socket_listen(tcp_socket, 10));
 
    printf("HTTP server started on port 8080\n");
+   printf("Press Enter to exit...\n");
+
+   create_line_reader(stdin_lr, file_to_stream(file_stdin));
 
    while (true) {
-      // Accept a connection and serve it's request synchronously.
-      create(socket, client_conn);
-      create(inet_addr, client_addr);
-      ecrash(socket_accept(&tcp_socket, &client_conn, &client_addr));
-      serve_client(&client_conn, &client_addr);
+      create_file_set(fd_set, &tcp_socket->file, file_stdin);
+      ecrash(file_set_select(&fd_set));
+
+      if (file_set_is_set(&fd_set, &tcp_socket->file)) {
+         // XXX We are potentially leaking the client connection here if we exit
+         // on a signal, but it doesn't matter so much, it is an unkown port.
+         create(socket, client_conn);
+         create(inet_addr, client_addr);
+
+         // Accept a connection and serve it's request synchronously.
+         ecrash(socket_accept(tcp_socket, &client_conn, &client_addr));
+         serve_client(&client_conn, &client_addr);
+      }
+
+      if (file_set_is_set(&fd_set, file_stdin)) {
+         printf("Server exiting...\n");
+         break;
+      }
    }
+
+   auto_free_pool_free(g_pool);
 
    return EXIT_SUCCESS;
 }
