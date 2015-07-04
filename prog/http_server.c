@@ -1,8 +1,9 @@
 #include <adt.h>
-#include <stdtyp/file.h>
 #include <extyp/network.h>
+#include <stdtyp/file.h>
 #include <stdtyp/linereader.h>
 #include <stdtyp/regex.h>
+#include <stdtyp/signal.h>
 
 static void
 client_404(struct socket *client_conn)
@@ -92,11 +93,26 @@ serve_client(struct socket *client_conn, struct inet_addr *client_addr)
    }
 }
 
+// XXX In order to free up the server socket, make the server global and clean
+// it up in a signal handler. This doesn't seem like the best thing.
+struct socket tcp_socket = {};
+
+static void
+reap_socket_and_exit(void)
+{
+   socket_destroy(&tcp_socket);
+
+   exit(1);
+}
+
 int
 main(void)
 {
+   // Clean up the socket on signal
+   set_signal_handler(SIGINT, reap_socket_and_exit);
+   set_signal_handler(SIGTERM, reap_socket_and_exit);
+
    // Listen on port 8080 for incoming connections.
-   create(socket, tcp_socket);
    ecrash(socket_bind(8080, &tcp_socket));
    // The second argument here is how many connections to queue in the kernel
    // before dropping connections.

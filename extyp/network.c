@@ -138,9 +138,15 @@ dns_lookup(const struct string *dname, struct inet_addr *iaddr_out)
 }
 
 int
-socket_fd(struct socket *s)
+socket_fd(const struct socket *s)
 {
    return file_fd(&s->file);
+}
+
+void
+socket_set_fd(struct socket *s, int fd)
+{
+   file_set_fd(&s->file, fd);
 }
 
 struct socket
@@ -167,10 +173,17 @@ socket_connect(struct string *server, int port, struct socket* socket_out)
    ereraise(dns_lookup(server, &ia));
 
    // Create tcp connection
-   create_socket(tcp_socket, socket(AF_INET, SOCK_STREAM, 0));
+   create(socket, tcp_socket);
 
-   if (socket_fd(&tcp_socket) == -1)
-      return errno_to_error();
+   do {
+      socket_set_fd(&tcp_socket, socket(AF_INET, SOCK_STREAM, 0));
+
+      if (socket_fd(&tcp_socket) == -1) {
+         if (errno != EAGAIN && errno != EINTR)
+            ereraise(errno_to_error());
+      } else
+         break;
+   } while (true);
 
    struct sockaddr_in saddr = {
       .sin_family = AF_INET,
@@ -179,12 +192,18 @@ socket_connect(struct string *server, int port, struct socket* socket_out)
    };
 
    // Connect to the server
-   if (connect(socket_fd(&tcp_socket),
-      (struct sockaddr *)&saddr, sizeof(saddr)) != 0)
-      return errno_to_error();
+   do {
+      int error = connect(
+         socket_fd(&tcp_socket), (struct sockaddr *)&saddr, sizeof(saddr));
+      if (error != 0) {
+         if (errno != EAGAIN && errno != EINTR)
+            ereraise(errno_to_error());
+      } else
+         break;
+   } while (true);
 
    socket_copy(socket_out, &tcp_socket);
-   tcp_socket.file.fd = -1;
+   socket_set_fd(&tcp_socket, -1);
 
    return no_error;
 }
@@ -192,10 +211,16 @@ socket_connect(struct string *server, int port, struct socket* socket_out)
 struct error
 socket_bind(int port, struct socket *socket_out)
 {
-   create_socket(tcp_socket, socket(AF_INET, SOCK_STREAM, 0));
+   create(socket, tcp_socket);
+   do {
+      socket_set_fd(&tcp_socket, socket(AF_INET, SOCK_STREAM, 0));
 
-   if (socket_fd(&tcp_socket) == -1)
-      ereraise(errno_to_error());
+      if (socket_fd(&tcp_socket) == -1) {
+         if (errno != EAGAIN && errno != EINTR)
+            ereraise(errno_to_error());
+      } else
+         break;
+   } while (true);
 
    struct sockaddr_in saddr = {
       .sin_family = AF_INET,
@@ -203,11 +228,16 @@ socket_bind(int port, struct socket *socket_out)
       .sin_addr.s_addr = INADDR_ANY
    };
 
-   int err =
-      bind(socket_fd(&tcp_socket), (struct sockaddr *)&saddr, sizeof(saddr));
+   do {
+      int err =
+         bind(socket_fd(&tcp_socket), (struct sockaddr *)&saddr, sizeof(saddr));
 
-   if (err != 0)
-      ereraise(errno_to_error());
+      if (err != 0) {
+         if (errno != EAGAIN && errno != EINTR)
+            ereraise(errno_to_error());
+      } else
+         break;
+   } while (true);
 
    socket_copy(socket_out, &tcp_socket);
    tcp_socket.file.fd = -1;
@@ -218,10 +248,15 @@ socket_bind(int port, struct socket *socket_out)
 struct error
 socket_listen(struct socket *tcp_socket, int backlog)
 {
-   int err = listen(socket_fd(tcp_socket), backlog);
+   do {
+      int err = listen(socket_fd(tcp_socket), backlog);
 
-   if (err != 0)
-      ereraise(errno_to_error());
+      if (err != 0) {
+         if (errno != EAGAIN && errno != EINTR)
+            ereraise(errno_to_error());
+      } else
+         break;
+   } while (true);
 
    return no_error;
 }
@@ -232,11 +267,18 @@ socket_accept(struct socket *tcp_socket, struct socket *socket_out,
 {
    struct sockaddr_in caddr;
    socklen_t clen = sizeof(caddr);
-   create_socket(client_conn,
-      accept(socket_fd(tcp_socket), (struct sockaddr *)&caddr, &clen));
+   create(socket, client_conn);
 
-   if (socket_fd(&client_conn) == -1)
-      ereraise(errno_to_error());
+   do {
+      socket_set_fd(&client_conn,
+         accept(socket_fd(tcp_socket), (struct sockaddr *)&caddr, &clen));
+
+      if (socket_fd(&client_conn) == -1) {
+         if (errno != EAGAIN && errno != EINTR)
+            ereraise(errno_to_error());
+      } else
+         break;
+   } while (true);
 
    create(inet_addr, client_addr);
    client_addr.version = 4;

@@ -47,6 +47,9 @@ file_close(struct file *f)
 int
 file_fd(const struct file *f);
 
+void
+file_set_fd(struct file *f, int fd);
+
 struct error
 file_list_directory(const struct string *, struct string_vec *)
    a_warn_unused_result;

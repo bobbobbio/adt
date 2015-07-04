@@ -73,6 +73,12 @@ file_fd(const struct file *f)
 }
 
 void
+file_set_fd(struct file *f, int fd)
+{
+   f->fd = fd;
+}
+
+void
 file_destroy(struct file *f)
 {
    ecrash(file_close(f));

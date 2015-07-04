@@ -102,6 +102,12 @@ struct string_vec;
    } \
    SWALLOWSEMICOLON
 
+// A little forward declaration is necessary here since adt uses these string
+// and string vector functions.
+struct string;
+struct string_vec;
+struct string *string_vec_grow(struct string_vec *);
+
 #define adt_func_body(type) _adt_func_body(type, )
 #define adt_func_header(type) _adt_func_header(type, )
 #define adt_func_static(type) \
@@ -227,5 +233,6 @@ pod_m_make(int8_t);
    _convert_ctype_body(type, f_func, static)
 
 #include <error.h>
+#include <stdtyp/vector.h>
 
 #endif // __ADT_H

@@ -26,7 +26,10 @@ dns_lookup(const struct string *dname, struct inet_addr *)
    a_warn_unused_result;
 
 int
-socket_fd(struct socket *s);
+socket_fd(const struct socket *s);
+
+void
+socket_set_fd(struct socket *s, int fd);
 
 #define create_socket(name, fd) \
    struct socket name a_cleanup(socket_destroy) = socket_make_var(fd)
