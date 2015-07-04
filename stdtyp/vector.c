@@ -15,6 +15,10 @@ adt_func_body(vector);
 
 #define BUFFER_START_SIZE (500)
 
+// Note: The init is designed such that it doesn't have to be called.  If you
+// just zero out all of the elements of the vector it should also work.  This
+// way you can make static vectors and not have to call init on them to start
+// using them.
 void
 vector_init(struct vector *v)
 {
@@ -46,7 +50,11 @@ vector_size(const struct vector *v)
 void
 _vector_expand(struct vector *v)
 {
-   v->buff_len *= 2;
+   if (v->buff_len == 0)
+      v->buff_len = BUFFER_START_SIZE;
+   else
+      v->buff_len *= 2;
+
    v->buff = realloc(v->buff, v->buff_len);
 }
 

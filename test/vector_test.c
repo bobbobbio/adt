@@ -142,5 +142,19 @@ int main()
    create_int_vec(expect_sort_test, 1, 2, 3, 4, 5, 6, 7, 8, 9);
    adt_assert(int_vec_equal(&sort_test, &expect_sort_test));
 
+   // This is suppose to be okay by design.
+   struct int_vec iv a_cleanup(int_vec_destroy) = {};
+   int_vec_append(&iv, 9);
+   int_vec_append(&iv, 4);
+   int_vec_append(&iv, 7);
+   int_vec_append(&iv, 1);
+   int_vec_append(&iv, 3);
+   int_vec_append(&iv, 2);
+   int_vec_append(&iv, 8);
+   int_vec_append(&iv, 6);
+   int_vec_append(&iv, 5);
+   int_vec_sort(&iv, int_compare);
+   adt_assert(int_vec_equal(&iv, &expect_sort_test));
+
    return EXIT_SUCCESS;
 }
