@@ -24,10 +24,10 @@ int main()
    string_vec_append(&words, strw("apple"));
    string_vec_append(&words, strw("book"));
    string_vec_append(&words, strw("caterpiller"));
-   adt_assert(string_vec_equal(&words, &terp));
-   adt_assert(string_equal(strw("apple"), string_vec_at(&words, 0)));
-   adt_assert(string_equal(strw("book"), string_vec_at(&words, 1)));
-   adt_assert(string_equal(strw("caterpiller"), string_vec_at(&words, 2)));
+   adt_assert_equal(string_vec, &words, &terp);
+   adt_assert_equal(string, strw("apple"), string_vec_at(&words, 0));
+   adt_assert_equal(string, strw("book"), string_vec_at(&words, 1));
+   adt_assert_equal(string, strw("caterpiller"), string_vec_at(&words, 2));
 
    create(char_vec, mook);
    char_vec_append(&mook, 'a');
@@ -135,12 +135,12 @@ int main()
    create_string_vec(expect, "a", "b", "c", "1", "2", "3");
 
    string_vec_extend(&left, &right);
-   adt_assert(string_vec_equal(&left, &expect));
+   adt_assert_equal(string_vec, &left, &expect);
 
    create_int_vec(sort_test, 4, 5, 2, 3, 7, 6, 8, 9, 1);
    int_vec_sort(&sort_test, int_compare);
    create_int_vec(expect_sort_test, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-   adt_assert(int_vec_equal(&sort_test, &expect_sort_test));
+   adt_assert_equal(int_vec, &sort_test, &expect_sort_test);
 
    // This is suppose to be okay by design.
    struct int_vec iv a_cleanup(int_vec_destroy) = {};
@@ -154,7 +154,21 @@ int main()
    int_vec_append(&iv, 6);
    int_vec_append(&iv, 5);
    int_vec_sort(&iv, int_compare);
-   adt_assert(int_vec_equal(&iv, &expect_sort_test));
+   adt_assert_equal(int_vec, &iv, &expect_sort_test);
+
+   // resize
+   create(int_vec, resize_vec);
+   int_vec_resize(&resize_vec, 10);
+
+   adt_assert_size(int_vec, &resize_vec, 10);
+   for (int i = 0; i < 10; i++)
+      adt_assert(*int_vec_at(&resize_vec, i) == 0);
+
+   int_vec_resize(&resize_vec, 5);
+
+   adt_assert_size(int_vec, &resize_vec, 5);
+   for (int i = 0; i < 5; i++)
+      adt_assert(*int_vec_at(&resize_vec, i) == 0);
 
    return EXIT_SUCCESS;
 }

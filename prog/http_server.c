@@ -26,6 +26,7 @@ client_redirect(struct socket *client_conn, const struct string* location)
 static void
 directory_listing(struct socket *client_conn, struct string_vec *files)
 {
+   string_vec_sort(files, string_compare);
    ecrash(socket_write(client_conn, strw("HTTP/1.0 200 OK\n\n")));
    ecrash(socket_write(client_conn, strw("<html><body>")));
    iter_value (string_vec, files, path) {

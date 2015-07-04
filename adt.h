@@ -166,7 +166,7 @@ memory_hash(void *m, size_t size)
 #define m_make(name, type) \
    static type *name##_new() { \
       return malloc(sizeof(type)); } \
-   static void name##_init(type *p) {} \
+   static void name##_init(type *p) { memset(p, 0, sizeof(type)); } \
    static void name##_destroy(type *p) {} \
    static bool name##_equal(type *a, type *b) { return *a == *b; } \
    static void name##_free(type *p) { \

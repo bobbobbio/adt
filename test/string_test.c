@@ -34,5 +34,7 @@ main(int argc, char **argv)
    adt_assert(string_length(&my_str) > 2,
       "String is much shorter than expected");
 
+   string_append_format(&my_str, "%s", print(string, strw("DERPYFACE")));
+
    return EXIT_SUCCESS;
 }

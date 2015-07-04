@@ -57,6 +57,7 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *),
    f bool name##_contains(const struct name *, type); \
    f void name##_clear(struct name *); \
    f int name##_size(const struct name *); \
+   f void name##_resize(struct name *, size_t); \
    f int name##_sort(struct name *, \
       int (*comparator)(const type_ref, const type_ref))
 
@@ -197,6 +198,20 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *),
    {                                                                           \
       while (vector_size(&a->vector) > 0)                                      \
          name##_remove(a, name##_size(a) - 1);                                 \
+   }                                                                           \
+   f void name##_resize(struct name *a, size_t new_size)                       \
+   {                                                                           \
+      if (new_size > vector_size(&a->vector)) {                                \
+         unsigned expand_by = new_size - vector_size(&a->vector);              \
+         type_ref w = vector_extend(&a->vector, expand_by, so);                \
+         for (unsigned i = 0; i < expand_by; i++) {                            \
+            typename##_init(w);                                                \
+            w++;                                                               \
+         }                                                                     \
+      } else {                                                                 \
+         while (vector_size(&a->vector) > new_size)                            \
+            name##_remove(a, name##_size(a) - 1);                              \
+      }                                                                        \
    }                                                                           \
    f void name##_copy(struct name *d, const struct name *s)                    \
    {                                                                           \

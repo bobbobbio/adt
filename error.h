@@ -167,6 +167,14 @@ create_error_header(_no_error);
 #define __adt_assert(test, ...) \
    adt_print(_adt_assert, test, #test, __FILE__, __LINE__, __VA_ARGS__)
 
+#define adt_assert_size(type, cont, size) \
+   adt_assert(type##_size((cont)) == size, \
+      "size of %s is not %d", print(type, (cont)), size)
+
+#define adt_assert_equal(type, a, b) \
+   adt_assert(type##_equal((a), (b)), \
+      "%s != %s", print(type, (a)), print(type, (b)))
+
 void _error_panic(struct error e, char *code, const char *file, int line);
 void _panic(char *fmt, ...)
    a_format(printf, 1, 2) a_noreturn;
