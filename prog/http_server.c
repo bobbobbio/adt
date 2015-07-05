@@ -76,8 +76,8 @@ serve_client(struct socket *client_conn, struct inet_addr *client_addr)
       } else
          directory_listing(client_conn, &files);
    } else {
-      // Look for the path they requested in the current working directory.  If we
-      // couldn't open the path because it doesn't exist, send 404.
+      // Look for the path they requested in the current working directory.  If
+      // we couldn't open the path because it doesn't exist, send 404.
       create(file, file);
       ehandle(error, file_open(&file, &path, 0)) {
          if (error_is_type(error, file_not_found_error)) {
