@@ -188,7 +188,7 @@ file_stat(const struct string *path, struct stat *stat_out)
 bool
 path_is_dir(const struct string *path)
 {
-   struct stat res = {};
+   struct stat res = {0};
 
    // Any error results in false
    ehandle(error, file_stat(path, &res))

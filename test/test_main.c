@@ -13,6 +13,7 @@ arg_main(struct arg_dict *args)
 {
    create(string_vec, files);
    ecrash(file_list_directory(strw("."), &files));
+   string_vec_sort(&files, string_compare);
 
    bool valgrind = false;
    #ifdef __linux

@@ -143,7 +143,7 @@ int main()
    adt_assert_equal(int_vec, &sort_test, &expect_sort_test);
 
    // This is suppose to be okay by design.
-   struct int_vec iv a_cleanup(int_vec_destroy) = {};
+   struct int_vec iv a_cleanup(int_vec_destroy) = {0};
    int_vec_append(&iv, 9);
    int_vec_append(&iv, 4);
    int_vec_append(&iv, 7);

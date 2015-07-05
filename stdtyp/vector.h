@@ -58,7 +58,7 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *),
    f void name##_clear(struct name *); \
    f int name##_size(const struct name *); \
    f void name##_resize(struct name *, size_t); \
-   f int name##_sort(struct name *, \
+   f void name##_sort(struct name *, \
       int (*comparator)(const type_ref, const type_ref))
 
 #define _vector_gen_body(name, type, type_ref, type_in, so, typename, f)       \
@@ -153,7 +153,7 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *),
    {                                                                           \
       return vector_size(&a->vector);                                          \
    }                                                                           \
-   f int name##_sort(struct name *a,                                           \
+   f void name##_sort(struct name *a,                                          \
       int (*comparator)(const type_ref, const type_ref))                       \
    {                                                                           \
       vector_sort(&a->vector,                                                  \
