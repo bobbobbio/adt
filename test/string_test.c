@@ -1,6 +1,7 @@
 #include <adt.h>
 #include <stdtyp/string.h>
 #include <stdtyp/regex.h>
+#include <stdtyp/string_stream.h>
 
 int
 main(int argc, char **argv)
@@ -35,6 +36,18 @@ main(int argc, char **argv)
       "String is much shorter than expected");
 
    string_append_format(&my_str, "%s", print(string, strw("DERPYFACE")));
+
+   const struct string *orig = strw("THIS IS A LONG STRING HAHAHAHAHAHHA.");
+   create_string_stream(ss, (struct string *)orig);
+
+   create(string, tread);
+   ecrash(stream_read_n_or_less((struct stream *)&ss, &tread, 4096));
+
+   assert(string_equal(&tread, orig));
+
+   create(string_vec, lvec);
+   string_split(strw("a b c d e f g"), ' ', &lvec);
+   adt_assert(string_vec_size(&lvec) == 7);
 
    return EXIT_SUCCESS;
 }

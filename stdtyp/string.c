@@ -272,7 +272,7 @@ string_split(const struct string *s, char c, struct string_vec *vec_out)
    string_vec_clear(vec_out);
 
    // XXX This is all kind of messed up
-   create_string_stream(ss, (struct string *)&s);
+   create_string_stream(ss, (struct string *)s);
    create_tokenizer(tkn, string_stream_to_stream(&ss));
    create(string, sc);
    string_append_char(&sc, c);
