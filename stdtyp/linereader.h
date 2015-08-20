@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #ifndef __LINE_READER_H__
 #define __LINE_READER_H__
 

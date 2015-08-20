@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #include <stdtyp/stream.h>
 
 extern const struct stream_interface fd_stream_interface;

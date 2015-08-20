@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #ifndef __REGEX_H__
 #define __REGEX_H__
 

@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #ifndef __FILE_H__
 #define __FILE_H__
 

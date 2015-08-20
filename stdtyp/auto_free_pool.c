@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #include <stdtyp/auto_free_pool.h>
 
 adt_func_pod_body(freer);

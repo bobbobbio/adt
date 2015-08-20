@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #ifndef __THREADING_H__
 #define __THREADING_H__
 

@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #include <error.h>
 #include <stdtyp/file.h>
 #include <execinfo.h>

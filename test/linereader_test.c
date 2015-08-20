@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #include <stdtyp/linereader.h>
 #include <stdtyp/tokenizer.h>
 #include <stdtyp/file.h>

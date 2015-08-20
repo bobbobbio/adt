@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #include <stdtyp/file.h>
 #include <stdtyp/stream.h>
 

@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #ifndef __STREAM_H__
 #define __STREAM_H__
 

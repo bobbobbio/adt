@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #ifndef __CTXMANAGER_H__
 #define __CTXMANAGER_H__
 

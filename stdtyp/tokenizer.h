@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #ifndef __TOKENIZER_H__
 #define __TOKENIZER_H__
 

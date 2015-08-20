@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #include <adt.h>
 #include <stdtyp/vector.h>
 #include <stdtyp/iter.h>

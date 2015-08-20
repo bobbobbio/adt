@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #include <adt.h>
 #include <extyp/network.h>
 #include <stdtyp/argparse.h>

@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #ifndef __STRING_H
 #define __STRING_H
 #include <adt.h>
@@ -144,6 +146,9 @@ string_split(const struct string *, char c, struct string_vec *);
 
 void
 string_tokenize(const struct string *, struct string_vec *);
+
+bool
+string_starts_with(const struct string *, const struct string *);
 
 bool
 string_ends_with(const struct string *, const struct string *);

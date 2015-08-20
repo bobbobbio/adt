@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #include <extyp/http.h>
 #include <stdtyp/linereader.h>
 #include <stdtyp/map.h>

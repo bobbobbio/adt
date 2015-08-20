@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #include <extyp/network.h>
 #include <stdtyp/stream.h>
 

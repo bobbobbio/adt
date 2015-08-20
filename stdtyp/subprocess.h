@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #ifndef __SUBPROCESS_H__
 #define __SUBPROCESS_H__
 

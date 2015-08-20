@@ -1,3 +1,5 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
 #include <stdtyp/file.h>
 #include <stdtyp/regex.h>
 #include <stdtyp/string.h>
@@ -295,6 +297,20 @@ string_tokenize(const struct string *s, struct string_vec *vec_out)
    create(string, t);
    while (tokenizer_get_next(&tkn, &t))
       string_vec_append(vec_out, &t);
+}
+
+bool
+string_starts_with(const struct string *a, const struct string *b)
+{
+   if (b->length > a->length)
+      return false;
+
+   for (int i = 0; i < b->length; i++) {
+      if (string_char_at_index(a, i) != string_char_at_index(b, i))
+         return false;
+   }
+
+   return true;
 }
 
 bool
