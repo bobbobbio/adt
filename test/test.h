@@ -10,7 +10,7 @@ typedef void (*test_function_t)();
 #ifdef __APPLE__
 // On OS X, it requires the section attribute to be in this format
 #define a_section(name) __attribute__ ((section("__DATA," name)))
-#elif
+#else
 #define a_section(name) __attribute__ ((section(name)))
 #endif
 
@@ -24,6 +24,9 @@ struct test {
 // use the section macro, but on OS X you have to make them yourself.
 extern struct test __start_test __asm("section$start$__DATA$test");
 extern struct test __stop_test __asm("section$end$__DATA$test");
+#else
+extern struct test __start_test;
+extern struct test __stop_test;
 #endif
 
 // We have to provide the used attribute because otherwise the linker might

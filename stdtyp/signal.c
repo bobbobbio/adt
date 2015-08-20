@@ -134,7 +134,8 @@ set_signal_handler(int signum, void (*func)())
 
    handler->func = func;
 
-   struct sigaction sa = {};
+   struct sigaction sa;
+   memset(&sa, 0, sizeof(struct sigaction));
    sa.sa_handler = handle_signal;
    int error = sigaction(signum, &sa, NULL);
 
