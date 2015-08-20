@@ -27,16 +27,16 @@ void list_copy_v(struct list *d, const struct list *s, void(*c)(void *, void *),
 #define _list_gen_header(name, type, type_ref, f) \
    struct name { struct list list; }; \
    _adt_func_header(name, f); \
-   f void name##_insert(struct name *, type, int i); \
-   f void name##_append(struct name *, type); \
-   f void name##_prepend(struct name *, type); \
-   f void name##_remove(struct name *, int i); \
-   f void name##_get(struct name *, type_ref, int); \
-   f type_ref name##_at(struct name *, int); \
-   f void name##_init(struct name *); \
-   f void name##_destroy(struct name *); \
-   f void name##_clear(struct name *); \
-   f int name##_size(struct name *)
+   a_unused f void name##_insert(struct name *, type, int i); \
+   a_unused f void name##_append(struct name *, type); \
+   a_unused f void name##_prepend(struct name *, type); \
+   a_unused f void name##_remove(struct name *, int i); \
+   a_unused f void name##_get(struct name *, type_ref, int); \
+   a_unused f type_ref name##_at(struct name *, int); \
+   a_unused f void name##_init(struct name *); \
+   a_unused f void name##_destroy(struct name *); \
+   a_unused f void name##_clear(struct name *); \
+   a_unused f int name##_size(struct name *)
 
 #define _list_gen_body(name, type, type_ref, type_in, typename, f) \
    _adt_func_body(name, f); \

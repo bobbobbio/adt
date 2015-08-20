@@ -57,18 +57,18 @@ struct string_vec;
    (struct type){ __VA_ARGS__ }
 
 #define _adt_func_header(type, f) \
-   f struct type * type##_new(void); \
-   f void type##_free(struct type *); \
-   f void type##_freer(struct type **); \
-   f void type##_init(struct type *); \
-   f struct type type##_make(void); \
-   f void type##_destroy(struct type *); \
-   f void type##_print(const struct type *, struct string *); \
+   a_unused f struct type * type##_new(void); \
+   a_unused f void type##_free(struct type *); \
+   a_unused f void type##_freer(struct type **); \
+   a_unused f void type##_init(struct type *); \
+   a_unused f struct type type##_make(void); \
+   a_unused f void type##_destroy(struct type *); \
+   a_unused f void type##_print(const struct type *, struct string *); \
    /* We pass the print function in so that we don't link against it. */ \
    /* This avoids having to have the print function always defined. */ \
-   f char * type##_printer(const struct type *, struct string_vec *, \
+   a_unused f char * type##_printer(const struct type *, struct string_vec *, \
       void(*p)(const struct type *, struct string *)); \
-   f void type##_copy(struct type *, const struct type *)
+   a_unused f void type##_copy(struct type *, const struct type *)
 
 #define _adt_func_body(type, f) \
    f struct type type##_make(void) \
@@ -119,16 +119,18 @@ struct string *string_vec_grow(struct string_vec *);
 // compare and hash
 #define _adt_func_pod_body(type, f) \
    _adt_func_body(type, f); \
-   f void type##_init(struct type *a) { memset(a, 0, sizeof(struct type)); } \
-   f void type##_destroy(struct type *a) {} \
-   f void type##_copy(struct type *a, const struct type *b) { *a = *b; } \
-   f bool type##_equal(const struct type *a, const struct type *b) \
+   a_unused f void type##_init(struct type *a) { \
+      memset(a, 0, sizeof(struct type)); } \
+   a_unused f void type##_destroy(struct type *a) {} \
+   a_unused f void type##_copy(struct type *a, const struct type *b) { \
+      *a = *b; } \
+   a_unused f bool type##_equal(const struct type *a, const struct type *b) \
       { return memcmp((const void *)a, (const void *)b, \
       sizeof(struct type)) == 0; } \
-   f int type##_compare(const struct type *a, const struct type *b) \
+   a_unused f int type##_compare(const struct type *a, const struct type *b) \
       { return memcmp((const void *)a, (const void *)b, \
       sizeof(struct type)); } \
-   f uint64_t type##_hash(const struct type *a) \
+   a_unused f uint64_t type##_hash(const struct type *a) \
       { return memory_hash((void *)a, sizeof(struct type)); } \
    SWALLOWSEMICOLON
 #define adt_func_pod_body(type) _adt_func_pod_body(type, )
@@ -142,6 +144,7 @@ struct string *string_vec_grow(struct string_vec *);
    static uint64_t type##_hash(const struct type *a); \
    _adt_func_pod_body(type, static)
 
+a_unused
 static uint64_t
 memory_hash(void *m, size_t size)
 {
@@ -175,22 +178,22 @@ memory_hash(void *m, size_t size)
 
 // POD types malloc and free
 #define m_make(name, type) \
-   static type *name##_new() { \
+   a_unused static type *name##_new() { \
       return malloc(sizeof(type)); } \
-   static void name##_init(type *p) { memset(p, 0, sizeof(type)); } \
-   static void name##_destroy(type *p) {} \
-   static bool name##_equal(type *a, type *b) { return *a == *b; } \
-   static void name##_free(type *p) { \
+   a_unused static void name##_init(type *p) { memset(p, 0, sizeof(type)); } \
+   a_unused static void name##_destroy(type *p) {} \
+   a_unused static bool name##_equal(type *a, type *b) { return *a == *b; } \
+   a_unused static void name##_free(type *p) { \
       free(p); } \
-   static void name##_copy(type *d, type *s) { \
+   a_unused static void name##_copy(type *d, type *s) { \
       *d = *s; } \
    SWALLOWSEMICOLON
 
 #define pod_m_make(type) \
    m_make(type, type); \
-   static uint64_t type##_hash(const type *a) { \
+   a_unused static uint64_t type##_hash(const type *a) { \
       return *a; } \
-   static int type##_compare(const type *a, const type *b) { \
+   a_unused static int type##_compare(const type *a, const type *b) { \
       return *a - *b; } \
    SWALLOWSEMICOLON
 

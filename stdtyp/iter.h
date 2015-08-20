@@ -17,7 +17,7 @@ struct name##_iter { \
    struct aiter pos; \
 }; \
 _adt_func_header(name##_iter, f); \
-f bool name##_iter_next(const struct name *, struct name##_iter *); \
+a_unused f bool name##_iter_next(const struct name *, struct name##_iter *); \
 typedef vtype name##_value; \
 typedef ktype name##_key
 

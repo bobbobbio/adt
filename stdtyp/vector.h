@@ -41,24 +41,24 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *),
    struct name { struct vector vector; }; \
    _adt_func_header(name, f); \
    _gen_iter_header(name, int, type_ref, f); \
-   f struct name *name##_new_size(uint64_t); \
-   f bool name##_equal(const struct name *, const struct name *); \
-   f void name##_insert(struct name *, type, int i); \
-   f void name##_append(struct name *, type); \
-   f void name##_extend(struct name *, const struct name *); \
-   f void name##_prepend(struct name *, type); \
-   f type_ref name##_grow(struct name *); \
-   f void name##_remove(struct name *, int i); \
-   f int name##_index_of(struct name *, type); \
-   f bool name##_remove_value(struct name *, type); \
-   f void name##_get(const struct name *, type_ref, int); \
-   f type_ref name##_at(const struct name *, int); \
-   f void name##_init_size(struct name *, uint64_t); \
-   f bool name##_contains(const struct name *, type); \
-   f void name##_clear(struct name *); \
-   f int name##_size(const struct name *); \
-   f void name##_resize(struct name *, size_t); \
-   f void name##_sort(struct name *, \
+   a_unused f struct name *name##_new_size(uint64_t); \
+   a_unused f bool name##_equal(const struct name *, const struct name *); \
+   a_unused f void name##_insert(struct name *, type, int i); \
+   a_unused f void name##_append(struct name *, type); \
+   a_unused f void name##_extend(struct name *, const struct name *); \
+   a_unused f void name##_prepend(struct name *, type); \
+   a_unused f type_ref name##_grow(struct name *); \
+   a_unused f void name##_remove(struct name *, int i); \
+   a_unused f int name##_index_of(struct name *, type); \
+   a_unused f bool name##_remove_value(struct name *, type); \
+   a_unused f void name##_get(const struct name *, type_ref, int); \
+   a_unused f type_ref name##_at(const struct name *, int); \
+   a_unused f void name##_init_size(struct name *, uint64_t); \
+   a_unused f bool name##_contains(const struct name *, type); \
+   a_unused f void name##_clear(struct name *); \
+   a_unused f int name##_size(const struct name *); \
+   a_unused f void name##_resize(struct name *, size_t); \
+   a_unused f void name##_sort(struct name *, \
       int (*comparator)(const type_ref, const type_ref))
 
 #define _vector_gen_body(name, type, type_ref, type_in, so, typename, f)       \
@@ -233,7 +233,7 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *),
    _vector_gen_header(name, const struct type *, struct type *, f)
 
 #define __vector_gen_pod_body(name, type, f) \
-   static void name##_type_print(const type *a, struct string *s) \
+   a_unused static void name##_type_print(const type *a, struct string *s) \
    { type##_print(a, s); } \
    _vector_gen_body(name, type, type *, ref, sizeof(type), type, f)
 #define __vector_gen_pod_header(name, type, f) \
@@ -260,7 +260,7 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *),
 // Ptr Vec
 #define _vector_gen_ptr_header(name, type, f) \
    _vector_gen_header(name, struct type *, struct type **, f); \
-   f void name##_free_ptrs(struct name *)
+   a_unused f void name##_free_ptrs(struct name *)
 
 #define _vector_gen_ptr_body(name, type, f) \
    m_make(name##_void, struct type *); \

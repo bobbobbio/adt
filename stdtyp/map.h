@@ -42,14 +42,14 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
 
 #define _map_gen_header(name, ktype, ktype_ref, type, type_ref, cnst, f) \
    struct name { struct map map; }; \
-   _adt_func_header(name, f); \
+   a_unused _adt_func_header(name, f); \
    _gen_iter_header(name, ktype_ref, type_ref, f); \
-   f void name##_get(const struct name *, ktype, type_ref); \
-   f type_ref name##_at(const struct name *, ktype); \
-   f bool name##_insert(struct name *, ktype, cnst type); \
-   f bool name##_remove(struct name *, ktype); \
-   f int name##_size(const struct name *); \
-   f bool name##_contains(const struct name *, ktype)
+   a_unused f void name##_get(const struct name *, ktype, type_ref); \
+   a_unused f type_ref name##_at(const struct name *, ktype); \
+   a_unused f bool name##_insert(struct name *, ktype, cnst type); \
+   a_unused f bool name##_remove(struct name *, ktype); \
+   a_unused f int name##_size(const struct name *); \
+   a_unused f bool name##_contains(const struct name *, ktype)
 
 #define _map_gen_body(name, ktype, ktype_ref, ktype_tn, ktype_in, ktype_out,   \
       typename, type, type_ref, vref, cnst, f)                                 \
@@ -183,7 +183,8 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
    _map_gen_header(name, ktype, ktype *, struct type *, struct type **, , )
 #define map_gen_podk_ptr_body(name, ktype, type) \
    m_make(name##_void, struct type *); \
-   static void name##_void_print(const struct type **a, struct string *s) \
+   a_unused static void name##_void_print( \
+      const struct type **a, struct string *s) \
    { void_print(a, s); } \
    _map_gen_body(name, ktype, ktype *, ktype, ref, unref, name##_void, \
       struct type *, struct type **, ref, , )
@@ -192,7 +193,8 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
    _map_gen_header(name, ktype, ktype *, struct type *, struct type **, \
       , static); \
    m_make(name##_void, struct type *); \
-   static void name##_void_print(const struct type **a, struct string *s) \
+   a_unused static void name##_void_print( \
+      const struct type **a, struct string *s) \
    { void_print(a, s); } \
    _map_gen_body(name, ktype, ktype *, ktype, ref, unref, name##_void, \
       struct type *, struct type **, ref, , static)
@@ -203,7 +205,8 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
       struct type **, , )
 #define map_gen_ptr_body(name, ktype, type) \
    m_make(name##_void, struct type *); \
-   static void name##_void_print(const struct type **a, struct string *s) \
+   a_unused static void name##_void_print( \
+      const struct type **a, struct string *s) \
    { void_print(a, s); } \
    _map_gen_body(name, const struct ktype *, struct ktype *, ktype, , , \
       name##_void, struct type *, struct type **, ref, , )

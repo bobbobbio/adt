@@ -130,8 +130,6 @@ int main(void)
    printf("HTTP server started on port 8080\n");
    printf("Press Enter to exit...\n");
 
-   create_line_reader(stdin_lr, file_to_stream(file_stdin));
-
    while (true) {
       create_file_set(fd_set, &tcp_socket->file, file_stdin);
       ecrash(file_set_select(&fd_set));

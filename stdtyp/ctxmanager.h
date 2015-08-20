@@ -85,7 +85,8 @@
    context_manager_gen_body(name, type, enter, exit)
 
 #define with_context_manager(name, t) \
-   ctx_def(struct name unq(cm) a_cleanup(name##_context_manager_exit) = \
+   ctx_def(struct name a_unused unq(cm) \
+      a_cleanup(name##_context_manager_exit) = \
       name##_context_manager_enter(t))
 
 #define with_create_var(type, name, cfunc, ...) \

@@ -64,7 +64,7 @@ vector_gen_header(string_vec_vec, string_vec);
 
 #define adt_print(func, ...) \
 do { \
-   create(string_vec, __PRINT_BUFFER__); \
+   create(string_vec, __PRINT_BUFFER__ a_unused); \
    func(__VA_ARGS__); \
 } while (0)
 

@@ -7,12 +7,12 @@
    struct name { struct map map; }; \
    _adt_func_header(name, f); \
    _gen_iter_header(name, int, ktype_ref, f); \
-   f bool name##_insert(struct name *, ktype); \
-   f bool name##_remove(struct name *, ktype); \
-   f int name##_size(const struct name *); \
-   f bool name##_contains(const struct name *, ktype); \
-   f void name##_get_random(const struct name *, ktype_ref); \
-   f void name##_union(struct name *, const struct name *)
+   a_unused f bool name##_insert(struct name *, ktype); \
+   a_unused f bool name##_remove(struct name *, ktype); \
+   a_unused f int name##_size(const struct name *); \
+   a_unused f bool name##_contains(const struct name *, ktype); \
+   a_unused f void name##_get_random(const struct name *, ktype_ref); \
+   a_unused f void name##_union(struct name *, const struct name *)
 
 #define _set_gen_body(name, ktype, ktype_ref, ktype_tn, ktype_in, ktype_out, f)\
    _adt_func_body(name, f);                                                    \

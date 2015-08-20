@@ -1,8 +1,11 @@
 CFLAGS += -D_POSIX_C_SOURCE
 CFLAGS += -D_C99_SOURCE
+CFLAGS += -Wall
+CFLAGS += -Werror
+CC = gcc
 
-!cc_prog = |> c99 $(CFLAGS) %f -o %o |>
-!cc = |> c99 $(CFLAGS) -c %f -o %o |> %B.o
+!cc_prog = |> $(CC) $(CFLAGS) %f -o %o |>
+!cc = |> $(CC) $(CFLAGS) -c %f -o %o |> %B.o
 !ar = |> ar rcs %o %f |>
 
 .gitignore
