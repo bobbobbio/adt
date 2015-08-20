@@ -1,6 +1,7 @@
 // Copyright 2015 Remi Bernotavicius. All right reserved.
 
 #include <stdtyp/threading.h>
+#include "test.h"
 
 create_error_body(test_error);
 
@@ -89,8 +90,7 @@ merge_sort(const struct int_vec *vec)
    return ret;
 }
 
-int
-main(int argc, char **argv)
+adt_test(thread_test)
 {
    create(thread_pool, tp);
    for (unsigned i = 0; i < 10; i++)

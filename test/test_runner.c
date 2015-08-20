@@ -17,9 +17,10 @@ arg_main(struct arg_dict *args)
    ecrash(file_list_directory(strw("."), &files));
    string_vec_sort(&files, string_compare);
 
-   bool valgrind = false;
-   #ifdef __linux
-   valgrind = true;
+   bool valgrind = true;
+   #ifdef __APPLE__
+   // Valgrind is broken on OS X
+   valgrind = false;
    #endif
 
    if (valgrind)

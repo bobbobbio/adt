@@ -2,6 +2,7 @@
 
 #include <error.h>
 #include <stdtyp/file.h>
+#include "test.h"
 
 create_error_body(test_error);
 
@@ -17,7 +18,7 @@ struct error a()
    eraise(test_error, "Failed to do something a");
 }
 
-int main()
+adt_test(error_test)
 {
    ehandle(error, a()) {
       // if we get an error, ignore it!

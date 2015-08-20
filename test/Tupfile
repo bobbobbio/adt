@@ -9,18 +9,19 @@ else
    PTHREAD = -pthread
 endif
 
-: argparse_test.c ../libadt.a |> !cc_prog |> argparse_test
-: file_test.c ../libadt.a |> !cc_prog |> file_test
-: http_test.c ../libadt.a |> !cc_prog |> http_test
-: linereader_test.c ../libadt.a |> !cc_prog |> linereader_test
-: list_test.c ../libadt.a |> !cc_prog |> list_test
-: map_test.c ../libadt.a |> !cc_prog |> map_test
-: regex_test.c ../libadt.a |> !cc_prog |> regex_test
-: set_test.c ../libadt.a |> !cc_prog |> set_test
-: string_test.c ../libadt.a |> !cc_prog |> string_test
-: vector_test.c ../libadt.a |> !cc_prog |> vector_test
-: auto_free_pool_test.c ../libadt.a |> !cc_prog |> auto_free_pool_test
-: thread_test.c ../libadt.a |> !cc_prog $(PTHREAD) |> thread_test
+: foreach *.c |> !cc |>
 
-: test_main.c |> !cc |>
-: test_main.o ../libadt.a | *_test |> !cc_prog |> all_tests
+: argparse_test.o ../libadt.a |> !cc_prog |> argparse_test
+: file_test.o main.o ../libadt.a |> !cc_prog |> file_test
+: http_test.o main.o ../libadt.a |> !cc_prog |> http_test
+: linereader_test.o main.o ../libadt.a |> !cc_prog |> linereader_test
+: list_test.o main.o ../libadt.a |> !cc_prog |> list_test
+: map_test.o main.o ../libadt.a |> !cc_prog |> map_test
+: regex_test.o main.o ../libadt.a |> !cc_prog |> regex_test
+: set_test.o main.o ../libadt.a |> !cc_prog |> set_test
+: string_test.o main.o ../libadt.a |> !cc_prog |> string_test
+: vector_test.o main.o ../libadt.a |> !cc_prog |> vector_test
+: auto_free_pool_test.o main.o ../libadt.a |> !cc_prog |> auto_free_pool_test
+: thread_test.o main.o ../libadt.a |> !cc_prog $(PTHREAD) |> thread_test
+
+: test_runner.o ../libadt.a | *_test |> !cc_prog |> all_tests

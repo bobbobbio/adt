@@ -1,9 +1,9 @@
 // Copyright 2015 Remi Bernotavicius. All right reserved.
 
 #include <stdtyp/auto_free_pool.h>
+#include "test.h"
 
-int
-main(int argc, char **argv)
+adt_test(auto_free_pool)
 {
    create(auto_free_pool, pool);
 

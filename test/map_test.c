@@ -2,6 +2,7 @@
 
 #include <stdtyp/map.h>
 #include <stdtyp/string.h>
+#include "test.h"
 
 struct point {
    int x;
@@ -49,8 +50,7 @@ p_inc(struct point *p)
    p->z++;
 }
 
-int
-main(int argc, char **argv)
+adt_test(map_insertion_and_iteration)
 {
    create(my_map, m);
    create(my_map_two, m2);
@@ -83,7 +83,11 @@ main(int argc, char **argv)
       adt_assert(i.value->x == i.value->y);
       adt_assert(i.value->z == i.value->y);
    }
+}
 
+adt_test(map_grow)
+{
+   create(point, p);
    create(my_map, m3);
 
    for (unsigned i = 0; i < 10000; i++) {
@@ -95,7 +99,11 @@ main(int argc, char **argv)
       my_map_get(&m3, i, &po);
       adt_assert(point_equal(&po, &p));
    }
+}
 
+adt_test(map_more_iteration)
+{
+   create(point, p);
    create(ptr_map, pm);
    adt_assert(ptr_map_insert(&pm, 3, &p));
 
@@ -104,7 +112,10 @@ main(int argc, char **argv)
       adt_assert(*i.value == &p);
       adt_assert(point_equal(&p, *i.value));
    }
+}
 
+adt_test(pod_key_map)
+{
    create(char_string_map, cm);
 
    adt_assert(char_string_map_insert(&cm, 'a', strw("hello")));
@@ -118,7 +129,10 @@ main(int argc, char **argv)
    }
    adt_assert(num == 1);
    adt_assert(char_string_map_size(&cm) == 1);
+}
 
+adt_test(pod_key_and_value_map)
+{
    create(int_int_map, iim);
 
    adt_assert(int_int_map_insert(&iim, 4, 6));
@@ -134,7 +148,10 @@ main(int argc, char **argv)
    }
 
    adt_assert(int_int_map_size(&iim) == 2);
+}
 
+adt_test(pod_value_map)
+{
    create(string_int_map, sim);
 
    adt_assert(string_int_map_insert(&sim, strw("apple"), 5));

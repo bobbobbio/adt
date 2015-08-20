@@ -2,6 +2,7 @@
 
 #include <stdtyp/set.h>
 #include <stdtyp/string.h>
+#include "test.h"
 
 struct some_type {
    int a;
@@ -15,11 +16,9 @@ set_gen_static(some_type_set, some_type);
 set_gen_pod_static(int_set, int);
 set_gen_static(string_set, string);
 
-int
-main(int argc, char **argv)
+adt_test(pod_set)
 {
    create(int_set, is);
-   create(string_set, ss);
 
    int_set_insert(&is, 4);
    int_set_insert(&is, 5);
@@ -58,7 +57,11 @@ main(int argc, char **argv)
 
    adt_assert(cnt == 2);
    adt_assert(int_set_size(&is) == 2);
+}
 
+adt_test(string_set)
+{
+   create(string_set, ss);
    adt_assert(string_set_insert(&ss, strw("apple")));
    adt_assert(string_set_insert(&ss, strw("book")));
    adt_assert(string_set_insert(&ss, strw("cat")));
@@ -82,7 +85,7 @@ main(int argc, char **argv)
 
    adt_assert(!string_set_contains(&ss, strw("apple")));
 
-   cnt = 0;
+   int cnt = 0;
    iter_value (string_set, &ss, str) {
       adt_assert(string_equal(str, strw("book")) ||
          string_equal(str, strw("cat")));
@@ -91,7 +94,10 @@ main(int argc, char **argv)
 
    adt_assert(cnt == 2);
    adt_assert(string_set_size(&ss) == 2);
+}
 
+adt_test(hashing)
+{
    create(some_type, a);
    a.a = 1;
    a.b = 'g';
@@ -111,7 +117,10 @@ main(int argc, char **argv)
    adt_assert(!some_type_set_insert(&sts, &b));
 
    adt_assert(some_type_set_size(&sts) == 1);
+}
 
+adt_test(grow_and_copy)
+{
    create(int_set, res);
    for (int i = 0; i < 1000; i++)
       adt_assert(int_set_insert(&res, i));

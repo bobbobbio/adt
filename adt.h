@@ -37,6 +37,7 @@ struct string_vec;
 #define a_format(...) __attribute__((format(__VA_ARGS__)))
 #define a_noreturn __attribute__((noreturn))
 #define a_unused __attribute__((unused))
+#define a_used __attribute__((used))
 
 #define create(type, name) \
    struct type name a_cleanup(type##_destroy) = type##_make()

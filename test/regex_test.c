@@ -2,9 +2,9 @@
 
 #include <adt.h>
 #include <stdtyp/regex.h>
+#include "test.h"
 
-int
-main(int argc, char **argv)
+adt_test(regex)
 {
    create_regex(reg, strw("(.+): (.+)"));
    create(string, key);

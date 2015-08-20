@@ -2,6 +2,7 @@
 
 #include <stdtyp/vector.h>
 #include <stdtyp/string.h>
+#include "test.h"
 
 vector_gen_pod_static(char_vec, char);
 vector_gen_pod_static(money_vec, double);
@@ -18,7 +19,7 @@ void TOPY_print(const struct TOPY *d, struct string *s) { }
 vector_gen_ptr_static(ptr_vec, TOPY);
 vector_gen_static(topy_vec, TOPY);
 
-int main()
+adt_test(insert)
 {
    create_string_vec(terp, "apple", "book", "caterpiller");
 
@@ -30,7 +31,10 @@ int main()
    adt_assert_equal(string, strw("apple"), string_vec_at(&words, 0));
    adt_assert_equal(string, strw("book"), string_vec_at(&words, 1));
    adt_assert_equal(string, strw("caterpiller"), string_vec_at(&words, 2));
+}
 
+adt_test(char_vec)
+{
    create(char_vec, mook);
    char_vec_append(&mook, 'a');
    char_vec_append(&mook, 'b');
@@ -38,7 +42,10 @@ int main()
    adt_assert(*char_vec_at(&mook, 0) == 'a');
    adt_assert(*char_vec_at(&mook, 1) == 'b');
    adt_assert(*char_vec_at(&mook, 2) == 'c');
+}
 
+adt_test(double_vec)
+{
    create(money_vec, money);
    money_vec_append(&money, 4.00);
    money_vec_append(&money, 12.54);
@@ -68,7 +75,10 @@ int main()
 
    iter_value (money_vec, &money, val)
       adt_assert(*val == 7);
+}
 
+adt_test(int_vec)
+{
    create(int_vec, ints);
    int_vec_append(&ints, 1);
    int_vec_append(&ints, 2);
@@ -112,7 +122,10 @@ int main()
    adt_assert(int_vec_index_of(&ints, 6) == 11);
 
    adt_assert(int_vec_remove_value(&ints, 6));
+}
 
+adt_test(vector_doesnt_free_elements)
+{
    struct TOPY *t = malloc(sizeof(struct TOPY));
    struct TOPY *u = malloc(sizeof(struct TOPY));
    struct TOPY *v = malloc(sizeof(struct TOPY));
@@ -131,14 +144,20 @@ int main()
    free(t);
    free(u);
    free(v);
+}
 
+adt_test(extend)
+{
    create_string_vec(left, "a", "b", "c");
    create_string_vec(right, "1", "2", "3");
    create_string_vec(expect, "a", "b", "c", "1", "2", "3");
 
    string_vec_extend(&left, &right);
    adt_assert_equal(string_vec, &left, &expect);
+}
 
+adt_test(sort)
+{
    create_int_vec(sort_test, 4, 5, 2, 3, 7, 6, 8, 9, 1);
    int_vec_sort(&sort_test, int_compare);
    create_int_vec(expect_sort_test, 1, 2, 3, 4, 5, 6, 7, 8, 9);
@@ -157,7 +176,10 @@ int main()
    int_vec_append(&iv, 5);
    int_vec_sort(&iv, int_compare);
    adt_assert_equal(int_vec, &iv, &expect_sort_test);
+}
 
+adt_test(resize)
+{
    // resize
    create(int_vec, resize_vec);
    int_vec_resize(&resize_vec, 10);
@@ -171,6 +193,4 @@ int main()
    adt_assert_size(int_vec, &resize_vec, 5);
    for (int i = 0; i < 5; i++)
       adt_assert(*int_vec_at(&resize_vec, i) == 0);
-
-   return EXIT_SUCCESS;
 }

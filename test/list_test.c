@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include <stdtyp/list.h>
+#include "test.h"
 
 // Create really simple type containing 3 ints
 struct my_data {
@@ -25,7 +26,7 @@ list_gen_pod_static(double_list, double);
 
 list_gen_static(matrix, int_list);
 
-int main()
+adt_test(struct_list)
 {
    create(my_list, list);
 
@@ -50,7 +51,10 @@ int main()
    my_data_free(one);
    my_data_free(two);
    my_data_free(three);
+}
 
+adt_test(int_list)
+{
    create(int_list, ilist);
 
    int_list_append(&ilist, 2);
@@ -60,21 +64,30 @@ int main()
    int_list_append(&ilist, 10);
    int_list_append(&ilist, 12);
    int_list_append(&ilist, 14);
+}
 
+adt_test(float_list)
+{
    create(float_list, flist);
    float_list_append(&flist, 3.1);
    float_list_append(&flist, 6.2);
    float_list_append(&flist, 9.3);
    float_list_append(&flist, 12.4);
    float_list_append(&flist, 15.5);
-   
+}
+
+adt_test(double_list)
+{
    create(double_list, dlist);
    double_list_append(&dlist, 234.23434);
    double_list_append(&dlist, 2392.9878);
    double_list_append(&dlist, 7345.537);
    double_list_append(&dlist, 7354.7534);
    double_list_append(&dlist, 73254.73);
+}
 
+adt_test(matrix)
+{
    create(matrix, m);
 
    struct int_list *a = int_list_new();
@@ -99,6 +112,4 @@ int main()
    matrix_remove(&m, 0);
    matrix_remove(&m, 0);
    matrix_remove(&m, 0);
-
-   return EXIT_SUCCESS;
 }

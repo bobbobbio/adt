@@ -2,14 +2,14 @@
 
 #include <extyp/network.h>
 #include <extyp/http.h>
+#include "test.h"
 
-int
-main(int argc, char **argv)
+adt_test(http_test)
 {
    create(inet_addr, ia);
    ehandle (error, dns_lookup(strw("127.0.0.1"), &ia)) {
       if (error_is_type(error, network_hostname_error)) {
-         return EXIT_FAILURE;
+         panic("network_hostname_error");
       } else
          error_panic(error, "");
    }
@@ -23,6 +23,4 @@ main(int argc, char **argv)
    ecrash(http_get_url(strw("http://abort.cc:80/"), &response));
    adt_assert(string_length(&response) > 0);
    printf("%s", string_to_cstring(&response));
-
-   return EXIT_SUCCESS;
 }

@@ -5,9 +5,9 @@
 #include <stdtyp/file.h>
 #include <stdtyp/string_stream.h>
 #include <error.h>
+#include "test.h"
 
-int
-main(int argc, char **argv)
+adt_test(linereader_test)
 {
    int tokens = 0;
    with_file_open (file, strw("linereader_test.c"), 0) {
@@ -27,7 +27,10 @@ main(int argc, char **argv)
    }
 
    adt_assert(tokens > 10);
+}
 
+adt_test(tokenizer)
+{
    create_string_stream(ss, (struct string *)strw("this is a sentence"));
    adt_assert(stream_has_more(string_stream_to_stream(&ss)));
 
@@ -47,6 +50,4 @@ main(int argc, char **argv)
    adt_assert(string_equal(&token, strw("sentence")));
 
    adt_assert(!tokenizer_get_next(&tkn, &token));
-
-   return EXIT_SUCCESS;
 }

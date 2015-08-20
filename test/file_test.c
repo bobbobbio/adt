@@ -2,9 +2,9 @@
 
 #include <adt.h>
 #include <stdtyp/file.h>
+#include "test.h"
 
-int
-main(int argc, char **argv)
+adt_test(file_test)
 {
    create(string_vec, files);
    ecrash(file_list_directory(strw("/etc"), &files));
@@ -13,6 +13,4 @@ main(int argc, char **argv)
    adt_assert(!path_is_dir(strw("/etc/hosts")));
 
    adt_assert(string_vec_contains(&files, strw("hosts")));
-
-   return EXIT_SUCCESS;
 }
