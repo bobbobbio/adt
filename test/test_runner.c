@@ -34,8 +34,6 @@ arg_main(struct arg_dict *args)
             continue;
       }
       if (string_ends_with(file, strw("_test"))) {
-         printf("%-20s: ", string_to_cstring(file));
-
          create(string, path);
          if (valgrind) {
             string_append_cstring(&path,
@@ -44,17 +42,39 @@ arg_main(struct arg_dict *args)
          } else {
             string_append_cstring(&path, "./");
          }
-
          string_append_string(&path, file);
+
+         create_copy(string, path_list, &path);
+         string_append_cstring(&path_list, " --list");
          create(string, output);
-         struct error e = subprocess_run(&path, &output);
-         if (!error_equal(e, no_error)
-            || (valgrind && !string_contains_substring(&output,
-            strw("ERROR SUMMARY: 0 errors from 0 contexts"))))
-            printf("failed");
-         else
-            printf("pass");
-         printf("\n");
+         ehandle(error, subprocess_run(&path_list, &output)) {
+            printf("%-40s: failed to get test list\n", string_to_cstring(file));
+            continue;
+         }
+         create(string_vec, tests);
+         string_split(&output, '\n', &tests);
+         iter_value (string_vec, &tests, test) {
+            create_copy(string, test_name, file);
+            string_append_format(&test_name, ":%s", print(string, test));
+            printf("%-40s: ", string_to_cstring(&test_name));
+            fflush(stdout);
+
+            create_copy(string, path_test, &path);
+            string_append_format(&path_test, " %s", print(string, test));
+            bool failed = false;
+            ehandle (error, subprocess_run(&path_test, &output))
+               failed = true;
+            if (failed) {
+               printf("failed\n");
+               continue;
+            }
+
+            if ((valgrind && !string_contains_substring(&output,
+               strw("ERROR SUMMARY: 0 errors from 0 contexts"))))
+               printf("failed\n");
+            else
+               printf("pass\n");
+         }
       }
    }
 

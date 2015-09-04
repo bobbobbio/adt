@@ -12,11 +12,15 @@ define_args(
         ARG_OPTIONAL,
     "words", 'w', "print the number of words", ARG_BOOL, ARG_OPTIONAL,
     "version", '\0', "print version information", ARG_BOOL, ARG_OPTIONAL,
+    "list", '\0', "list", ARG_BOOL, ARG_OPTIONAL,
     "", '\0', "File", ARG_STRING_ARRAY, ARG_OPTIONAL
 );
 
 int
 arg_main(struct arg_dict *dict)
 {
+   if (has_arg(dict, strw("list")))
+      printf("argparse\n");
+
    return EXIT_SUCCESS;
 }

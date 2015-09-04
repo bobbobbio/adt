@@ -6,44 +6,67 @@
 #include <stdtyp/string_stream.h>
 #include "test.h"
 
+adt_test(string_const)
+{
+   create_const_string(str, "STRING");
+   adt_assert_equal(string, &str, strw("STRING"));
+
+   with_expected_assert_condition("s->mallocd")
+      string_append_cstring(&str, "DERP");
+}
+
 adt_test(append_format)
 {
    create_string(str, "FORMAT: ");
    string_append_format(&str, "%d, %d, %s", 1, 2, "THREE");
-   adt_assert(string_equal(&str, strw("FORMAT: 1, 2, THREE")));
+   adt_assert_equal(string, &str, strw("FORMAT: 1, 2, THREE"));
 }
 
-adt_test(regex)
+adt_test(append_format_empty)
 {
-   create_string(str2, "nothing apple cat apple banana");
+   create_string(str, "FORMAT: ");
+   string_append_format(&str, "derp");
+   adt_assert_equal(string, &str, strw("FORMAT: derp"));
+}
+
+adt_test(string_replace)
+{
+   create_string(str, "nothing apple cat apple banana");
 
    create_regex(reg, strw("apple"));
-   string_replace(&str2, &reg, strw("steve jobs"));
+   string_replace(&str, &reg, strw("steve jobs"));
 
-   adt_assert(string_equal(&str2,
-      strw("nothing steve jobs cat steve jobs banana")));
+   adt_assert_equal(string, &str,
+      strw("nothing steve jobs cat steve jobs banana"));
+}
 
+adt_test(string_replace_regex_group)
+{
+   create_string(str, "nothing steve jobs cat steve jobs banana");
    create_regex(reg2, strw("(a)"));
-   string_replace(&str2, &reg2, strw("$1=[$1]\\$1"));
+   string_replace(&str, &reg2, strw("$1=[$1]\\$1"));
 
-   adt_assert(string_equal(&str2,
+   adt_assert(string_equal(&str,
       strw("nothing steve jobs ca=[a]$1t steve jobs "
       "ba=[a]$1na=[a]$1na=[a]$1")));
 }
 
-adt_test(vec_format)
+adt_test(string_append_format)
 {
-   create_string_vec(p, "apple", "banana", "cat", "LERP");
-   aprintf("%d, %s, %d\n", 4, print(string_vec, &p), 5);
+   create(string, str);
+   string_append_format(&str, "%d ", 87);
+   string_append_format(&str, "%s", print(string, strw("foo")));
 
-   create(string, my_str);
-   string_append_format(&my_str, "%s", print(string_vec, &p));
-   adt_assert(string_equal(&my_str, strw("[ apple, banana, cat, LERP ]")));
+   adt_assert_equal(string, &str, strw("87 foo"));
+}
 
-   adt_assert(string_length(&my_str) > 2,
-      "String is much shorter than expected");
+adt_test(string_vec_format)
+{
+   create_string_vec(str_vec, "apple", "banana", "cat", "LERP");
 
-   string_append_format(&my_str, "%s", print(string, strw("DERPYFACE")));
+   create(string, expected);
+   string_append_format(&expected, "%s", print(string_vec, &str_vec));
+   adt_assert_equal(string, &expected, strw("[ apple, banana, cat, LERP ]"));
 }
 
 adt_test(string_stream)

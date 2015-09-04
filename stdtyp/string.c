@@ -420,25 +420,34 @@ string_remove_substring(struct string *s, int si, int ei)
 }
 
 int
-_string_append_format(struct string *s, char *fmt, ...)
+string_append_format_va_list(struct string *s, const char *fmt, va_list args)
 {
-   va_list args;
-   va_list args2;
-   va_start(args, fmt);
-   va_start(args2, fmt);
+   va_list args_copy;
+   va_copy(args_copy, args);
 
-   int len = vsnprintf(NULL, 0, fmt, args);
+   int len = vsnprintf(NULL, 0, fmt, args_copy);
    int fs = s->buff_len - s->length;
    while (len + 1 > fs) {
       string_expand(s);
       fs = s->buff_len - s->length;
    }
-   adt_assert(vsnprintf(&s->buff[s->length], fs, fmt, args2) < fs);
+   adt_assert(vsnprintf(&s->buff[s->length], fs, fmt, args) < fs);
    s->length += len;
 
-   va_end(args);
-   va_end(args2);
+   va_end(args_copy);
 
+   return len;
+}
+
+int
+_string_append_format(struct string *s, const char *fmt, ...)
+{
+   va_list args;
+   va_start(args, fmt);
+
+   int len = string_append_format_va_list(s, fmt, args);
+
+   va_end(args);
    return len;
 }
 

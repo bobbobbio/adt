@@ -71,7 +71,7 @@ do { \
 } while (0)
 
 #define string_append_format(str, fmt, ...) \
-   adt_print(_string_append_format, str, fmt, __VA_ARGS__)
+   adt_print(_string_append_format, str, fmt, ## __VA_ARGS__)
 
 #define aprintf(...) adt_print(printf, __VA_ARGS__)
 #define afprintf(...) adt_print(fprintf, __VA_ARGS__)
@@ -103,6 +103,9 @@ string_append_cstring_length(struct string *, const char *, size_t);
 
 void
 string_append_string(struct string *, const struct string *);
+
+int
+string_append_format_va_list(struct string *, const char *, va_list args);
 
 struct error
 string_read_fd(struct string *s, int fd, size_t want, size_t *got, bool *done)
@@ -172,7 +175,7 @@ void
 string_vec_join(struct string *, const struct string_vec *, char);
 
 int
-_string_append_format(struct string *, char *, ...)
+_string_append_format(struct string *, const char *, ...)
    a_format(printf, 2, 3);
 
 bool

@@ -204,6 +204,8 @@ struct mutex {
 };
 adt_func_header(mutex);
 
+#define mutex_initializer { PTHREAD_MUTEX_INITIALIZER }
+
 // The current thread already owns the lock
 create_error_header(mutex_already_owned_error);
 

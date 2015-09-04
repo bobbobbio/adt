@@ -96,6 +96,42 @@ enum error_mode {
 };
 extern __thread enum error_mode current_error_mode;
 
+enum expected_assert_type {
+   EXPECTED_ASSERT_MESSAGE = 0,
+   EXPECTED_ASSERT_CONDITION = 1
+};
+
+struct expected_assert {
+   union {
+      const char *expected_message;
+      const char *expected_condition;
+   };
+   enum expected_assert_type type;
+};
+adt_func_header(expected_assert);
+
+void
+set_expected_assert(struct expected_assert *);
+
+void
+clear_expected_assert(void);
+
+struct expected_assert *
+expected_assert_message_create(const char *message);
+
+struct expected_assert *
+expected_assert_condition_create(const char *condition);
+
+#define with_expected_assert_condition(cond) \
+   ctx_def(struct expected_assert *unq(n) a_unused \
+      a_cleanup(expected_assert_freer) = \
+      expected_assert_condition_create(cond))
+
+#define with_expected_assert_message(cond) \
+   ctx_def(struct expected_assert *unq(n) a_unused \
+      a_cleanup(expected_assert_freer) = \
+      expected_assert_message_create(cond))
+
 #define create_error_header(name) \
    extern char *name
 
