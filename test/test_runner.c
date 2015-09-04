@@ -28,6 +28,7 @@ arg_main(struct arg_dict *args)
 
    const struct string_vec *tests = get_arg_string_array(args, strw(""));
 
+   bool a_test_failed = false;
    iter_value (string_vec, &files, file) {
       if (tests != NULL) {
          if (!string_vec_contains(tests, file))
@@ -49,6 +50,7 @@ arg_main(struct arg_dict *args)
          create(string, output);
          ehandle(error, subprocess_run(&path_list, &output)) {
             printf("%-40s: failed to get test list\n", string_to_cstring(file));
+            a_test_failed = true;
             continue;
          }
          create(string_vec, tests);
@@ -66,17 +68,19 @@ arg_main(struct arg_dict *args)
                failed = true;
             if (failed) {
                printf("failed\n");
+               a_test_failed = true;
                continue;
             }
 
             if ((valgrind && !string_contains_substring(&output,
-               strw("ERROR SUMMARY: 0 errors from 0 contexts"))))
+               strw("ERROR SUMMARY: 0 errors from 0 contexts")))) {
                printf("failed\n");
-            else
+               a_test_failed = true;
+            } else
                printf("pass\n");
          }
       }
    }
 
-   return EXIT_SUCCESS;
+   return a_test_failed ? EXIT_FAILURE : EXIT_SUCCESS;
 }
