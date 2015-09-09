@@ -29,6 +29,204 @@ adt_test(append_format_empty)
    adt_assert_equal(string, &str, strw("FORMAT: derp"));
 }
 
+a_format(printf, 2, 3)
+static void
+append_format_va_list_helper(struct string *str, const char *s, ...)
+{
+   va_list args;
+   va_start(args, s);
+
+   string_append_format_va_list(str, s, args);
+
+   va_end(args);
+}
+
+adt_test(make_var)
+{
+   create_string(str, "THIS IS A STRING");
+
+   adt_assert_equal(string, &str, strw("THIS IS A STRING"));
+}
+
+adt_test(clear)
+{
+   create_string(str, "THIS IS A STRING");
+
+   string_clear(&str);
+
+   adt_assert_equal(string, &str, strw(""));
+}
+
+adt_test(append_char)
+{
+   create(string, str);
+
+   string_append_char(&str, 'c');
+
+   adt_assert_equal(string, &str, strw("c"));
+}
+
+adt_test(append_int)
+{
+   create(string, str);
+
+   string_append_int(&str, 2);
+
+   adt_assert_equal(string, &str, strw("2"));
+}
+
+adt_test(append_cstring)
+{
+   create(string, str);
+
+   string_append_cstring(&str, "DERP");
+
+   adt_assert_equal(string, &str, strw("DERP"));
+}
+
+adt_test(length)
+{
+   create_string(str, "123456");
+
+   adt_assert(string_length(&str) == 6);
+}
+
+adt_test(char_at_index)
+{
+   create_string(str, "0123456");
+
+   adt_assert(string_char_at_index(&str, 0) == '0');
+   adt_assert(string_char_at_index(&str, 5) == '5');
+}
+
+adt_test(to_int)
+{
+   create_string(str, "589");
+
+   adt_assert(string_to_int(&str) == 589);
+}
+
+adt_test(to_int_failure)
+{
+   create_string(str, "derpcakes");
+
+   adt_assert(string_to_int(&str) == 0);
+}
+
+adt_test(equal)
+{
+   create_string(str, "derpcakes");
+
+   adt_assert_equal(string, &str, strw("derpcakes"));
+}
+
+adt_test(split)
+{
+   create_string(str, "a b c d");
+
+   create(string_vec, vec);
+   string_split(&str, ' ', &vec);
+
+   create_string_vec(expected_vec, "a", "b", "c", "d");
+
+   adt_assert_equal(string_vec, &vec, &expected_vec);
+}
+
+adt_test(tokenize)
+{
+   create_string(str, "a b\tc   d\ne");
+
+   create(string_vec, vec);
+   string_tokenize(&str, &vec);
+
+   create_string_vec(expected_vec, "a", "b", "c", "d", "e");
+
+   adt_assert_equal(string_vec, &vec, &expected_vec);
+}
+
+adt_test(starts_with)
+{
+   create_string(str, "applecake");
+
+   adt_assert(string_starts_with(&str, strw("apple")));
+   adt_assert(!string_starts_with(&str, strw("Apple")));
+   adt_assert(!string_starts_with(&str, strw("gpple")));
+}
+
+adt_test(ends_with)
+{
+   create_string(str, "applecake");
+
+   adt_assert(string_ends_with(&str, strw("cake")));
+   adt_assert(!string_ends_with(&str, strw("Cake")));
+   adt_assert(!string_ends_with(&str, strw("lake")));
+}
+
+adt_test(contains_char)
+{
+   create_string(str, "applecake");
+
+   adt_assert(string_contains_char(&str, 'c'));
+   adt_assert(!string_contains_char(&str, 'g'));
+}
+
+adt_test(contains_substring)
+{
+   create_string(str, "applecake");
+
+   adt_assert(string_contains_substring(&str, strw("apple")));
+   adt_assert(string_contains_substring(&str, strw("cake")));
+   adt_assert(!string_contains_substring(&str, strw("lece")));
+}
+
+adt_test(remove_substring)
+{
+   create_string(str, "applecake");
+   create_copy(string, str2, &str);
+
+   string_remove_substring(&str, 5, 8);
+   string_remove_substring(&str2, 0, 4);
+   adt_assert_equal(string, &str, strw("apple"));
+   adt_assert_equal(string, &str2, strw("cake"));
+}
+
+adt_test(compare)
+{
+   create_string(str, "banana");
+   create_string(str2, "apple");
+
+   adt_assert(string_compare(&str, &str2) > 0);
+   adt_assert(string_compare(&str2, &str) < 0);
+   adt_assert(string_compare(&str, &str) == 0);
+}
+
+adt_test(hash)
+{
+   create_string(str, "banana");
+   create_string(str2, "apple");
+
+   adt_assert(string_hash(&str) != string_hash(&str2));
+   adt_assert(string_hash(&str) == string_hash(&str));
+}
+
+adt_test(vec_join)
+{
+   create_string_vec(vec, "an", "apple", "cake");
+   create(string, str);
+
+   string_vec_join(&str, &vec, ' ');
+   adt_assert_equal(string, &str, strw("an apple cake"));
+}
+
+adt_test(append_format_va_list)
+{
+   create(string, str);
+
+   append_format_va_list_helper(&str, "%s %s %s", "A", "B", "C");
+
+   adt_assert_equal(string, &str, strw("A B C"));
+}
+
 adt_test(string_replace)
 {
    create_string(str, "nothing apple cat apple banana");
@@ -51,16 +249,7 @@ adt_test(string_replace_regex_group)
       "ba=[a]$1na=[a]$1na=[a]$1")));
 }
 
-adt_test(string_append_format)
-{
-   create(string, str);
-   string_append_format(&str, "%d ", 87);
-   string_append_format(&str, "%s", print(string, strw("foo")));
-
-   adt_assert_equal(string, &str, strw("87 foo"));
-}
-
-adt_test(string_vec_format)
+adt_test(vec_format)
 {
    create_string_vec(str_vec, "apple", "banana", "cat", "LERP");
 
@@ -69,7 +258,7 @@ adt_test(string_vec_format)
    adt_assert_equal(string, &expected, strw("[ apple, banana, cat, LERP ]"));
 }
 
-adt_test(string_stream)
+adt_test(stream)
 {
    const struct string *orig = strw("THIS IS A LONG STRING HAHAHAHAHAHHA.");
    create_string_stream(ss, (struct string *)orig);
@@ -78,11 +267,4 @@ adt_test(string_stream)
    ecrash(stream_read_n_or_less((struct stream *)&ss, &tread, 4096));
 
    assert(string_equal(&tread, orig));
-}
-
-adt_test(string_split)
-{
-   create(string_vec, lvec);
-   string_split(strw("a b c d e f g"), ' ', &lvec);
-   adt_assert(string_vec_size(&lvec) == 7);
 }

@@ -32,6 +32,8 @@ _strvw(const char *a, ...)
       a = va_arg(argp, const char *);
    }
 
+   va_end(argp);
+
    return out;
 }
 
