@@ -227,7 +227,7 @@ string_read_fd(struct string *s, int fd, size_t want, size_t *got, bool *done)
          if (errno == EINTR || errno == EAGAIN)
             continue;
          else {
-            return errno_to_error();
+            ereraise(errno_to_error());
          }
       } else { // we actually read data
          s->length += bytes_read;
@@ -275,8 +275,7 @@ string_split(const struct string *s, char c, struct string_vec *vec_out)
 {
    string_vec_clear(vec_out);
 
-   // XXX This is all kind of messed up
-   create_string_stream(ss, (struct string *)s);
+   create_string_stream_const(ss, s);
    create_tokenizer(tkn, string_stream_to_stream(&ss));
    create(string, sc);
    string_append_char(&sc, c);
@@ -293,8 +292,7 @@ string_tokenize(const struct string *s, struct string_vec *vec_out)
 {
    string_vec_clear(vec_out);
 
-   // XXX This is also messed up...
-   create_string_stream(ss, (struct string *)s);
+   create_string_stream_const(ss, s);
    create_tokenizer(tkn, string_stream_to_stream(&ss));
    create(string, t);
    while (tokenizer_get_next(&tkn, &t))

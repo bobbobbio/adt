@@ -2,7 +2,10 @@ include_rules
 
 CFLAGS += -I../
 
-: nsfind.c ../libadt.a |> !cc_prog |> nsfind
-: wc.c ../libadt.a |> !cc_prog |> wc
-: ncl.c ../libadt.a |> !cc_prog |> ncl
-: http_server.c ../libadt.a |> !cc_prog |> http_server
+: foreach *.c |> !cc |>
+
+: nsfind.o ../libadt.a |> !cc_prog |> nsfind
+: wc.o ../libadt.a |> !cc_prog |> wc
+: ncl.o ../libadt.a |> !cc_prog |> ncl
+: http_server.o server_prog.o ../libadt.a |> !cc_prog |> http_server
+: ftp_server.o server_prog.o ../libadt.a |> !cc_prog |> ftp_server

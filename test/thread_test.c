@@ -33,6 +33,13 @@ hello3(int val)
 }
 fptr_define(hello3, int, int);
 
+int
+add_func(int a, int b)
+{
+   return a + b;
+}
+fptr_define(add_func, int, int, int);
+
 // Since the thread calls itself, this has to go first
 struct int_vec *
 merge_sort(const struct int_vec *vec);
@@ -122,4 +129,13 @@ adt_test(thread_test)
    with_mutex (&mutex) {
       printf("Hello from the lock");
    }
+}
+
+adt_test(thread_add_func_test)
+{
+   struct thread *t = thread_run(add_func, 100, 15);
+   int res;
+   thread_join(t, &res);
+
+   adt_assert(res == 115);
 }

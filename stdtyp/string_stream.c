@@ -23,22 +23,27 @@ string_stream_init(struct string_stream *s)
    s->type = STRING_STREAM;
    s->offset = 0;
    s->string = NULL;
+   s->is_const = false;
 }
 
 void
 string_stream_destroy(struct string_stream *s) {}
 
 struct string_stream
-string_stream_make_var(struct string *str) {
+string_stream_make_var(struct string *str)
+{
    struct string_stream s = string_stream_make();
-   string_stream_set_string(&s, str);
+   s.string = str;
    return s;
 }
 
-void
-string_stream_set_string(struct string_stream *s, struct string *str)
+struct string_stream
+string_stream_const_make_var(const struct string *str)
 {
-   s->string = str;
+   struct string_stream s = string_stream_make();
+   s.string = (struct string *)str;
+   s.is_const = true;
+   return s;
 }
 
 struct error
@@ -66,6 +71,7 @@ string_stream_write(struct stream *s, const struct string *data)
 {
    adt_assert(s->type == STRING_STREAM);
    struct string_stream *ss = (struct string_stream *)s;
+   adt_assert(!ss->is_const);
    adt_assert(ss->string != NULL);
 
    string_append_string(ss->string, data);

@@ -261,7 +261,7 @@ adt_test(vec_format)
 adt_test(stream)
 {
    const struct string *orig = strw("THIS IS A LONG STRING HAHAHAHAHAHHA.");
-   create_string_stream(ss, (struct string *)orig);
+   create_string_stream_const(ss, orig);
 
    create(string, tread);
    ecrash(stream_read_n_or_less((struct stream *)&ss, &tread, 4096));

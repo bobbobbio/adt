@@ -13,9 +13,8 @@ adt_test(linereader_test)
    with_file_open (file, strw("linereader_test.c"), 0) {
       create_line_reader(lr, file_to_stream(&file));
 
-      create(string, line);
-      while (line_reader_get_line(&lr, &line)) {
-         create_string_stream(ss, &line);
+      iter_value (line_reader, &lr, line) {
+         create_string_stream_const(ss, line);
          create_tokenizer(tkn, string_stream_to_stream(&ss));
          create(string, t);
          while (tokenizer_get_next(&tkn, &t)) {
@@ -31,7 +30,7 @@ adt_test(linereader_test)
 
 adt_test(tokenizer)
 {
-   create_string_stream(ss, (struct string *)strw("this is a sentence"));
+   create_string_stream_const(ss, strw("this is a sentence"));
    adt_assert(stream_has_more(string_stream_to_stream(&ss)));
 
    create_tokenizer(tkn, string_stream_to_stream(&ss));
@@ -50,4 +49,18 @@ adt_test(tokenizer)
    adt_assert(string_equal(&token, strw("sentence")));
 
    adt_assert(!tokenizer_get_next(&tkn, &token));
+}
+
+adt_test(line_reader_string_stream)
+{
+   create_string_vec(expected_vec, "aaa", "bbb", "ccc", "ddd");
+
+   create_string_stream_const(str, strw("aaa\nbbb\nccc\nddd"));
+   create_line_reader(lr, string_stream_to_stream(&str));
+   iter_value (line_reader, &lr, line) {
+      adt_assert_equal(string, string_vec_at(&expected_vec, 0), line);
+      string_vec_remove(&expected_vec, 0);
+   }
+
+   adt_assert(string_vec_size(&expected_vec) == 0);
 }

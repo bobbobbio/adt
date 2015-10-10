@@ -61,9 +61,8 @@ file_close(struct file *f)
 
    if (close(f->fd) == -1)
       ereraise(errno_to_error());
-   else {
+   else
       f->fd = -1;
-   }
 
    return no_error;
 }
@@ -84,7 +83,6 @@ void
 file_destroy(struct file *f)
 {
    ecrash(file_close(f));
-   f->fd = -1;
    f->done = true;
 }
 
@@ -283,7 +281,9 @@ fd_stream_read(struct stream *s, struct string *buff, size_t want, size_t *got)
    struct file *fd_s = (struct file *)s;
    adt_assert(fd_s->fd != -1, "File descriptor not open");
 
-   return string_read_fd(buff, fd_s->fd, want, got, &fd_s->done);
+   ereraise(string_read_fd(buff, fd_s->fd, want, got, &fd_s->done));
+
+   return no_error;
 }
 
 struct error

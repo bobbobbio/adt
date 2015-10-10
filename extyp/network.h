@@ -6,8 +6,9 @@
 #include <sys/socket.h>
 
 #include <adt.h>
-#include <stdtyp/string.h>
+#include <arpa/inet.h>
 #include <stdtyp/file.h>
+#include <stdtyp/string.h>
 
 create_error_header(network_error);
 create_error_header(network_hostname_error);
@@ -20,8 +21,14 @@ struct inet_addr {
 };
 adt_func_pod_header(inet_addr);
 
+#define inet_addr_ipv4_make(a, b, c, d) \
+   ((struct inet_addr){ 4, {a, b, c, d}})
+
 struct socket {
    struct file file;
+
+   int port;
+   struct inet_addr address;
 };
 adt_func_header(socket);
 
@@ -75,7 +82,19 @@ socket_bind(struct socket *tcp_socket, int port)
    a_warn_unused_result;
 
 struct error
+socket_bind_any_port(struct socket *tcp_socket, int *port_out)
+   a_warn_unused_result;
+
+struct error
 socket_listen(struct socket *, int backlog)
+   a_warn_unused_result;
+
+struct error
+socket_get_port(struct socket *tcp_socket, int *port_out)
+   a_warn_unused_result;
+
+struct error
+socket_get_address(struct socket *tcp_socket, struct inet_addr *address_out)
    a_warn_unused_result;
 
 struct error

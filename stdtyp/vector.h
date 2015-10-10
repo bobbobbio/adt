@@ -51,6 +51,7 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *),
    a_unused f void name##_prepend(struct name *, type); \
    a_unused f type_ref name##_grow(struct name *); \
    a_unused f void name##_remove(struct name *, int i); \
+   a_unused f void name##_remove_last(struct name *); \
    a_unused f int name##_index_of(struct name *, type); \
    a_unused f bool name##_remove_value(struct name *, type); \
    a_unused f void name##_get(const struct name *, type_ref, int); \
@@ -129,6 +130,10 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *),
    {                                                                           \
       typename##_destroy(vector_at(&a->vector, i, so));                        \
       vector_remove(&a->vector, i, so);                                        \
+   }                                                                           \
+   f void name##_remove_last(struct name *a)                                   \
+   {                                                                           \
+      name##_remove(a, name##_size(a) - 1);                                    \
    }                                                                           \
    f void name##_get(const struct name *a, type_ref r, int i)                  \
    {                                                                           \

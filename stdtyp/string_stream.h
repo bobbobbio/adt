@@ -10,6 +10,7 @@ struct a_packed string_stream {
    enum stream_type type;
    struct string *string;
    unsigned offset;
+   bool is_const;
 };
 adt_func_header(string_stream);
 
@@ -20,11 +21,15 @@ string_stream_to_stream(struct string_stream *);
    struct string_stream name a_cleanup(string_stream_destroy) = \
       string_stream_make_var(string)
 
-void
-string_stream_set_string(struct string_stream *, struct string *);
+#define create_string_stream_const(name, string) \
+   struct string_stream name a_cleanup(string_stream_destroy) = \
+      string_stream_const_make_var(string)
 
 struct string_stream
 string_stream_make_var(struct string *);
+
+struct string_stream
+string_stream_const_make_var(const struct string *);
 
 struct error
 string_stream_read(struct stream *, struct string *, size_t want, size_t *got)

@@ -11,6 +11,20 @@ adt_func_body(line_reader);
 
 #define BUFFER_SIZE 4096
 
+iter_gen_body(line_reader, int, const struct string *);
+
+bool line_reader_iter_next(
+   const struct line_reader *const_self,
+   struct line_reader_iter *i)
+{
+   struct line_reader *self = (struct line_reader *)const_self;
+   i->key++;
+   bool got_line = false;
+   ecrash(line_reader_get_line(self, &self->iter_str, &got_line));
+   i->value = &self->iter_str;
+   return got_line;
+}
+
 void
 line_reader_init(struct line_reader *l)
 {
@@ -18,6 +32,7 @@ line_reader_init(struct line_reader *l)
    l->start = 0;
    l->done = false;
    l->stream = NULL;
+   string_init(&l->iter_str);
 }
 
 struct line_reader
@@ -32,6 +47,7 @@ void
 line_reader_destroy(struct line_reader *l)
 {
    string_destroy(&l->buff);
+   string_init(&l->iter_str);
 }
 
 static struct error
@@ -56,16 +72,24 @@ line_reader_set_stream(struct line_reader *l, struct stream *stream)
    l->stream = stream;
 }
 
-bool
-line_reader_get_line(struct line_reader *l, struct string *s)
+struct error
+line_reader_get_line(struct line_reader *l, struct string *s, bool *got_line)
 {
-   if (l->done)
-      return false;
+   bool dummy;
+   if (got_line == NULL)
+      got_line = &dummy;
+
+   if (l->done) {
+      *got_line = false;
+      return no_error;
+   }
 
    if (l->start >= string_length(&l->buff)) {
-      line_reader_read(l, &l->done);
-      if (l->done)
-         return false;
+      ereraise(line_reader_read(l, &l->done));
+      if (l->done) {
+         *got_line = false;
+         return no_error;
+      }
    }
 
    string_clear(s);
@@ -76,7 +100,7 @@ line_reader_get_line(struct line_reader *l, struct string *s)
          string_append_char(s, string_char_at_index(&l->buff, i));
       i++;
       if (i >= string_length(&l->buff)) {
-         line_reader_read(l, &l->done);
+         ereraise(line_reader_read(l, &l->done));
          if (l->done)
             break;
          i = l->start;
@@ -84,5 +108,6 @@ line_reader_get_line(struct line_reader *l, struct string *s)
    }
    l->start = i + 1;
 
-   return true;
+   *got_line = true;
+   return no_error;
 }

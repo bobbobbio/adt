@@ -59,6 +59,22 @@ struct string_vec;
 #define make(type, ...) \
    (struct type){ __VA_ARGS__ }
 
+#define adt_printer_header(type) \
+   /* We pass the print function in so that we don't link against it. */ \
+   /* This avoids having to have the print function always defined. */ \
+   char * type##_printer(const struct type *, struct string_vec *, \
+      void(*p)(const struct type *, struct string *))
+
+#define adt_printer_body(type) \
+   char * type##_printer(const struct type *v, struct string_vec *sv, \
+      void(*p)(const struct type *, struct string *)) \
+   { \
+      struct string *str = string_vec_grow(sv); \
+      p(v, str); \
+      return str->buff; \
+   } \
+   SWALLOWSEMICOLON
+
 #define _adt_func_header(type, f) \
    a_unused f struct type * type##_new(void); \
    a_unused f void type##_free(struct type *); \
@@ -67,11 +83,8 @@ struct string_vec;
    a_unused f struct type type##_make(void); \
    a_unused f void type##_destroy(struct type *); \
    a_unused f void type##_print(const struct type *, struct string *); \
-   /* We pass the print function in so that we don't link against it. */ \
-   /* This avoids having to have the print function always defined. */ \
-   a_unused f char * type##_printer(const struct type *, struct string_vec *, \
-      void(*p)(const struct type *, struct string *)); \
-   a_unused f void type##_copy(struct type *, const struct type *)
+   a_unused f void type##_copy(struct type *, const struct type *); \
+   a_unused f adt_printer_header(type)
 
 #define _adt_func_body(type, f) \
    f struct type type##_make(void) \
@@ -91,17 +104,11 @@ struct string_vec;
       type##_destroy(a); \
       free(a); \
    } \
+   f adt_printer_body(type); \
    f void type##_freer(struct type **a) \
    { \
       if (*a != NULL) \
          type##_free(*a); \
-   } \
-   f char * type##_printer(const struct type *v, struct string_vec *sv, \
-      void(*p)(const struct type *, struct string *)) \
-   { \
-      struct string *str = string_vec_grow(sv); \
-      p(v, str); \
-      return str->buff; \
    } \
    SWALLOWSEMICOLON
 

@@ -122,6 +122,18 @@ handle_signal(int signum)
    handler->func();
 }
 
+static void
+_set_signal_handler(int signum, void (*handle_signal)(int))
+{
+   struct sigaction sa;
+   memset(&sa, 0, sizeof(struct sigaction));
+   sa.sa_handler = handle_signal;
+   int error = sigaction(signum, &sa, NULL);
+
+   if (error != 0)
+      ecrash(errno_to_error());
+}
+
 void
 set_signal_handler(int signum, void (*func)())
 {
@@ -134,11 +146,16 @@ set_signal_handler(int signum, void (*func)())
 
    handler->func = func;
 
-   struct sigaction sa;
-   memset(&sa, 0, sizeof(struct sigaction));
-   sa.sa_handler = handle_signal;
-   int error = sigaction(signum, &sa, NULL);
+   _set_signal_handler(signum, handle_signal);
+}
 
-   if (error != 0)
-      ecrash(errno_to_error());
+void
+ignore_signal(int signum)
+{
+   struct signal sig = { signum };
+   struct signal_handler *handler = get_signal_handler(sig);
+
+   adt_assert(handler->func == NULL);
+
+   _set_signal_handler(signum, SIG_IGN);
 }

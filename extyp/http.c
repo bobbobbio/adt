@@ -54,7 +54,7 @@ http_get_url(const struct string *url, struct string *output)
    int line_number = 0;
    while (true) {
       create(string, line);
-      line_reader_get_line(&lr, &line);
+      ecrash(line_reader_get_line(&lr, &line, NULL));
       // status line
       if (line_number == 0) {
          // XXX Check for HTTP OK or something
@@ -72,9 +72,8 @@ http_get_url(const struct string *url, struct string *output)
    }
 
    // Read the whole body, now that we got all the headers.
-   create(string, line);
-   while (line_reader_get_line(&lr, &line))
-      string_append_format(output, "%s\n", string_to_cstring(&line));
+   iter_value (line_reader, &lr, line)
+      string_append_format(output, "%s\n", string_to_cstring(line));
 
    return no_error;
 }

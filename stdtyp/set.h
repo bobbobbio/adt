@@ -18,7 +18,7 @@
 
 #define _set_gen_body(name, ktype, ktype_ref, ktype_tn, ktype_in, ktype_out, f)\
    _adt_func_body(name, f);                                                    \
-   _gen_iter_body(name, ktype_ref, void *, f);                                 \
+   _gen_iter_body(name, int, ktype_ref, f);                                    \
                                                                                \
    static uint64_t name##_hash(const void *a)                                  \
    {                                                                           \

@@ -166,3 +166,11 @@ print_backtrace(int skip_frames)
          &call_stack[skip_frames], call_stack_size - skip_frames, STDERR_FILENO);
    }
 }
+
+adt_printer_body(error);
+
+void
+error_print(const struct error *e, struct string *s)
+{
+   string_append_format(s, "%s(\"%s\")", e->type, e->msg);
+}

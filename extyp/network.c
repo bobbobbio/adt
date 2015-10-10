@@ -17,12 +17,14 @@ void
 socket_init(struct socket *s)
 {
    file_init(&s->file);
+
+   s->port = -1;
+   inet_addr_init(&s->address);
 }
 
 void
 socket_destroy(struct socket *s)
 {
-   ecrash(file_close(&s->file));
    file_destroy(&s->file);
 }
 
@@ -150,6 +152,12 @@ socket_set_fd(struct socket *s, int fd)
    file_set_fd(&s->file, fd);
 }
 
+void
+socket_print(const struct socket *s, struct string *str)
+{
+   string_append_format(str, "socket(fd=%d)", socket_fd(s));
+}
+
 struct socket
 socket_make_var(int fd)
 {
@@ -242,7 +250,7 @@ socket_tcp_init(struct socket *socket_out)
 }
 
 struct error
-socket_bind(struct socket *tcp_socket, int port)
+_socket_bind(struct socket *tcp_socket, int port)
 {
    struct sockaddr_in saddr = {
       .sin_family = AF_INET,
@@ -260,6 +268,67 @@ socket_bind(struct socket *tcp_socket, int port)
       } else
          break;
    } while (true);
+
+   return no_error;
+}
+
+struct error
+socket_bind(struct socket *tcp_socket, int port)
+{
+   ereraise(_socket_bind(tcp_socket, port));
+
+   return no_error;
+}
+
+static struct error
+socket_getsockname(struct socket *tcp_socket)
+{
+   struct sockaddr_in saddr = {};
+   socklen_t len = sizeof(saddr);
+
+   int err = getsockname(
+      socket_fd(tcp_socket), (struct sockaddr *)&saddr, &len);
+
+   if (err == -1)
+      ereraise(errno_to_error());
+
+   tcp_socket->port = ntohs(saddr.sin_port);
+
+   tcp_socket->address.version = 4;
+   *(uint32_t *)tcp_socket->address.addr = saddr.sin_addr.s_addr;
+
+   return no_error;
+}
+
+struct error
+socket_get_port(struct socket *tcp_socket, int *port_out)
+{
+   if (tcp_socket->port == -1)
+      ereraise(socket_getsockname(tcp_socket));
+
+   *port_out = tcp_socket->port;
+
+   return no_error;
+}
+
+struct error
+socket_get_address(struct socket *tcp_socket, struct inet_addr *address_out)
+{
+   if (tcp_socket->address.version == 0)
+      ereraise(socket_getsockname(tcp_socket));
+
+   inet_addr_copy(address_out, &tcp_socket->address);
+
+   return no_error;
+}
+
+struct error
+socket_bind_any_port(struct socket *tcp_socket, int *port_out)
+{
+   ereraise(_socket_bind(tcp_socket, INADDR_ANY));
+
+   if (port_out != NULL)
+      ereraise(socket_get_port(tcp_socket, port_out));
 
    return no_error;
 }

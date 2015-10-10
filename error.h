@@ -56,7 +56,7 @@
  * error type.
  *
  * If the calling function itself returns an error, it can use the ereraise
- * macro raise and potential error as if this function was raising an error
+ * macro to raise the potential error as if this function was raising an error
  * itself.
  *
  * struct error
@@ -109,6 +109,11 @@ struct expected_assert {
    enum expected_assert_type type;
 };
 adt_func_header(expected_assert);
+
+adt_printer_header(error);
+
+void
+error_print(const struct error *, struct string *);
 
 void
 set_expected_assert(struct expected_assert *);

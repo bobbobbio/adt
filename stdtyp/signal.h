@@ -5,3 +5,6 @@
 
 void
 set_signal_handler(int signum, void (*func)());
+
+void
+ignore_signal(int signum);

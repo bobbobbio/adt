@@ -10,6 +10,8 @@ struct line_reader {
    uint64_t start;
    bool done;
    struct stream *stream;
+
+   struct string iter_str;
 };
 adt_func_header(line_reader);
 
@@ -23,7 +25,10 @@ line_reader_make_var(struct stream *stream);
 void
 line_reader_set_stream(struct line_reader *, struct stream *);
 
-bool
-line_reader_get_line(struct line_reader *, struct string *);
+struct error
+line_reader_get_line(struct line_reader *, struct string *, bool *got_line)
+   a_warn_unused_result;
+
+iter_gen_header(line_reader, int, const struct string *);
 
 #endif // __LINE_READER_H__

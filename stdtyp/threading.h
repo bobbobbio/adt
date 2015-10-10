@@ -102,21 +102,17 @@ adt_func_header(thread_pool);
    _struct_make(__VA_ARGS__, , , , , , \
       mkvar, mkvar, mkvar, mkvar, mkvar, noop, noop, noop, noop, noop)
 
-#define cm(x) \
-   x,
+#define mkarg(e) \
+   e,
 
-#define _fptr_call(func, args, a, b, c, d, e, _a, _b, _c, _d, _e, ...) \
-   func( \
-   _a \
-   _b \
-   _c \
-   _d \
-   _e)
+#define _fptr_call(func, args, a, b, c, d, e, _a, _b, _c, _d, _e, \
+   __a, __b, __c, __d, __e, ___a, ___b, ___c, ___d, ___e, ...) \
+   func(_e(___e) _d(___d) _c(___c) _b(___b) ___a)
 
 #define fptr_call(func, args, ...) \
    _fptr_call(func, args, __VA_ARGS__, \
-      cm(args->e), cm(args->d), cm(args->c), cm(args->b), args->a_, \
-      , , , , )
+      mkarg, mkarg, mkarg, mkarg, mkarg, noop, noop, noop, noop, noop, \
+      args->e_, args->d_, args->c_, args->b_, args->a_, , , , , )
 
 #define fptr_run(func, ...) \
    func##_stub, sizeof(struct func##_args), &(struct func##_args){ __VA_ARGS__ }

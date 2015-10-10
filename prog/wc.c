@@ -137,16 +137,15 @@ vector_gen_static(file_stats_vec, file_stats);
 static void
 analyze_file(struct line_reader *lr, struct file_stats *fs_out)
 {
-   create(string, line);
-   while (line_reader_get_line(lr, &line)) {
-      create_string_stream(ss, &line);
+   iter_value (line_reader, lr, line) {
+      create_string_stream_const(ss, line);
       create_tokenizer(tkn, string_stream_to_stream(&ss));
       create(string, token);
       while (tokenizer_get_next(&tkn, &token))
          (*stat_map_at(&fs_out->stats, strw("words")))++;
       (*stat_map_at(&fs_out->stats, strw("lines")))++;
 
-      uint64_t len = string_length(&line);
+      uint64_t len = string_length(line);
 
       // This accounts for the newline character, on the last line it acconts
       // for the EOF character
