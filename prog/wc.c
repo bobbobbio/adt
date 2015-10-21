@@ -172,7 +172,6 @@ arg_main(struct arg_dict *args)
 
    // Create a vector to store all of the stats
    create(file_stats_vec, all_file_stats);
-   file_stats_vec_resize(&all_file_stats, string_vec_size(files));
 
    if (files == NULL) {
       // If no files are given, read stdin
@@ -182,6 +181,7 @@ arg_main(struct arg_dict *args)
       analyze_file(&lr, &fs);
       file_stats_vec_append(&all_file_stats, &fs);
    } else {
+      file_stats_vec_resize(&all_file_stats, string_vec_size(files));
       // For each file given, analyze it
       iter_value (string_vec, files, file_path) {
          create(line_reader, lr);
