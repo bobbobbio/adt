@@ -135,7 +135,7 @@ dns_lookup(const struct string *dname, struct inet_addr *iaddr_out)
    struct sockaddr_in *addr = (struct sockaddr_in *)results->ai_addr;
 
    iaddr_out->version = 4;
-   *((uint32_t *)iaddr_out->addr) = addr->sin_addr.s_addr;
+   memcpy(iaddr_out->addr, &addr->sin_addr.s_addr, 4);
 
    return no_error;
 }
@@ -208,8 +208,8 @@ socket_connect(struct string *server, int port, struct socket* socket_out)
    struct sockaddr_in saddr = {
       .sin_family = AF_INET,
       .sin_port = htons(port),
-      .sin_addr.s_addr = *((uint32_t *)ia.addr)
    };
+   memcpy(&saddr.sin_addr.s_addr, &ia.addr, 4);
 
    // Connect to the server
    do {
@@ -295,7 +295,7 @@ socket_getsockname(struct socket *tcp_socket)
    tcp_socket->port = ntohs(saddr.sin_port);
 
    tcp_socket->address.version = 4;
-   *(uint32_t *)tcp_socket->address.addr = saddr.sin_addr.s_addr;
+   memcpy(tcp_socket->address.addr, &saddr.sin_addr.s_addr, 4);
 
    return no_error;
 }
@@ -370,7 +370,7 @@ socket_accept(struct socket *tcp_socket, struct socket *socket_out,
 
    create(inet_addr, client_addr);
    client_addr.version = 4;
-   *((uint32_t *)client_addr.addr) = caddr.sin_addr.s_addr;
+   memcpy(client_addr.addr, &caddr.sin_addr.s_addr, 4);
 
    socket_copy(socket_out, &client_conn);
    client_conn.file.fd = -1;

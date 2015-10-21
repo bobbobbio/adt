@@ -125,30 +125,27 @@ clear_expected_assert(void)
 static struct mutex g_assert_handler_lock = mutex_initializer;
 
 void
-_adt_assert(bool test, const char *code, const char *file,
-   int line, char *fmt, ...)
+_adt_assert(const char *code, const char *file, int line, char *fmt, ...)
 {
    va_list args;
    va_start(args, fmt);
 
-   if (!test) {
-      if (g_expected_assert) {
-         create(string, msg);
-         if (fmt != NULL)
-            string_append_format_va_list(&msg, fmt, args);
-         with_mutex(&g_assert_handler_lock)
-            expected_assert_handle(g_expected_assert, strw(code), &msg);
-         exit(EXIT_SUCCESS);
-      } else {
-         print_backtrace(2);
-         fprintf(stderr, "Assert failed: %s : ", code);
-         if (fmt != NULL) {
-            vfprintf(stderr, fmt, args);
-            fprintf(stderr, " : ");
-         }
-         fprintf(stderr, "in file %s on line %d\n", file, line);
-         abort();
+   if (g_expected_assert) {
+      create(string, msg);
+      if (fmt != NULL)
+         string_append_format_va_list(&msg, fmt, args);
+      with_mutex(&g_assert_handler_lock)
+         expected_assert_handle(g_expected_assert, strw(code), &msg);
+      exit(EXIT_SUCCESS);
+   } else {
+      print_backtrace(2);
+      fprintf(stderr, "Assert failed: %s : ", code);
+      if (fmt != NULL) {
+         vfprintf(stderr, fmt, args);
+         fprintf(stderr, " : ");
       }
+      fprintf(stderr, "in file %s on line %d\n", file, line);
+      abort();
    }
 
    va_end(args);

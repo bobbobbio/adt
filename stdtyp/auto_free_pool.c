@@ -13,7 +13,7 @@ _auto_free_pool_add_ptr(struct auto_free_pool *pool,
 {
    struct freer freer = { freer_func };
    struct pointer pointer = { obj };
-   bool not_replaced =
+   bool not_replaced a_unused =
       freeable_object_map_insert(&pool->objs, &pointer, &freer);
 
    adt_assert(not_replaced, "Added duplicate object to auto_free_pool");

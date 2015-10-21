@@ -145,13 +145,6 @@ string_length(const struct string *s)
    return s->length;
 }
 
-char
-string_char_at_index(const struct string *s, uint64_t i)
-{
-   adt_assert(i < s->length);
-   return s->buff[i];
-}
-
 static void
 string_expand(struct string *s)
 {
@@ -431,7 +424,8 @@ string_append_format_va_list(struct string *s, const char *fmt, va_list args)
       string_expand(s);
       fs = s->buff_len - s->length;
    }
-   adt_assert(vsnprintf(&s->buff[s->length], fs, fmt, args) < fs);
+   int res a_unused = vsnprintf(&s->buff[s->length], fs, fmt, args);
+   adt_assert(res < fs);
    s->length += len;
 
    va_end(args_copy);

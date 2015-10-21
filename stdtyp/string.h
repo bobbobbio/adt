@@ -135,8 +135,11 @@ string_set_cstring(struct string *s, char *);
 uint64_t
 string_length(const struct string *);
 
-char
-string_char_at_index(const struct string *, uint64_t);
+inline static char
+string_char_at_index(const struct string *s, uint64_t i)
+{
+   return s->buff[i];
+}
 
 int
 string_to_int(const struct string *);

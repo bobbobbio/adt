@@ -203,12 +203,21 @@ create_error_header(_no_error);
 #define panic(...) \
    adt_print(_panic, __VA_ARGS__)
 
+#define unlikely(x) \
+   __builtin_expect(!!(x), 0)
+
 // This is like a regular assert except that you can add an optional message as
 // the second argument, and it accepts adt printing (see string.h).
 #define adt_assert(...) \
    __adt_assert(__VA_ARGS__, NULL)
-#define __adt_assert(test, ...) \
-   adt_print(_adt_assert, test, #test, __FILE__, __LINE__, __VA_ARGS__)
+#define __adt_assert(test, ...)                                                \
+   if (unlikely(!(test)))                                                      \
+      adt_print(_adt_assert, #test, __FILE__, __LINE__, __VA_ARGS__)
+
+#ifdef ASSERTS_OFF
+#undef __adt_assert
+#define __adt_assert(...)
+#endif
 
 #define adt_assert_size(type, cont, size) \
    adt_assert(type##_size((cont)) == size, \
@@ -222,8 +231,7 @@ void _error_panic(struct error e, char *code, const char *file, int line);
 void _panic(char *fmt, ...)
    a_format(printf, 1, 2) a_noreturn;
 char *error_msg(struct error e);
-void _adt_assert(
-   bool test, const char *code, const char *file, int line, char *fmt, ...);
+void _adt_assert(const char *code, const char *file, int line, char *fmt, ...);
 void print_backtrace(int skip_frames);
 
 #endif // __ERROR_H

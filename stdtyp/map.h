@@ -144,8 +144,10 @@ map_iterate(const struct map *, struct aiter *, void **, void **);
       ktype_ref k;                                                             \
       type_ref v;                                                              \
       struct aiter i; i.ipos = 0;                                              \
-      while (map_iterate(&src->map, &i, (void **)&k, (void **)&v))             \
-         adt_assert(name##_insert_(dst, ktype_out(k), v));                     \
+      while (map_iterate(&src->map, &i, (void **)&k, (void **)&v)) {           \
+         bool res a_unused = name##_insert_(dst, ktype_out(k), v);             \
+         adt_assert(res);                                                      \
+      }                                                                        \
    }                                                                           \
    SWALLOWSEMICOLON
 

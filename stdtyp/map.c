@@ -60,7 +60,7 @@ _map_nbuckets(const struct map *m)
 void
 _map_resize(struct map *m)
 {
-   uint64_t old_size = m->size;
+   uint64_t old_size a_unused = m->size;
    struct map_table *old_buckets = m->buckets;
    uint64_t size = map_table_size(m->buckets) * 2;
    m->buckets = map_table_new_size(size);

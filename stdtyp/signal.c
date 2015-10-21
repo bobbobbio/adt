@@ -153,7 +153,7 @@ void
 ignore_signal(int signum)
 {
    struct signal sig = { signum };
-   struct signal_handler *handler = get_signal_handler(sig);
+   struct signal_handler *handler a_unused = get_signal_handler(sig);
 
    adt_assert(handler->func == NULL);
 
