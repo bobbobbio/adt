@@ -47,7 +47,7 @@ void
 line_reader_destroy(struct line_reader *l)
 {
    string_destroy(&l->buff);
-   string_init(&l->iter_str);
+   string_destroy(&l->iter_str);
 }
 
 static struct error

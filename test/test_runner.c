@@ -35,24 +35,23 @@ arg_main(struct arg_dict *args)
             continue;
       }
       if (string_ends_with(file, strw("_test"))) {
-         create(string, path);
-         if (valgrind) {
-            string_append_cstring(&path,
-               "valgrind --tool=memcheck --leak-check=full "
-               "--suppressions=valgrind.supp ./");
-         } else {
-            string_append_cstring(&path, "./");
-         }
-         string_append_string(&path, file);
-
-         create_copy(string, path_list, &path);
-         string_append_cstring(&path_list, " --list");
+         create(string, list_args);
+         string_append_format(&list_args, "./%s --list", print(string, file));
          create(string, output);
-         ehandle(error, subprocess_run(&path_list, &output)) {
+         ehandle(error, subprocess_run(&list_args, &output)) {
             printf("%-40s: failed to get test list\n", string_to_cstring(file));
             a_test_failed = true;
             continue;
          }
+
+         create(string, args);
+         if (valgrind) {
+            string_append_cstring(&args,
+               "valgrind --tool=memcheck --leak-check=full "
+               "--suppressions=valgrind.supp ");
+         }
+         string_append_format(&args, "./%s", print(string, file));
+
          create(string_vec, tests);
          string_split(&output, '\n', &tests);
          iter_value (string_vec, &tests, test) {
@@ -61,7 +60,7 @@ arg_main(struct arg_dict *args)
             printf("%-40s: ", string_to_cstring(&test_name));
             fflush(stdout);
 
-            create_copy(string, path_test, &path);
+            create_copy(string, path_test, &args);
             string_append_format(&path_test, " %s", print(string, test));
             bool failed = false;
             ehandle (error, subprocess_run(&path_test, &output))
