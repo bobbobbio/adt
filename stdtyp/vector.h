@@ -31,6 +31,9 @@ vector_size(const struct vector *);
 void
 vector_init_size(struct vector *, uint64_t, size_t);
 
+void
+vector_resize(struct vector *, uint64_t, size_t);
+
 bool
 vector_iterate(const struct vector *, struct aiter *, uint64_t *, void **,
    size_t);
@@ -56,7 +59,6 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *),
    a_unused f bool name##_remove_value(struct name *, type); \
    a_unused f void name##_get(const struct name *, type_ref, int); \
    a_unused f type_ref name##_at(const struct name *, int); \
-   a_unused f void name##_init_size(struct name *, uint64_t); \
    a_unused f bool name##_contains(const struct name *, type); \
    a_unused f void name##_clear(struct name *); \
    a_unused f int name##_size(const struct name *); \
@@ -78,7 +80,7 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *),
    f struct name *name##_new_size(uint64_t size)                               \
    {                                                                           \
       struct name *a = type_malloc(name);                                      \
-      name##_init_size(a, size);                                               \
+      vector_init_size(&a->vector, so, size);                                  \
       for (unsigned i = 0; i < size; i++)                                      \
          typename##_init(vector_at(&a->vector, i, so));                        \
       return a;                                                                \
@@ -146,10 +148,6 @@ vector_sort(struct vector *, int (*compare)(const void *, const void *),
    f void name##_init(struct name *n)                                          \
    {                                                                           \
       vector_init(&n->vector);                                                 \
-   }                                                                           \
-   f void name##_init_size(struct name *n, uint64_t size)                      \
-   {                                                                           \
-      vector_init_size(&n->vector, size, so);                                  \
    }                                                                           \
    f void name##_destroy(struct name *a)                                       \
    {                                                                           \

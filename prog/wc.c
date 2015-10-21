@@ -172,6 +172,7 @@ arg_main(struct arg_dict *args)
 
    // Create a vector to store all of the stats
    create(file_stats_vec, all_file_stats);
+   file_stats_vec_resize(&all_file_stats, string_vec_size(files));
 
    if (files == NULL) {
       // If no files are given, read stdin

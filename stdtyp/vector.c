@@ -24,17 +24,25 @@ adt_func_body(vector);
 void
 vector_init(struct vector *v)
 {
-   v->buff = malloc(BUFFER_START_SIZE);
-   v->buff_len = BUFFER_START_SIZE;
+   v->buff = NULL;
+   v->buff_len = 0;
    v->size = 0;
 }
 
 void
 vector_init_size(struct vector *v, uint64_t s, size_t size)
 {
-   v->buff = malloc(s * size);
-   v->buff_len = s;
-   v->size = s;
+   vector_init(v);
+   vector_resize(v, s, size);
+}
+
+void
+vector_resize(struct vector *v, uint64_t s, size_t size)
+{
+   adt_assert(v->size <= size);
+   v->buff = realloc(v->buff, s * size);
+   v->buff_len = s * size;
+   v->size = size;
 }
 
 void
