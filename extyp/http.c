@@ -53,19 +53,22 @@ http_get_url(const struct string *url, struct string *output)
    create(string_string_map, header);
    int line_number = 0;
    while (true) {
-      create(string, line);
-      ecrash(line_reader_get_line(&lr, &line, NULL));
+      const struct string *line = NULL;
+      ecrash(line_reader_get_line(&lr, &line));
       // status line
       if (line_number == 0) {
          // XXX Check for HTTP OK or something
       } else {
+         create_copy(string, line_stripped, line);
+         string_strip(&line_stripped);
+
          // Check for end of header
-         if (string_length(&line) == 0)
+         if (string_length(&line_stripped) == 0)
             break;
          create(string, key);
          create(string, value);
          // XXX Rather than assert return some error
-         adt_assert(regex_match(&kv_reg, &line, &key, &value));
+         adt_assert(regex_match(&kv_reg, &line_stripped, &key, &value));
          string_string_map_insert(&header, &key, &value);
       }
       line_number++;

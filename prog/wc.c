@@ -132,7 +132,6 @@ file_stats_append(struct file_stats *dst, const struct file_stats *src) {
       *stat_map_at(&dst->stats, strw("max-line-length")) = ml;
 }
 
-vector_gen_static(file_stats_vec, file_stats);
 
 static void
 analyze_file(struct line_reader *lr, struct file_stats *fs_out)
@@ -170,8 +169,14 @@ arg_main(struct arg_dict *args)
    // Get the files given as args
    const struct string_vec *files = get_arg_string_array(args, strw(""));
 
-   // Create a vector to store all of the stats
-   create(file_stats_vec, all_file_stats);
+   create(string_vec, options);
+   get_options(args, &options);
+
+   create(file_stats, total);
+   string_set_cstring(&total.name, "total");
+
+   unsigned num_stats = 0;
+   static const unsigned col = 8;
 
    if (files == NULL) {
       // If no files are given, read stdin
@@ -179,9 +184,11 @@ arg_main(struct arg_dict *args)
 
       create(file_stats, fs);
       analyze_file(&lr, &fs);
-      file_stats_vec_append(&all_file_stats, &fs);
+
+      file_stats_print_stats(&fs, col, &options);
+      file_stats_append(&total, &fs);
+      num_stats++;
    } else {
-      file_stats_vec_resize(&all_file_stats, string_vec_size(files));
       // For each file given, analyze it
       iter_value (string_vec, files, file_path) {
          create(line_reader, lr);
@@ -204,41 +211,18 @@ arg_main(struct arg_dict *args)
          if (file_opened) {
             create(file_stats, fs);
             analyze_file(&lr, &fs);
+
             string_copy(&fs.name, file_path);
-            file_stats_vec_append(&all_file_stats, &fs);
+            file_stats_print_stats(&fs, col, &options);
+            file_stats_append(&total, &fs);
+            num_stats++;
          }
       }
    }
 
-   if (file_stats_vec_size(&all_file_stats) == 0)
-      return EXIT_FAILURE;
+   if (num_stats > 1)
+      file_stats_print_stats(&total, col, &options);
 
-   create(string_vec, options);
-   get_options(args, &options);
-
-   // Calculate total
-   create(file_stats, total);
-   string_set_cstring(&total.name, "total");
-   iter_value (file_stats_vec, &all_file_stats, fs)
-      file_stats_append(&total, fs);
-   if (file_stats_vec_size(&all_file_stats) > 1)
-      file_stats_vec_append(&all_file_stats, &total);
-
-   // Get column width
-   int col = 0;
-   iter_value (file_stats_vec, &all_file_stats, fs) {
-      iter_value (stat_map, &fs->stats, val)
-         col = max(col, uwidth(*val));
-   }
-
-   // If we are only printing one stat, lets forget the columns
-   if (file_stats_vec_size(&all_file_stats) == 1
-      && string_vec_size(&options) == 1)
-      col = 1;
-
-   // Print the stats
-   iter_value (file_stats_vec, &all_file_stats, fs)
-      file_stats_print_stats(fs, col, &options);
 
    return EXIT_SUCCESS;
 }

@@ -258,6 +258,36 @@ string_to_int(const struct string *s)
 }
 
 bool
+is_whitespace(char c)
+{
+   return c == ' ' || c == '\t' || c  == '\n' || c == '\r';
+}
+
+void
+string_strip(struct string *s)
+{
+   if (string_length(s) == 0)
+      return;
+
+   unsigned si = 0;
+   unsigned ei = string_length(s) - 1;
+   while (is_whitespace(string_char_at_index(s, si))) {
+      si++;
+      if (si >= string_length(s)) {
+         string_clear(s);
+         return;
+      }
+   }
+   while (is_whitespace(string_char_at_index(s, ei)))
+      ei--;
+
+   if (ei < string_length(s) - 1)
+      string_remove_substring(s, ei + 1, string_length(s) - 1);
+   if (si > 0)
+      string_remove_substring(s, 0, si - 1);
+}
+
+bool
 string_equal(const struct string *a, const struct string *b)
 {
    return strcmp(a->buff, b->buff) == 0;
@@ -267,17 +297,20 @@ void
 string_split(const struct string *s, char c, struct string_vec *vec_out)
 {
    string_vec_clear(vec_out);
-
-   create_string_stream_const(ss, s);
-   create_tokenizer(tkn, string_stream_to_stream(&ss));
-   create(string, sc);
-   string_append_char(&sc, c);
-   tokenizer_set_skip_chars(&tkn, &sc);
-   tokenizer_set_allow_empty(&tkn, true);
-
+   unsigned st = 0;
    create(string, t);
-   while (tokenizer_get_next(&tkn, &t))
-      string_vec_append(vec_out, &t);
+   for (unsigned i = 0; i < string_length(s); i++) {
+      if (string_char_at_index(s, i) == c) {
+         string_clear(&t);
+         string_append_cstring_length(&t, &s->buff[st], i - st);
+         string_vec_append(vec_out, &t);
+         st = i + 1;
+      }
+   }
+
+   string_clear(&t);
+   string_append_cstring_length(&t, &s->buff[st], string_length(s) - st);
+   string_vec_append(vec_out, &t);
 }
 
 void

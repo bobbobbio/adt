@@ -120,6 +120,34 @@ adt_test(equal)
    adt_assert_equal(string, &str, strw("derpcakes"));
 }
 
+adt_test(strip_easy)
+{
+   create_string(str, "  ab  ");
+   string_strip(&str);
+   adt_assert_equal(string, &str, strw("ab"));
+}
+
+adt_test(strip_empty)
+{
+   create_string(str, "");
+   string_strip(&str);
+   adt_assert_equal(string, &str, strw(""));
+}
+
+adt_test(strip_all)
+{
+   create_string(str, "      \t \n      ");
+   string_strip(&str);
+   adt_assert_equal(string, &str, strw(""));
+}
+
+adt_test(strip_ending)
+{
+   create_string(str, "a line\r\n");
+   string_strip(&str);
+   adt_assert_equal(string, &str, strw("a line"));
+}
+
 adt_test(split)
 {
    create_string(str, "a b c d");

@@ -6,11 +6,16 @@
 #include <stdtyp/string.h>
 
 struct line_reader {
-   struct string buff;
    uint64_t start;
    bool done;
    struct stream *stream;
 
+   // This is the buffer we read off of the stream into
+   struct string buff;
+   // When a line ends up spaning read boundary, the hold over gets put into
+   // this string
+   struct string ebuff;
+   // This the struct string that we use to return a string out of get_line
    struct string iter_str;
 };
 adt_func_header(line_reader);
@@ -26,7 +31,7 @@ void
 line_reader_set_stream(struct line_reader *, struct stream *);
 
 struct error
-line_reader_get_line(struct line_reader *, struct string *, bool *got_line)
+line_reader_get_line(struct line_reader *, const struct string **)
    a_warn_unused_result;
 
 iter_gen_header(line_reader, int, const struct string *);

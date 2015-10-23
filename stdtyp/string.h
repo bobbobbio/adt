@@ -96,6 +96,9 @@ const struct string *
 string_const_new(const char *buff);
 
 void
+string_strip(struct string *);
+
+void
 string_append_cstring(struct string *, const char *);
 
 void

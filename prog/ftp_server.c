@@ -81,11 +81,10 @@ ftp_server_read_command(
 {
    create_line_reader(client_lr, socket_to_stream(&self->control_conn));
 
-   create(string, line);
-   while (string_length(&line) == 0) {
-      bool got_line = false;
-      ereraise(line_reader_get_line(&client_lr, &line, &got_line));
-      if (!got_line) {
+   const struct string *line = NULL;
+   while (string_length(line) == 0) {
+      ereraise(line_reader_get_line(&client_lr, &line));
+      if (line == NULL) {
          // If we didn't get a line it means the socket it closed, so return an
          // error
          eraise(network_error, "Socket closed.");
@@ -93,7 +92,7 @@ ftp_server_read_command(
    }
 
    create(string_vec, vec);
-   string_split(&line, ' ', &vec);
+   string_split(line, ' ', &vec);
 
    string_clear(value_out);
    if (string_vec_size(&vec) >= 1)
@@ -101,9 +100,9 @@ ftp_server_read_command(
    if (string_vec_size(&vec) == 2)
       string_copy(value_out, string_vec_at(&vec, 1));
    else if(string_vec_size(&vec) > 2)
-      panic("command malformed?: %s", print(string, &line));
+      panic("command malformed?: %s", print(string, line));
 
-   ftp_server_log(self, "--> %s\n", print(string, &line));
+   ftp_server_log(self, "--> %s\n", print(string, line));
 
    return no_error;
 }

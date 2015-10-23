@@ -19,20 +19,20 @@ bool line_reader_iter_next(
 {
    struct line_reader *self = (struct line_reader *)const_self;
    i->key++;
-   bool got_line = false;
-   ecrash(line_reader_get_line(self, &self->iter_str, &got_line));
-   i->value = &self->iter_str;
-   return got_line;
+   ecrash(line_reader_get_line(self, &i->value));
+   return i->value != NULL;
 }
 
 void
 line_reader_init(struct line_reader *l)
 {
    string_init(&l->buff);
+   string_init(&l->ebuff);
+   // XXX: This is really lame
+   memset(&l->iter_str, 0, sizeof(struct string));
    l->start = 0;
    l->done = false;
    l->stream = NULL;
-   string_init(&l->iter_str);
 }
 
 struct line_reader
@@ -47,7 +47,7 @@ void
 line_reader_destroy(struct line_reader *l)
 {
    string_destroy(&l->buff);
-   string_destroy(&l->iter_str);
+   string_destroy(&l->ebuff);
 }
 
 static struct error
@@ -73,41 +73,55 @@ line_reader_set_stream(struct line_reader *l, struct stream *stream)
 }
 
 struct error
-line_reader_get_line(struct line_reader *l, struct string *s, bool *got_line)
+line_reader_get_line(struct line_reader *l, const struct string **s)
 {
-   bool dummy;
-   if (got_line == NULL)
-      got_line = &dummy;
-
    if (l->done) {
-      *got_line = false;
+      *s = NULL;
       return no_error;
    }
 
    if (l->start >= string_length(&l->buff)) {
       ereraise(line_reader_read(l, &l->done));
       if (l->done) {
-         *got_line = false;
+         *s = NULL;
          return no_error;
       }
    }
 
-   string_clear(s);
+   string_clear(&l->ebuff);
+
    uint64_t i = l->start;
    while (string_char_at_index(&l->buff, i) != '\n') {
-      // XXX what do we do about \r????
-      if (string_char_at_index(&l->buff, i) != '\r')
-         string_append_char(s, string_char_at_index(&l->buff, i));
       i++;
       if (i >= string_length(&l->buff)) {
+         string_append_cstring_length(&l->ebuff,
+            &string_to_cstring(&l->buff)[l->start],
+            string_length(&l->buff) - l->start);
+
          ereraise(line_reader_read(l, &l->done));
+         i = l->start;
          if (l->done)
             break;
-         i = l->start;
       }
    }
+
+   if (string_length(&l->ebuff) > 0) {
+      // If we had to put stuff into the extended buffer, we have to use that.
+      string_append_cstring_length(&l->ebuff,
+         &string_to_cstring(&l->buff)[l->start],
+         i - l->start);
+      *s = &l->ebuff;
+   } else {
+      // Otherwise, we construct a string that is pointing to inside of the
+      // regular buffer.
+      l->iter_str.buff = (char *)&string_to_cstring(&l->buff)[l->start];
+      l->iter_str.buff_len = i - l->start;
+      l->iter_str.length = l->iter_str.buff_len;
+      l->iter_str.buff[l->iter_str.length] = '\0';
+      *s = &l->iter_str;
+   }
+
    l->start = i + 1;
 
-   *got_line = true;
    return no_error;
 }

@@ -53,6 +53,7 @@ arg_main(struct arg_dict *args)
          string_append_format(&args, "./%s", print(string, file));
 
          create(string_vec, tests);
+         string_strip(&output);
          string_split(&output, '\n', &tests);
          iter_value (string_vec, &tests, test) {
             create_copy(string, test_name, file);

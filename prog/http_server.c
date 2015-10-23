@@ -45,18 +45,18 @@ void
 serve_client(struct socket *client_conn, struct inet_addr *client_addr)
 {
    // Read off only the first line of the request.
-   create(string, buff);
+   const struct string *line = NULL;
    create_line_reader(client_lr, socket_to_stream(client_conn));
-   ecrash(line_reader_get_line(&client_lr, &buff, NULL));
+   ecrash(line_reader_get_line(&client_lr, &line));
 
    // Log the request
    aprintf("%s -- \"%s\"\n",
-      print(inet_addr, client_addr), print(string, &buff));
+      print(inet_addr, client_addr), print(string, line));
 
    // We only support GET, if it doesn't match the get request, we send a 404
    create_regex(get_reg, strw("GET /([^ ]*) HTTP.*"));
    create(string, path);
-   if (!regex_match(&get_reg, &buff, &path)) {
+   if (!regex_match(&get_reg, line, &path)) {
       client_404(client_conn);
       return;
    }
@@ -87,9 +87,10 @@ serve_client(struct socket *client_conn, struct inet_addr *client_addr)
          }
       }
       // Otherwise we read the file and write the contents back to the client.
-      ecrash(file_read(&file, &buff));
+      create(string, buffer);
+      ecrash(file_read(&file, &buffer));
       ecrash(socket_write(client_conn, strw("HTTP/1.0 200 OK\n\n")));
-      ecrash(socket_write(client_conn, &buff));
+      ecrash(socket_write(client_conn, &buffer));
    }
 }
 

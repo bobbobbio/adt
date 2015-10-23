@@ -10,7 +10,6 @@ adt_func_body(tokenizer);
 void tokenizer_init(struct tokenizer *t)
 {
    t->pos = 0;
-   t->allow_empty = false;
    string_init(&t->buff);
    string_init(&t->skip_chars);
    string_copy(&t->skip_chars, strw(" \t\r\n"));
@@ -73,8 +72,8 @@ _tokenizer_skip(struct tokenizer *t)
    }
 }
 
-static bool
-non_empty_get_next(struct tokenizer *t, struct string *s)
+bool
+tokenizer_get_next(struct tokenizer *t, const struct string **s)
 {
    adt_assert(t->stream != NULL);
 
@@ -87,7 +86,6 @@ non_empty_get_next(struct tokenizer *t, struct string *s)
 
    _tokenizer_skip(t);
 
-   string_clear(s);
    while (t->pos < string_length(&t->buff)) {
       char c = string_char_at_index(&t->buff, t->pos);
       if (is_skipchar(t, c))
@@ -100,54 +98,4 @@ non_empty_get_next(struct tokenizer *t, struct string *s)
    }
 
    return true;
-}
-
-static bool
-empty_get_next(struct tokenizer *t, struct string *s)
-{
-   adt_assert(t->stream != NULL);
-
-   while (t->pos >= string_length(&t->buff)) {
-      if (!stream_has_more(t->stream))
-         return false;
-      else
-         _tokenizer_read(t);
-   }
-
-   string_clear(s);
-   while (t->pos < string_length(&t->buff)) {
-      char c = string_char_at_index(&t->buff, t->pos);
-      if (is_skipchar(t, c))
-         break;
-      string_append_char(s, c);
-      t->pos++;
-
-      if (t->pos >= string_length(&t->buff))
-         _tokenizer_read(t);
-   }
-
-   t->pos++;
-
-   return true;
-}
-
-bool
-tokenizer_get_next(struct tokenizer *t, struct string *s)
-{
-   if (t->allow_empty)
-      return empty_get_next(t, s);
-   else
-      return non_empty_get_next(t, s);
-}
-
-void
-tokenizer_set_skip_chars(struct tokenizer *t, struct string *s)
-{
-   string_copy(&t->skip_chars, s);
-}
-
-void
-tokenizer_set_allow_empty(struct tokenizer *t, bool ae)
-{
-   t->allow_empty = ae;
 }

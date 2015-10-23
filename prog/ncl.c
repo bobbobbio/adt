@@ -44,8 +44,9 @@ arg_main(struct arg_dict *args)
       }
 
       if (file_set_is_set(&fd_set, file_stdin)) {
-         ecrash(line_reader_get_line(&stdin_lr, &buff, NULL));
-         string_append_cstring(&buff, "\n");
+         const struct string *line = NULL;
+         ecrash(line_reader_get_line(&stdin_lr, &line));
+         string_append_format(&buff, "%s\n", print(string, line));
          ecrash(socket_write(&client_conn, &buff));
       }
    }

@@ -11,7 +11,6 @@ struct tokenizer {
    struct string buff;
    uint64_t pos;
    struct string skip_chars;
-   bool allow_empty;
 };
 adt_func_header(tokenizer);
 
@@ -34,11 +33,5 @@ tokenizer_set_stream(struct tokenizer *, struct stream *);
 
 bool
 tokenizer_get_next(struct tokenizer *, struct string *);
-
-void
-tokenizer_set_skip_chars(struct tokenizer *, struct string *);
-
-void
-tokenizer_set_allow_empty(struct tokenizer *, bool);
 
 #endif // __TOKENIZER_H__
