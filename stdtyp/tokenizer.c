@@ -73,7 +73,7 @@ _tokenizer_skip(struct tokenizer *t)
 }
 
 bool
-tokenizer_get_next(struct tokenizer *t, const struct string **s)
+tokenizer_get_next(struct tokenizer *t, const struct string *s)
 {
    adt_assert(t->stream != NULL);
 
