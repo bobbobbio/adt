@@ -60,21 +60,6 @@ file_stats_copy(struct file_stats *d, const struct file_stats *s)
 static void
 file_stats_print(const struct file_stats *f, struct string *s) {}
 
-static bool
-file_stats_equal(const struct file_stats *a, const struct file_stats *b)
-{
-   return false;
-}
-
-// Gives the width of a uint
-static int
-uwidth(uint64_t n)
-{
-   create(string, tmp);
-   string_append_int(&tmp, n);
-   return string_length(&tmp);
-}
-
 // Given an arguments dict, return out a string_vec with all the selected
 // options
 static void
