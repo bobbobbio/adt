@@ -39,15 +39,19 @@ arg_main(struct arg_dict *args)
          string_append_format(&list_args, "./%s --list", print(string, file));
          create(string, output);
          ehandle(error, subprocess_run(&list_args, &output)) {
+            aprintf("%s\n", print(error, &error));
             printf("%-40s: failed to get test list\n", string_to_cstring(file));
             a_test_failed = true;
-            continue;
          }
+         if (a_test_failed)
+            continue;
 
          create(string, args);
          if (valgrind) {
             string_append_cstring(&args,
-               "valgrind --tool=memcheck --leak-check=full "
+               "valgrind "
+               "--tool=memcheck "
+               "--leak-check=full "
                "--suppressions=valgrind.supp ");
          }
          string_append_format(&args, "./%s", print(string, file));

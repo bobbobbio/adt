@@ -298,19 +298,16 @@ string_split(const struct string *s, char c, struct string_vec *vec_out)
 {
    string_vec_clear(vec_out);
    unsigned st = 0;
-   create(string, t);
    for (unsigned i = 0; i < string_length(s); i++) {
       if (string_char_at_index(s, i) == c) {
-         string_clear(&t);
-         string_append_cstring_length(&t, &s->buff[st], i - st);
-         string_vec_append(vec_out, &t);
+         struct string *t = string_vec_grow(vec_out);
+         string_append_cstring_length(t, &s->buff[st], i - st);
          st = i + 1;
       }
    }
 
-   string_clear(&t);
-   string_append_cstring_length(&t, &s->buff[st], string_length(s) - st);
-   string_vec_append(vec_out, &t);
+   struct string *t = string_vec_grow(vec_out);
+   string_append_cstring_length(t, &s->buff[st], string_length(s) - st);
 }
 
 void
@@ -429,20 +426,21 @@ string_remove_substring(struct string *s, int si, int ei)
    adt_assert(si >= 0);
    adt_assert(ei < s->length);
 
-   int nbuff_len = s->buff_len - (ei - si + 1);
+   int nbuff_len = s->length - (ei - si + 1) + 1;
    char *nbuff = (char *)malloc(nbuff_len);
 
    int bi = 0;
-   for (int i = 0; i < s->buff_len; i++) {
+   for (int i = 0; i < s->length; i++) {
       if (i < si || i > ei)
          nbuff[bi++] = s->buff[i];
    }
-   adt_assert(bi == nbuff_len);
+   adt_assert(bi == nbuff_len - 1);
 
    free(s->buff);
    s->buff = nbuff;
    s->buff_len = nbuff_len;
    s->length = s->buff_len - 1;
+   s->buff[s->length] = '\0';
 }
 
 int

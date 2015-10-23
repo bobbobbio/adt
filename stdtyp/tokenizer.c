@@ -86,6 +86,7 @@ tokenizer_get_next(struct tokenizer *t, struct string *s)
 
    _tokenizer_skip(t);
 
+   string_clear(s);
    while (t->pos < string_length(&t->buff)) {
       char c = string_char_at_index(&t->buff, t->pos);
       if (is_skipchar(t, c))
