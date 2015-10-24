@@ -4,7 +4,6 @@
 #include <stdtyp/argparse.h>
 #include <stdtyp/file.h>
 #include <stdtyp/linereader.h>
-#include <stdtyp/tokenizer.h>
 #include <stdtyp/vector.h>
 #include <stdtyp/string_stream.h>
 
@@ -122,11 +121,16 @@ static void
 analyze_file(struct line_reader *lr, struct file_stats *fs_out)
 {
    iter_value (line_reader, lr, line) {
-      create_string_stream_const(ss, line);
-      create_tokenizer(tkn, string_stream_to_stream(&ss));
-      create(string, token);
-      while (tokenizer_get_next(&tkn, &token))
-         (*stat_map_at(&fs_out->stats, strw("words")))++;
+      bool in_word = false;
+      for (unsigned i = 0; i < string_length(line); i++) {
+         if (char_is_whitespace(string_char_at_index(line, i)))
+            in_word = false;
+         else if (!in_word) {
+            in_word = true;
+            (*stat_map_at(&fs_out->stats, strw("words")))++;
+         }
+      }
+
       (*stat_map_at(&fs_out->stats, strw("lines")))++;
 
       uint64_t len = string_length(line);

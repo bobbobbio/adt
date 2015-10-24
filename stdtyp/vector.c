@@ -15,7 +15,7 @@ _memcpy(uint8_t *dst, uint8_t *src, size_t len)
 
 adt_func_body(vector);
 
-#define BUFFER_START_SIZE (500)
+#define BUFFER_START_SIZE (10)
 
 // Note: The init is designed such that it doesn't have to be called.  If you
 // just zero out all of the elements of the vector it should also work.  This

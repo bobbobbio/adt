@@ -3,7 +3,6 @@
 #include <stdtyp/file.h>
 #include <stdtyp/regex.h>
 #include <stdtyp/string.h>
-#include <stdtyp/tokenizer.h>
 #include <stdtyp/string_stream.h>
 
 #include <errno.h>
@@ -258,7 +257,7 @@ string_to_int(const struct string *s)
 }
 
 bool
-is_whitespace(char c)
+char_is_whitespace(char c)
 {
    return c == ' ' || c == '\t' || c  == '\n' || c == '\r';
 }
@@ -271,14 +270,14 @@ string_strip(struct string *s)
 
    unsigned si = 0;
    unsigned ei = string_length(s) - 1;
-   while (is_whitespace(string_char_at_index(s, si))) {
+   while (char_is_whitespace(string_char_at_index(s, si))) {
       si++;
       if (si >= string_length(s)) {
          string_clear(s);
          return;
       }
    }
-   while (is_whitespace(string_char_at_index(s, ei)))
+   while (char_is_whitespace(string_char_at_index(s, ei)))
       ei--;
 
    if (ei < string_length(s) - 1)
@@ -315,11 +314,20 @@ string_tokenize(const struct string *s, struct string_vec *vec_out)
 {
    string_vec_clear(vec_out);
 
-   create_string_stream_const(ss, s);
-   create_tokenizer(tkn, string_stream_to_stream(&ss));
-   create(string, t);
-   while (tokenizer_get_next(&tkn, &t))
-      string_vec_append(vec_out, &t);
+   unsigned si = 0;
+   unsigned ei = 0;
+
+   for (; ei < string_length(s); ei++) {
+      if (char_is_whitespace(string_char_at_index(s, ei))) {
+         if (ei - si > 0) {
+            struct string *sc = string_vec_grow(vec_out);
+            string_append_cstring_length(sc, &s->buff[si], ei - si);
+         }
+         si = ei + 1;
+      }
+   }
+   struct string *sc = string_vec_grow(vec_out);
+   string_append_cstring_length(sc, &s->buff[si], ei - si);
 }
 
 bool

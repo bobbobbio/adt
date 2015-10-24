@@ -191,4 +191,7 @@ bool
 string_replace_first(struct string *s, const struct regex *r,
    const struct string *n);
 
+bool
+char_is_whitespace(char c);
+
 #endif // __STRING_H
