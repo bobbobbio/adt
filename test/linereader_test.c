@@ -12,9 +12,8 @@ adt_test(linereader_test)
    with_file_open (file, strw("linereader_test.c"), 0) {
       create_line_reader(lr, file_to_stream(&file));
 
-      iter_value (line_reader, &lr, line) {
-         create_string_stream_const(ss, line);
-      }
+      iter_value (line_reader, &lr, line)
+         lines++;
    }
 
    adt_assert(lines > 10);
