@@ -120,6 +120,14 @@ file_stats_append(struct file_stats *dst, const struct file_stats *src) {
 static void
 analyze_file(struct line_reader *lr, struct file_stats *fs_out)
 {
+   // Do all the stat lookups up-front
+   uint64_t *words = stat_map_at(&fs_out->stats, strw("words"));
+   uint64_t *lines = stat_map_at(&fs_out->stats, strw("lines"));
+   uint64_t *bytes = stat_map_at(&fs_out->stats, strw("bytes"));
+   uint64_t *chars = stat_map_at(&fs_out->stats, strw("chars"));
+   uint64_t *max_line_length =
+      stat_map_at(&fs_out->stats, strw("max-line-length"));
+
    iter_value (line_reader, lr, line) {
       bool in_word = false;
       for (unsigned i = 0; i < string_length(line); i++) {
@@ -127,11 +135,11 @@ analyze_file(struct line_reader *lr, struct file_stats *fs_out)
             in_word = false;
          else if (!in_word) {
             in_word = true;
-            (*stat_map_at(&fs_out->stats, strw("words")))++;
+            (*words)++;
          }
       }
 
-      (*stat_map_at(&fs_out->stats, strw("lines")))++;
+      (*lines)++;
 
       uint64_t len = string_length(line);
 
@@ -139,9 +147,11 @@ analyze_file(struct line_reader *lr, struct file_stats *fs_out)
       // for the EOF character
       *stat_map_at(&fs_out->stats, strw("bytes")) += len + 1;
       *stat_map_at(&fs_out->stats, strw("chars")) += len + 1;
+      (*bytes) += len + 1;
+      (*chars) += len + 1;
 
-      if (len > *stat_map_at(&fs_out->stats, strw("max-line-length")))
-         *stat_map_at(&fs_out->stats, strw("max-line-length")) = len;
+      if (len > *max_line_length)
+         *max_line_length = len;
    }
 }
 

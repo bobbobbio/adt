@@ -120,9 +120,6 @@ string_make_var(const char *cstr);
 struct string *
 string_new_var(const char *cstr);
 
-const char *
-string_to_cstring(const struct string *);
-
 void
 string_clear(struct string *);
 
@@ -134,15 +131,6 @@ string_append_int(struct string *, int);
 
 void
 string_set_cstring(struct string *s, char *);
-
-uint64_t
-string_length(const struct string *);
-
-inline static char
-string_char_at_index(const struct string *s, uint64_t i)
-{
-   return s->buff[i];
-}
 
 int
 string_to_int(const struct string *);
@@ -191,7 +179,28 @@ bool
 string_replace_first(struct string *s, const struct regex *r,
    const struct string *n);
 
-bool
-char_is_whitespace(char c);
+static inline uint64_t
+string_length(const struct string *s)
+{
+   return s->length;
+}
+
+static inline const char *
+string_to_cstring(const struct string *s)
+{
+   return (const char *)s->buff;
+}
+
+inline static char
+string_char_at_index(const struct string *s, uint64_t i)
+{
+   return s->buff[i];
+}
+
+static inline bool
+char_is_whitespace(char c)
+{
+   return c == ' ' || c == '\t' || c  == '\n' || c == '\r';
+}
 
 #endif // __STRING_H

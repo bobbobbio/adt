@@ -132,18 +132,6 @@ string_print(const struct string *s, struct string *d)
    string_append_string(d, s);
 }
 
-const char *
-string_to_cstring(const struct string *s)
-{
-   return (const char *)s->buff;
-}
-
-uint64_t
-string_length(const struct string *s)
-{
-   return s->length;
-}
-
 static void
 string_expand(struct string *s)
 {
@@ -254,12 +242,6 @@ string_to_int(const struct string *s)
 {
    adt_assert(s->length > 0);
    return atoi(s->buff);
-}
-
-bool
-char_is_whitespace(char c)
-{
-   return c == ' ' || c == '\t' || c  == '\n' || c == '\r';
 }
 
 void
