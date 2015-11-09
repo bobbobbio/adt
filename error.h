@@ -227,7 +227,8 @@ create_error_header(_no_error);
    adt_assert(type##_equal((a), (b)), \
       "%s != %s", print(type, (a)), print(type, (b)))
 
-void _error_panic(struct error e, char *code, const char *file, int line);
+void _error_panic(struct error e, char *code, const char *file, int line)
+   a_noreturn;
 void _panic(char *fmt, ...)
    a_format(printf, 1, 2) a_noreturn;
 char *error_msg(struct error e);
