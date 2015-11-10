@@ -3,10 +3,11 @@
 #ifndef __ADT_H
 #define __ADT_H
 
-#include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 
 struct string;
 struct string_vec;
@@ -185,6 +186,7 @@ memory_hash(void *m, size_t size)
 #define char_print(x, s) string_append_format(s, "%c", *(x))
 #define unsigned_print(x, s) string_append_format(s, "%u", *(x))
 #define void_print(x, s) string_append_format(s, "%p", *(x))
+#define pid_t_print(x, s) string_append_format(s, "%ld", (long)*(x))
 
 // POD types malloc and free
 #define m_make(name, type) \
@@ -220,6 +222,7 @@ pod_m_make(int64_t);
 pod_m_make(int32_t);
 pod_m_make(int16_t);
 pod_m_make(int8_t);
+pod_m_make(pid_t);
 
 // Convert existing structs to use create, that have existing free
 #define _convert_ctype_body(type, f_func, f) \
