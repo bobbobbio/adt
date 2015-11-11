@@ -9,3 +9,4 @@ CFLAGS += -I../
 : ncl.o ../libadt.a |> !cc_prog |> ncl
 : http_server.o server_prog.o ../libadt.a |> !cc_prog |> http_server
 : ftp_server.o server_prog.o ../libadt.a |> !cc_prog |> ftp_server
+: fs_spy.o ../libadt.a |> !cc_prog |> fs_spy

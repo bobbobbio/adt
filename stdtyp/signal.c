@@ -131,7 +131,7 @@ _set_signal_handler(int signum, void (*handle_signal)(int))
    int error = sigaction(signum, &sa, NULL);
 
    if (error != 0)
-      ecrash(errno_to_error());
+      ecrash_errno_error();
 }
 
 void

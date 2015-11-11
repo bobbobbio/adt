@@ -5,6 +5,12 @@
 #include <execinfo.h>
 #include <stdtyp/threading.h>
 
+create_error_body(file_not_found_error);
+create_error_body(file_access_error);
+create_error_body(file_out_of_space_error);
+create_error_body(file_already_exists_error);
+create_error_body(errno_unknown_error);
+
 // We panic by default
 __thread enum error_mode current_error_mode = ERROR_PANIC;
 
@@ -170,4 +176,19 @@ void
 error_print(const struct error *e, struct string *s)
 {
    string_append_format(s, "%s(\"%s\")", e->type, e->msg);
+}
+
+char *
+errno_to_error(void)
+{
+   if (errno == EACCES)
+      return file_access_error;
+   else if (errno == ENOENT)
+      return file_not_found_error;
+   else if (errno == EEXIST)
+      return file_already_exists_error;
+   else if (errno == ENOSPC)
+      return file_out_of_space_error;
+   else
+      return errno_unknown_error;
 }

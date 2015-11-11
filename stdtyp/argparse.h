@@ -90,13 +90,13 @@ void
 parse_args(struct arg_dict *dict, char **argv, int argc);
 
 #define arg_main(_arg_dict) \
-_arg_call(_arg_dict); \
+_main(_arg_dict); \
 int main(int argc, char **argv) { \
    create(arg_dict, ad); \
    declare_args(&ad); \
    parse_args(&ad, argv, argc); \
-   return _arg_call(&ad); } \
-int _arg_call(_arg_dict)
+   return _main(&ad); } \
+int _main(_arg_dict)
 
 struct arg_entry {
    char sc;

@@ -23,9 +23,9 @@ adt_test(regex)
    regex_match_all(&fmt_regex, &fmt_str, &matches);
 
    adt_assert(string_vec_vec_size(&matches) == 3);
-   create_string_vec(one, "%2.4ld", "", "2", ".4", "l", "d");
-   create_string_vec(two, "%+*.99lli", "+", "*", ".99", "ll", "i");
-   create_string_vec(three, "%p", "", "", "", "", "p");
+   create_string_vec_cstr(one, "%2.4ld", "", "2", ".4", "l", "d");
+   create_string_vec_cstr(two, "%+*.99lli", "+", "*", ".99", "ll", "i");
+   create_string_vec_cstr(three, "%p", "", "", "", "", "p");
    adt_assert(string_vec_equal(string_vec_vec_at(&matches, 0), &one));
    adt_assert(string_vec_equal(string_vec_vec_at(&matches, 1), &two));
    adt_assert(string_vec_equal(string_vec_vec_at(&matches, 2), &three));

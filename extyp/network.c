@@ -53,7 +53,7 @@ eai_to_error(int ecode)
    else if (ecode == EAI_SOCKTYPE)
       eraise(network_error, "ai_socktype not supported");
    else if (ecode == EAI_SYSTEM)
-      ereraise(errno_to_error());
+      eraise_errno_error();
    else
       panic("Invalid error code");
 
@@ -174,7 +174,7 @@ socket_set_bool_option(struct socket *s, int optname)
    int val = 1;
    int error = setsockopt(socket_fd(s), SOL_SOCKET, optname, &val, sizeof(val));
    if (error != 0)
-      ereraise(errno_to_error());
+      eraise_errno_error();
 
    return no_error;
 }
@@ -200,7 +200,7 @@ socket_connect(struct string *server, int port, struct socket* socket_out)
 
       if (socket_fd(&tcp_socket) == -1) {
          if (errno != EAGAIN && errno != EINTR)
-            ereraise(errno_to_error());
+            eraise_errno_error();
       } else
          break;
    } while (true);
@@ -217,7 +217,7 @@ socket_connect(struct string *server, int port, struct socket* socket_out)
          socket_fd(&tcp_socket), (struct sockaddr *)&saddr, sizeof(saddr));
       if (error != 0) {
          if (errno != EAGAIN && errno != EINTR)
-            ereraise(errno_to_error());
+            eraise_errno_error();
       } else
          break;
    } while (true);
@@ -238,7 +238,7 @@ socket_tcp_init(struct socket *socket_out)
 
       if (socket_fd(&tcp_socket) == -1) {
          if (errno != EAGAIN && errno != EINTR)
-            ereraise(errno_to_error());
+            eraise_errno_error();
       } else
          break;
    } while (true);
@@ -264,7 +264,7 @@ _socket_bind(struct socket *tcp_socket, int port)
 
       if (err != 0) {
          if (errno != EAGAIN && errno != EINTR)
-            ereraise(errno_to_error());
+            eraise_errno_error();
       } else
          break;
    } while (true);
@@ -290,7 +290,7 @@ socket_getsockname(struct socket *tcp_socket)
       socket_fd(tcp_socket), (struct sockaddr *)&saddr, &len);
 
    if (err == -1)
-      ereraise(errno_to_error());
+      eraise_errno_error();
 
    tcp_socket->port = ntohs(saddr.sin_port);
 
@@ -341,7 +341,7 @@ socket_listen(struct socket *tcp_socket, int backlog)
 
       if (err != 0) {
          if (errno != EAGAIN && errno != EINTR)
-            ereraise(errno_to_error());
+            eraise_errno_error();
       } else
          break;
    } while (true);
@@ -363,7 +363,7 @@ socket_accept(struct socket *tcp_socket, struct socket *socket_out,
 
       if (socket_fd(&client_conn) == -1) {
          if (errno != EAGAIN && errno != EINTR)
-            ereraise(errno_to_error());
+            eraise_errno_error();
       } else
          break;
    } while (true);

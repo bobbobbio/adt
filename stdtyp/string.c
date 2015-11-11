@@ -17,23 +17,34 @@ adt_func_body(string);
 vector_gen_body(string_vec, string);
 vector_gen_body(string_vec_vec, string_vec);
 
-struct string_vec
-_strvw(const char *a, ...)
+void
+_string_vec_append_cstrs(struct string_vec *self, const char *a, ...)
 {
    va_list argp;
    va_start(argp, a);
 
-   struct string_vec out = string_vec_make();
-
    while (a != NULL) {
       create_const_string(str, a);
-      string_vec_append(&out, &str);
+      string_vec_append(self, &str);
       a = va_arg(argp, const char *);
    }
 
    va_end(argp);
+}
 
-   return out;
+void
+_string_vec_append_strings(struct string_vec *self,
+   const struct string *a, ...)
+{
+   va_list argp;
+   va_start(argp, a);
+
+   while (a != NULL) {
+      string_vec_append(self, a);
+      a = va_arg(argp, const struct string *);
+   }
+
+   va_end(argp);
 }
 
 void
@@ -207,7 +218,7 @@ string_read_fd(struct string *s, int fd, size_t want, size_t *got, bool *done)
          if (errno == EINTR || errno == EAGAIN)
             continue;
          else {
-            ereraise(errno_to_error());
+            eraise_errno_error();
          }
       } else { // we actually read data
          s->length += bytes_read;

@@ -4,6 +4,7 @@
 #define __ERROR_H
 
 #include <assert.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -146,8 +147,11 @@ expected_assert_condition_create(const char *condition);
 #define error_panic(e, msg) \
    _error_panic(e, msg, __FILE__, __LINE__)
 
+#define error_make(name, message) \
+   ((struct error){ .type = name, .msg = message })
+
 #define eraise(name, message) \
-   do { struct error e = { .type = name, .msg = message }; \
+   do { struct error e = error_make(name, message); \
       if (current_error_mode == ERROR_PANIC) \
          error_panic(e, #name); \
       return e; \
@@ -234,5 +238,37 @@ void _panic(char *fmt, ...)
 char *error_msg(struct error e);
 void _adt_assert(const char *code, const char *file, int line, char *fmt, ...);
 void print_backtrace(int skip_frames);
+
+create_error_header(file_not_found_error);
+create_error_header(file_access_error);
+create_error_header(file_out_of_space_error);
+create_error_header(file_already_exists_error);
+create_error_header(errno_unknown_error);
+
+#define errno_panic()                                                          \
+do {                                                                           \
+   if (errno == EINTR || errno == EAGAIN)                                      \
+      panic("temporary failure caused crash");                                 \
+                                                                               \
+   if (errno == EFAULT)                                                        \
+      panic("Path pointed to invalid memory");                                 \
+   else if (errno == EINVAL)                                                   \
+      panic("oflag was not set");                                              \
+}while(false)
+
+#define eraise_errno_error()                                                   \
+do {                                                                           \
+   errno_panic();                                                              \
+   eraise(errno_to_error(), strerror(errno));                                  \
+} while(false)
+
+#define ecrash_errno_error()                                                   \
+do {                                                                           \
+   errno_panic();                                                              \
+   error_panic(error_make(errno_to_error(), strerror(errno)), "");             \
+} while(false)
+
+char *
+errno_to_error(void);
 
 #endif // __ERROR_H

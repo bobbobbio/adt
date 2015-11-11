@@ -8,13 +8,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
-#include <errno.h>
-
-create_error_body(file_not_found_error);
-create_error_body(file_access_error);
-create_error_body(file_out_of_space_error);
-create_error_body(file_already_exists_error);
-create_error_body(errno_unknown_error);
 
 adt_func_body(file);
 
@@ -37,7 +30,7 @@ file_open(struct file *f, const struct string *path, int flags)
 {
    int fd = open(string_to_cstring(path), flags);
    if (fd == -1)
-      return errno_to_error();
+      eraise_errno_error();
    else {
       f->fd = fd;
       return no_error;
@@ -60,7 +53,7 @@ file_close(struct file *f)
       return no_error;
 
    if (close(f->fd) == -1)
-      ereraise(errno_to_error());
+      eraise_errno_error();
    else
       f->fd = -1;
 
@@ -86,32 +79,6 @@ file_destroy(struct file *f)
    f->done = true;
 }
 
-struct error
-errno_to_error(void)
-{
-   if (errno == EINTR)
-      panic("temporary failure caused crash");
-   else if (errno == EAGAIN)
-      panic("temporary failure caused crash");
-
-   if (errno == EFAULT)
-      panic("Path pointed to invalid memory");
-   else if (errno == EINVAL)
-      panic("oflag was not set");
-
-   if (errno == EACCES)
-      eraise(file_access_error, strerror(errno));
-   else if (errno == ENOENT)
-      eraise(file_not_found_error, strerror(errno));
-   else if (errno == EEXIST)
-      eraise(file_already_exists_error, strerror(errno));
-   else if (errno == ENOSPC)
-      eraise(file_out_of_space_error, strerror(errno));
-   else
-      eraise(errno_unknown_error, strerror(errno));
-}
-
-
 // From the man page:
 //
 // struct dirent {
@@ -132,7 +99,7 @@ file_list_directory(const struct string *path, struct string_vec *files_out)
    DIR *dirp = opendir(string_to_cstring(path));
    if (dirp == NULL) {
       closedir(dirp);
-      return errno_to_error();
+      eraise_errno_error();
    }
 
    // Iterate over the files
@@ -151,7 +118,7 @@ file_list_directory(const struct string *path, struct string_vec *files_out)
    }
 
    if (closedir(dirp) == -1)
-      return errno_to_error();
+      eraise_errno_error();
 
    return no_error;
 }
@@ -180,7 +147,7 @@ file_stat(const struct string *path, struct stat *stat_out)
    adt_assert(stat_out != NULL);
    int err = stat(string_to_cstring(path), stat_out);
    if (err < 0)
-      ereraise(errno_to_error());
+      eraise_errno_error();
 
    return no_error;
 }
@@ -244,7 +211,7 @@ file_set_select(struct file_set *f)
    int err = select(f->highest_fd + 1, &f->fds, NULL, NULL, NULL);
 
    if (err < 0)
-      ereraise(errno_to_error());
+      eraise_errno_error();
 
    return no_error;
 }
@@ -303,7 +270,7 @@ fd_stream_write(struct stream *s, const struct string *data)
          if (errno == EINTR || errno == EAGAIN)
             continue;
          else
-            return errno_to_error();
+            eraise_errno_error();
       }
       to_write -= written;
    }

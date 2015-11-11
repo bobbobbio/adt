@@ -11,6 +11,10 @@ struct regex;
    struct string name a_cleanup(string_destroy) = \
    string_make_var(str)
 
+#define create_string_format(name, ...) \
+   create(string, name); \
+   string_append_format(&name, __VA_ARGS__)
+
 #define create_ptr_string(name, str) \
    struct string *name a_cleamup(string_freer) = \
    string_new_var(str)
@@ -27,13 +31,16 @@ struct regex;
 void
 carr_freer(const char ***);
 
-#define create_cstr_array(name, expr) \
-   struct string_vec *____sv = expr; \
+#define _create_cstr_array(name, expr, sv) \
+   const struct string_vec *sv = expr; \
    const char **name a_cleanup(carr_freer) = \
-      (const char **)malloc(sizeof(char *) * (string_vec_size(____sv) + 1)); \
-   for (int i = 0; i < string_vec_size(____sv); i++) { \
-      name[i] = string_to_cstring(string_vec_at(____sv, i)); } \
-   name[string_vec_size(____sv)] = NULL;
+      (const char **)malloc(sizeof(char *) * (string_vec_size(sv) + 1)); \
+   for (int i = 0; i < string_vec_size(sv); i++) { \
+      name[i] = string_to_cstring(string_vec_at(sv, i)); } \
+   name[string_vec_size(sv)] = NULL
+
+#define create_cstr_array(name, expr) \
+   _create_cstr_array(name, expr, unq(sv))
 
 struct string {
    char *buff;
@@ -49,7 +56,7 @@ vector_gen_header(string_vec_vec, string_vec);
 // adt printing.  This section defines aprintf and its variants.  This function
 // allows you to print adt types inside one function call. It turns this:
 //
-// create_string_vec(my_list, "a", "b", "c");
+// create_string_vec_cstr(my_list, "a", "b", "c");
 // {
 //    create(string, temp);
 //    string_vec_print(&my_list, &temp);
@@ -58,7 +65,7 @@ vector_gen_header(string_vec_vec, string_vec);
 //
 // into this:
 //
-// create_string_vec(my_list, "a", "b", "c");
+// create_string_vec_cstr(my_list, "a", "b", "c");
 // aprintf("%s", print(string_vec, &my_list));
 
 #define print(type, v) \
@@ -82,12 +89,26 @@ do { \
 #define avsprintf(...) adt_print(vsprintf, __VA_ARGS__)
 #define avsnprintf(...) adt_print(vsnprintf, __VA_ARGS__)
 
-#define create_string_vec(name, ...) \
-   struct string_vec name a_cleanup(string_vec_destroy) = \
-      _strvw(__VA_ARGS__, NULL)
+#define create_string_vec_cstr(name, ...) \
+   create(string_vec, name); \
+   string_vec_append_cstrs(&name, __VA_ARGS__)
 
-struct string_vec
-_strvw(const char *a, ...);
+#define create_string_vec(name, ...) \
+   create(string_vec, name); \
+   string_vec_append_strings(&name, __VA_ARGS__)
+
+#define string_vec_append_cstrs(name, ...) \
+   _string_vec_append_cstrs(name, __VA_ARGS__, NULL)
+
+#define string_vec_append_strings(name, ...) \
+   _string_vec_append_strings(name, __VA_ARGS__, NULL)
+
+void
+_string_vec_append_cstrs(struct string_vec *self, const char *a, ...);
+
+void
+_string_vec_append_strings(
+   struct string_vec *self, const struct string *a, ...);
 
 struct string
 string_const_make(const char *buff);

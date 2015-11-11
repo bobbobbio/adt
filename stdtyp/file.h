@@ -13,12 +13,6 @@
 #include <stdtyp/ctxmanager.h>
 #include <stdtyp/stream.h>
 
-create_error_header(file_not_found_error);
-create_error_header(file_access_error);
-create_error_header(file_out_of_space_error);
-create_error_header(file_already_exists_error);
-create_error_header(errno_unknown_error);
-
 struct file {
    enum stream_type type;
    int fd;
@@ -60,10 +54,6 @@ file_list_directory(const struct string *, struct string_vec *)
 bool
 path_is_dir(const struct string *)
     a_warn_unused_result;
-
-struct error
-errno_to_error(void)
-   a_warn_unused_result;
 
 #define with_file_open(name, path, flags) \
    with_create_var(file, name, file_make_open, path, flags)

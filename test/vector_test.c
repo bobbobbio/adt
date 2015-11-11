@@ -21,7 +21,7 @@ vector_gen_static(topy_vec, TOPY);
 
 adt_test(insert)
 {
-   create_string_vec(terp, "apple", "book", "caterpiller");
+   create_string_vec_cstr(terp, "apple", "book", "caterpiller");
 
    create(string_vec, words);
    string_vec_append(&words, strw("apple"));
@@ -148,9 +148,9 @@ adt_test(vector_doesnt_free_elements)
 
 adt_test(extend)
 {
-   create_string_vec(left, "a", "b", "c");
-   create_string_vec(right, "1", "2", "3");
-   create_string_vec(expect, "a", "b", "c", "1", "2", "3");
+   create_string_vec_cstr(left, "a", "b", "c");
+   create_string_vec_cstr(right, "1", "2", "3");
+   create_string_vec_cstr(expect, "a", "b", "c", "1", "2", "3");
 
    string_vec_extend(&left, &right);
    adt_assert_equal(string_vec, &left, &expect);

@@ -67,7 +67,7 @@ get_options(struct arg_dict *dict, struct string_vec *options_out)
    string_vec_clear(options_out);
 
    // List of all the arguments, the order is the order they get printed
-   create_string_vec(all_options, "lines", "words", "bytes", "chars",
+   create_string_vec_cstr(all_options, "lines", "words", "bytes", "chars",
       "max-line-length");
 
    // Go through all the arguments

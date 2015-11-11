@@ -155,7 +155,7 @@ adt_test(split)
    create(string_vec, vec);
    string_split(&str, ' ', &vec);
 
-   create_string_vec(expected_vec, "a", "b", "c", "d");
+   create_string_vec_cstr(expected_vec, "a", "b", "c", "d");
 
    adt_assert_equal(string_vec, &vec, &expected_vec);
 }
@@ -167,7 +167,7 @@ adt_test(tokenize)
    create(string_vec, vec);
    string_tokenize(&str, &vec);
 
-   create_string_vec(expected_vec, "a", "b", "c", "d", "e");
+   create_string_vec_cstr(expected_vec, "a", "b", "c", "d", "e");
 
    adt_assert_equal(string_vec, &vec, &expected_vec);
 }
@@ -239,7 +239,7 @@ adt_test(hash)
 
 adt_test(vec_join)
 {
-   create_string_vec(vec, "an", "apple", "cake");
+   create_string_vec_cstr(vec, "an", "apple", "cake");
    create(string, str);
 
    string_vec_join(&str, &vec, ' ');
@@ -279,7 +279,7 @@ adt_test(string_replace_regex_group)
 
 adt_test(vec_format)
 {
-   create_string_vec(str_vec, "apple", "banana", "cat", "LERP");
+   create_string_vec_cstr(str_vec, "apple", "banana", "cat", "LERP");
 
    create(string, expected);
    string_append_format(&expected, "%s", print(string_vec, &str_vec));

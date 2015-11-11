@@ -23,7 +23,7 @@ adt_test(linereader_test)
 
 adt_test(line_reader_string_stream)
 {
-   create_string_vec(expected_vec, "aaa", "bbb", "ccc", "ddd");
+   create_string_vec_cstr(expected_vec, "aaa", "bbb", "ccc", "ddd");
 
    create_string_stream_const(str, strw("aaa\nbbb\nccc\nddd"));
    create_line_reader(lr, string_stream_to_stream(&str));
