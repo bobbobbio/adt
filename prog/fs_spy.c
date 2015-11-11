@@ -1,9 +1,7 @@
+#include <adt.h>
+
+#ifndef __APPLE__
 #include <extyp/ptrace.h>
-#include <sys/ptrace.h>
-#include <stdtyp/file.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <signal.h>
 
 int
 main(int argc, char **argv)
@@ -27,3 +25,13 @@ main(int argc, char **argv)
 
    return EXIT_SUCCESS;
 }
+
+#else
+
+int
+main(int argc, char **argv)
+{
+   panic("ptrace on OS X is a complete joke, this doesn't work.");
+}
+
+#endif // __APPLE__

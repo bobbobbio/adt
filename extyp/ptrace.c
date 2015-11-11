@@ -1,3 +1,7 @@
+// Copyright 2015 Remi Bernotavicius. All right reserved.
+
+// ptrace on OS X is a complete joke
+#ifndef __APPLE__
 #include <extyp/ptrace.h>
 #include <error.h>
 #include <stdtyp/file.h>
@@ -235,3 +239,4 @@ ptracer_subprocess(struct ptracer *self, const struct string_vec *cmd)
    return no_error;
 }
 
+#endif // __APPLE__
