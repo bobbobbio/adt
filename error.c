@@ -19,7 +19,6 @@ create_error_body(_no_error);
 void
 _error_panic(struct error e, char *code, const char *file, int line)
 {
-   print_backtrace(2);
    _panic("Got error: %s : \"%s\" : %s : in file %s on line %d\n",
       e.type, code, e.msg, file, line);
 }
@@ -31,6 +30,7 @@ _panic(char *fmt, ...)
    va_start(args, fmt);
    vfprintf(stderr, fmt, args);
    fprintf(stderr, "\n");
+   print_backtrace(2);
    abort();
 
    va_end(args);
@@ -165,8 +165,8 @@ print_backtrace(int skip_frames)
    if (call_stack_size <= 0)
       fprintf(stderr, "Failed to get backtrace");
    else {
-      backtrace_symbols_fd(
-         &call_stack[skip_frames], call_stack_size - skip_frames, STDERR_FILENO);
+      backtrace_symbols_fd(&call_stack[skip_frames],
+         call_stack_size - skip_frames, STDERR_FILENO);
    }
 }
 

@@ -4,7 +4,6 @@ CFLAGS += -Werror
 CFLAGS += -D_C99_SOURCE
 CFLAGS += -D_POSIX_C_SOURCE
 CFLAGS += -std=c99
-CFLAGS += -O3
 CC = gcc
 
 ifeq (@(TUP_PLATFORM),macosx)
@@ -14,6 +13,7 @@ else
    PTHREAD = -pthread
    # Stupid debugging symbols on mac don't work with tup
    CFLAGS += -g
+   CFLAGS += -rdynamic
 endif
 
 !cc_prog = |> $(CC) $(CFLAGS) $(PTHREAD) %f -o %o |>
