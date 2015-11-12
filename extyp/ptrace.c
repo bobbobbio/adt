@@ -18,9 +18,23 @@
 
 #define reg_offset(name) (void *)(offsetof(struct user_regs_struct, name))
 
+adt_func_body(syscall);
 adt_func_pod_body(ptracer_child);
 map_gen_podk_body(pid_map, pid_t, ptracer_child);
 adt_func_body(ptracer);
+
+void
+syscall_init(struct syscall *self)
+{
+   self->num = 0;
+   string_init(&self->path);
+}
+
+void
+syscall_destroy(struct syscall *self)
+{
+   string_destroy(&self->path);
+}
 
 void
 ptracer_init(struct ptracer *self)
@@ -139,32 +153,33 @@ a_warn_unused_result
 static struct error
 ptracer_child_got_syscall(struct ptracer_child *self)
 {
-   if (!self->in_syscall) {
+   if (self->syscall == NULL) {
       long syscall = -1;
       ereraise(ptracer_child_peek_user(self, reg_offset(orig_rax), &syscall));
 
-      self->in_syscall = true;
-      self->syscall = syscall;
-   } else {
-      self->in_syscall = false;
-
-      // look for file access calls
-      if (!(self->syscall == SYS_open || self->syscall == SYS_access ||
-         self->syscall == SYS_stat || self->syscall == SYS_lstat)) {
+      if (!(syscall == SYS_open || syscall == SYS_access ||
+         syscall == SYS_stat || syscall == SYS_lstat)) {
          return no_error;
       }
 
+      self->syscall = syscall_new();
+      self->syscall->num = syscall;
+
+      ereraise(ptracer_child_peek_data_string(self, reg_offset(rdi),
+         &self->syscall->path));
+   } else {
       // get the return value
       long retval = -1;
       ereraise(ptracer_child_peek_user(self, reg_offset(rax), &retval));
 
-      // get the argument
-      create(string, path);
-      ereraise(ptracer_child_peek_data_string(self, reg_offset(rdi), &path));
-
       // open returns a fd on success, and a negative value on failure
-      if (retval < 0 && !string_starts_with(&path, strw("/")))
-         afprintf(stderr, "TRACE: %s\n", print(string, &path));
+      if (!string_starts_with(&self->syscall->path, strw("/"))) {
+         afprintf(stderr, "TRACE: READ%s %s\n", (retval < 0 ? " FAIL" : ""),
+               print(string, &self->syscall->path));
+      }
+
+      syscall_free(self->syscall);
+      self->syscall = NULL;
    }
 
    return no_error;

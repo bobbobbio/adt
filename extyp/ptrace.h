@@ -9,10 +9,16 @@
 #include <adt.h>
 #include <stdtyp/map.h>
 
+struct syscall {
+   unsigned num;
+   unsigned retval;
+   struct string path;
+};
+adt_func_header(syscall);
+
 struct ptracer_child {
    pid_t pid;
-   bool in_syscall;
-   unsigned syscall;
+   struct syscall *syscall;
 };
 adt_func_pod_header(ptracer_child);
 
