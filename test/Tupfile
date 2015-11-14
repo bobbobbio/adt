@@ -3,18 +3,7 @@ include_rules
 CFLAGS += -I../
 
 : foreach *.c |> !cc |>
-
-: argparse_test.o ../libadt.a |> !cc_prog |> argparse_test
-: file_test.o main.o ../libadt.a |> !cc_prog |> file_test
-: http_test.o main.o ../libadt.a |> !cc_prog |> http_test
-: linereader_test.o main.o ../libadt.a |> !cc_prog |> linereader_test
-: list_test.o main.o ../libadt.a |> !cc_prog |> list_test
-: map_test.o main.o ../libadt.a |> !cc_prog |> map_test
-: regex_test.o main.o ../libadt.a |> !cc_prog |> regex_test
-: set_test.o main.o ../libadt.a |> !cc_prog |> set_test
-: string_test.o main.o ../libadt.a |> !cc_prog |> string_test
-: vector_test.o main.o ../libadt.a |> !cc_prog |> vector_test
-: auto_free_pool_test.o main.o ../libadt.a |> !cc_prog |> auto_free_pool_test
-: thread_test.o main.o ../libadt.a |> !cc_prog |> thread_test
-
+: foreach *_test.o | main.o ../libadt.a |> $(CC) $(CFLAFGS) $(PTHREAD) %f main.o ../libadt.a -o %o |> %B
 : test_runner.o ../libadt.a | *_test |> !cc_prog |> all_tests
+
+: foreach *_test |> ./%f --list > %o |> %B.test
