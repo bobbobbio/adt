@@ -133,10 +133,13 @@ expected_assert_condition_create(const char *condition);
       a_cleanup(expected_assert_freer) = \
       expected_assert_condition_create(cond))
 
-#define with_expected_assert_message(cond) \
+#define with_expected_panic(cond) \
    ctx_def(struct expected_assert *unq(n) a_unused \
       a_cleanup(expected_assert_freer) = \
       expected_assert_message_create(cond))
+
+#define with_expected_assert_message(cond) \
+   with_expected_panic("assert: " cond)
 
 #define create_error_header(name) \
    extern char *name
@@ -144,8 +147,8 @@ expected_assert_condition_create(const char *condition);
 #define create_error_body(name) \
    char *name = #name
 
-#define error_panic(e, msg) \
-   _error_panic(e, msg, __FILE__, __LINE__)
+#define error_panic(e, _msg) \
+   _assert(_msg, __FILE__, __LINE__, "error: %s : %s", (e).type, (e).msg)
 
 #define error_make(name, message) \
    ((struct error){ .type = name, .msg = message })
@@ -205,7 +208,7 @@ create_error_header(_no_error);
    } while(0)
 
 #define panic(...) \
-   adt_print(_panic, __VA_ARGS__)
+   adt_print(_assert, "false", __FILE__, __LINE__, __VA_ARGS__)
 
 #define unlikely(x) \
    __builtin_expect(!!(x), 0)
@@ -233,8 +236,8 @@ create_error_header(_no_error);
 
 void _error_panic(struct error e, char *code, const char *file, int line)
    a_noreturn;
-void _panic(char *fmt, ...)
-   a_format(printf, 1, 2) a_noreturn;
+void _assert(const char *code, const char *file, int line, char *fmt, ...)
+   a_format(printf, 4, 5) a_noreturn;
 char *error_msg(struct error e);
 void _adt_assert(const char *code, const char *file, int line, char *fmt, ...);
 void print_backtrace(int skip_frames);

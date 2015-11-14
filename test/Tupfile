@@ -5,5 +5,3 @@ CFLAGS += -I../
 : foreach *.c |> !cc |>
 : foreach *_test.o | main.o ../libadt.a |> $(CC) $(CFLAFGS) $(PTHREAD) %f main.o ../libadt.a -o %o |> %B
 : test_runner.o ../libadt.a | *_test |> !cc_prog |> all_tests
-
-: foreach *_test |> ./%f --list > %o |> %B.test

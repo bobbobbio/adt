@@ -16,32 +16,6 @@ __thread enum error_mode current_error_mode = ERROR_PANIC;
 
 create_error_body(_no_error);
 
-void
-_error_panic(struct error e, char *code, const char *file, int line)
-{
-   _panic("Got error: %s : \"%s\" : %s : in file %s on line %d\n",
-      e.type, code, e.msg, file, line);
-}
-
-void
-_panic(char *fmt, ...)
-{
-   va_list args;
-   va_start(args, fmt);
-   vfprintf(stderr, fmt, args);
-   fprintf(stderr, "\n");
-   print_backtrace(2);
-   abort();
-
-   va_end(args);
-}
-
-char *
-error_msg(struct error e)
-{
-   return e.msg;
-}
-
 static struct expected_assert *g_expected_assert = NULL;
 
 adt_func_body(expected_assert);
@@ -131,28 +105,45 @@ clear_expected_assert(void)
 static struct mutex g_assert_handler_lock = mutex_initializer;
 
 void
-_adt_assert(const char *code, const char *file, int line, char *fmt, ...)
+_assert(const char *code, const char *file, int line, char *fmt, ...)
 {
    va_list args;
    va_start(args, fmt);
 
    if (g_expected_assert) {
       create(string, msg);
-      if (fmt != NULL)
-         string_append_format_va_list(&msg, fmt, args);
+      string_append_format_va_list(&msg, fmt, args);
       with_mutex(&g_assert_handler_lock)
          expected_assert_handle(g_expected_assert, strw(code), &msg);
       exit(EXIT_SUCCESS);
    } else {
       print_backtrace(2);
-      fprintf(stderr, "Assert failed: %s : ", code);
-      if (fmt != NULL) {
-         vfprintf(stderr, fmt, args);
-         fprintf(stderr, " : ");
-      }
-      fprintf(stderr, "in file %s on line %d\n", file, line);
+      vfprintf(stderr, fmt, args);
+      fprintf(stderr, ": %s : in file %s on line %d\n", code, file, line);
       abort();
    }
+
+   va_end(args);
+}
+
+char *
+error_msg(struct error e)
+{
+   return e.msg;
+}
+
+void
+_adt_assert(const char *code, const char *file, int line, char *fmt, ...)
+{
+   va_list args;
+   va_start(args, fmt);
+
+   create(string, msg);
+   if (fmt != NULL) {
+      string_append_format_va_list(&msg, fmt, args);
+   }
+
+   _assert(code, file, line, "assert: %s", string_to_cstring(&msg));
 
    va_end(args);
 }

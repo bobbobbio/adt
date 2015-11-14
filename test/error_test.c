@@ -6,12 +6,14 @@
 
 create_error_body(test_error);
 
-struct error b()
+struct error
+b()
 {
    eraise(test_error, "Failed to do something b");
 }
 
-struct error a()
+struct error
+a()
 {
    ereraise(b());
 
@@ -25,7 +27,10 @@ adt_test(error_test)
    }
 
    adt_assert(1 < 2, "this is a message");
+}
 
-   // this one should crash
-   b();
+adt_test(error_test_crash)
+{
+   with_expected_panic("error: test_error : Failed to do something b")
+      b();
 }
