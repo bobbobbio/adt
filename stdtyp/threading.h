@@ -42,7 +42,7 @@
  *
  * When you join the thread, it gives you the value returned from the fptr.  If
  * the thread function is void return type, just pass NULL for the second
- * argument to thread_join.It will also free the thread pointer, (and is the
+ * argument to thread_join.  It will also free the thread pointer, (and is the
  * only way to do so)
  *
  * int result;
